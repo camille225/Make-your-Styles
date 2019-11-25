@@ -44,7 +44,14 @@ DROP TABLE IF EXISTS filtre ;
 
 CREATE TABLE filtre (Code_filtre int AUTO_INCREMENT NOT NULL,
 filtre_Libelle VARCHAR,
+Code_categorie_filtre int NOT NULL,
 PRIMARY KEY (Code_filtre) ) ENGINE=InnoDB;
+
+DROP TABLE IF EXISTS categorie_filtre ;
+
+CREATE TABLE categorie_filtre (Code_categorie_filtre int AUTO_INCREMENT NOT NULL,
+categorie_filtre_Libelle VARCHAR,
+PRIMARY KEY (Code_categorie_filtre) ) ENGINE=InnoDB;
 
 DROP TABLE IF EXISTS a_article_commande ;
 
@@ -69,3 +76,11 @@ a_parametre_utilisateur_Valeur INT,
 a_parametre_utilisateur_Actif INT,
 PRIMARY KEY (Code_utilisateur,
  Code_parametre) ) ENGINE=InnoDB;
+
+DROP TABLE IF EXISTS a_utilisateur_filtre ;
+
+CREATE TABLE a_utilisateur_filtre (Code_utilisateur int AUTO_INCREMENT NOT NULL,
+Code_filtre int NOT NULL,
+a_utilisateur_filtre_Actif BOOL,
+PRIMARY KEY (Code_utilisateur,
+ Code_filtre) ) ENGINE=InnoDB;
