@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+<title>Documentation API</title>
+<style>
+.table td { border-color: #B0B0B0; }
+</style>
+</head>
+<body>
+<div class="jumbotron jumbotron-fluid">
+<div class="container-fluid">
+<h1 class="display-4">Dictionnaire des données du projet make-your-style</h1>
+<p class="lead">Date : 25/11/2019 11:57:35</p>
+</div>
+</div>
+<div class="container-fluid">
+<div style="page-break-inside: avoid;">
+<div class="alert alert-primary" role="alert">
+<h4 class="alert-heading">Entité "UTILISATEUR"</h4>
+<hr>
+<table class="table table-sm">
+<thead><tr><th>Description</th><th>Type de donnée</th><th>Nom de la colonne (BD)</th></tr></thead>
+<tbody>
+<tr scope="row" class="bg-primary" style="color: white;"><th style="width: 33%;">Identifiant : utilisateur</th><th>Entier naturel</th><th style="width: 33%;">Code_utilisateur</th></tr>
+<tr scope="row"><td>utilisateur_Identifiant</td><td>Chaine jusqu'à 255 caractères</td><td>utilisateur_Identifiant</td></tr>
+<tr scope="row"><td>utilisateur_Password</td><td>Chaine jusqu'à 255 caractères</td><td>utilisateur_Password</td></tr>
+<tr scope="row"><td>utilisateur_Email</td><td>Chaine jusqu'à 255 caractères</td><td>utilisateur_Email</td></tr>
+<tr scope="row"><td>utilisateur_Administrateur</td><td>Booléen (oui/non)<br><span style="font-size: 0.85em; font-style: italic;">( 1 => 'Oui', 0 => 'Non' )</span></td><td>utilisateur_Administrateur</td></tr>
+<tr scope="row"><td>utilisateur_Developpeur</td><td>Booléen (oui/non)<br><span style="font-size: 0.85em; font-style: italic;">( 1 => 'Oui', 0 => 'Non' )</span></td><td>utilisateur_Developpeur</td></tr>
+</tbody>
+</table>
+</div>
+
+</div>
+<div style="page-break-inside: avoid;">
+<div class="alert alert-primary" role="alert">
+<h4 class="alert-heading">Entité "ARTICLE"</h4>
+<hr>
+<table class="table table-sm">
+<thead><tr><th>Description</th><th>Type de donnée</th><th>Nom de la colonne (BD)</th></tr></thead>
+<tbody>
+<tr scope="row" class="bg-primary" style="color: white;"><th style="width: 33%;">Identifiant : article</th><th>Entier naturel</th><th style="width: 33%;">Code_article</th></tr>
+<tr scope="row"><td>article_Libelle</td><td>Chaine jusqu'à 255 caractères</td><td>article_Libelle</td></tr>
+<tr scope="row"><td>article_Photo_Fichier</td><td>Fichier</td><td>article_Photo_Fichier</td></tr>
+<tr scope="row"><td>article_Prix</td><td>FLOAT</td><td>article_Prix</td></tr>
+<tr scope="row"><td>article_Actif</td><td>Booléen (oui/non)<br><span style="font-size: 0.85em; font-style: italic;">( 1 => 'Oui', 0 => 'Non' )</span></td><td>article_Actif</td></tr>
+<tr scope="row" class="bg-warning" style="font-style: italic;"><td>Lien vers l'entité : TYPE_PRODUIT</td><td>Référence</td><td>Code_type_produit</td></tr>
+</tbody>
+</table>
+</div>
+
+</div>
+<div style="page-break-inside: avoid;">
+<div class="alert alert-primary" role="alert">
+<h4 class="alert-heading">Entité "COMMANDE"</h4>
+<hr>
+<table class="table table-sm">
+<thead><tr><th>Description</th><th>Type de donnée</th><th>Nom de la colonne (BD)</th></tr></thead>
+<tbody>
+<tr scope="row" class="bg-primary" style="color: white;"><th style="width: 33%;">Identifiant : commande</th><th>Entier naturel</th><th style="width: 33%;">Code_commande</th></tr>
+<tr scope="row"><td>commande_Prix_total</td><td>FLOAT</td><td>commande_Prix_total</td></tr>
+<tr scope="row"><td>commande_Date_livraison</td><td>Date (sans l'heure)</td><td>commande_Date_livraison</td></tr>
+<tr scope="row"><td>commande_Date_creation</td><td>Date (sans l'heure)</td><td>commande_Date_creation</td></tr>
+<tr scope="row" class="bg-warning" style="font-style: italic;"><td>Lien vers l'entité : UTILISATEUR</td><td>Référence</td><td>Code_utilisateur</td></tr>
+</tbody>
+</table>
+</div>
+
+</div>
+<div style="page-break-inside: avoid;">
+<div class="alert alert-primary" role="alert">
+<h4 class="alert-heading">Entité "TYPE_PRODUIT"</h4>
+<hr>
+<table class="table table-sm">
+<thead><tr><th>Description</th><th>Type de donnée</th><th>Nom de la colonne (BD)</th></tr></thead>
+<tbody>
+<tr scope="row" class="bg-primary" style="color: white;"><th style="width: 33%;">Identifiant : type_produit</th><th>Entier naturel</th><th style="width: 33%;">Code_type_produit</th></tr>
+<tr scope="row"><td>type_produit_Libelle</td><td>Chaine jusqu'à 255 caractères</td><td>type_produit_Libelle</td></tr>
+</tbody>
+</table>
+</div>
+
+</div>
+<div style="page-break-inside: avoid;">
+<div class="alert alert-primary" role="alert">
+<h4 class="alert-heading">Entité "PARAMETRE"</h4>
+<hr>
+<table class="table table-sm">
+<thead><tr><th>Description</th><th>Type de donnée</th><th>Nom de la colonne (BD)</th></tr></thead>
+<tbody>
+<tr scope="row" class="bg-primary" style="color: white;"><th style="width: 33%;">Identifiant : parametre</th><th>Entier naturel</th><th style="width: 33%;">Code_parametre</th></tr>
+<tr scope="row"><td>parametre_Libelle</td><td>Chaine jusqu'à 255 caractères</td><td>parametre_Libelle</td></tr>
+</tbody>
+</table>
+</div>
+
+</div>
+<div style="page-break-inside: avoid;">
+<div class="alert alert-primary" role="alert">
+<h4 class="alert-heading">Entité "FILTRE"</h4>
+<hr>
+<table class="table table-sm">
+<thead><tr><th>Description</th><th>Type de donnée</th><th>Nom de la colonne (BD)</th></tr></thead>
+<tbody>
+<tr scope="row" class="bg-primary" style="color: white;"><th style="width: 33%;">Identifiant : filtre</th><th>Entier naturel</th><th style="width: 33%;">Code_filtre</th></tr>
+<tr scope="row"><td>filtre_Libelle</td><td>Chaine jusqu'à 255 caractères</td><td>filtre_Libelle</td></tr>
+</tbody>
+</table>
+</div>
+
+</div>
+<div style="page-break-inside: avoid;">
+<div class="alert alert-secondary" role="alert">
+<h4 class="alert-heading">Association "A_ARTICLE_COMMANDE"</h4>
+<hr>
+<table class="table table-sm">
+<thead><tr><th>Description</th><th>Type de donnée</th><th>Nom de la colonne (BD)</th></tr></thead>
+<tbody>
+<tr scope="row" class="bg-warning" style="font-style: italic;"><th style="width: 33%;">Lien vers l'entité : COMMANDE</th><th>Référence</th><th style="width: 33%;">Code_commande</th></tr>
+<tr scope="row" class="bg-warning" style="font-style: italic;"><th style="width: 33%;">Lien vers l'entité : ARTICLE</th><th>Référence</th><th style="width: 33%;">Code_article</th></tr>
+</tbody>
+</table>
+</div>
+
+</div>
+<div style="page-break-inside: avoid;">
+<div class="alert alert-secondary" role="alert">
+<h4 class="alert-heading">Association "A_FILTRE_PRODUIT"</h4>
+<hr>
+<table class="table table-sm">
+<thead><tr><th>Description</th><th>Type de donnée</th><th>Nom de la colonne (BD)</th></tr></thead>
+<tbody>
+<tr scope="row" class="bg-warning" style="font-style: italic;"><th style="width: 33%;">Lien vers l'entité : FILTRE</th><th>Référence</th><th style="width: 33%;">Code_filtre</th></tr>
+<tr scope="row" class="bg-warning" style="font-style: italic;"><th style="width: 33%;">Lien vers l'entité : ARTICLE</th><th>Référence</th><th style="width: 33%;">Code_article</th></tr>
+<tr scope="row"><td>a_filtre_produit_Actif</td><td>Nombre entier</td><td>a_filtre_produit_Actif</td></tr>
+</tbody>
+</table>
+</div>
+
+</div>
+<div style="page-break-inside: avoid;">
+<div class="alert alert-secondary" role="alert">
+<h4 class="alert-heading">Association "A_PARAMETRE_UTILISATEUR"</h4>
+<hr>
+<table class="table table-sm">
+<thead><tr><th>Description</th><th>Type de donnée</th><th>Nom de la colonne (BD)</th></tr></thead>
+<tbody>
+<tr scope="row" class="bg-warning" style="font-style: italic;"><th style="width: 33%;">Lien vers l'entité : UTILISATEUR</th><th>Référence</th><th style="width: 33%;">Code_utilisateur</th></tr>
+<tr scope="row" class="bg-warning" style="font-style: italic;"><th style="width: 33%;">Lien vers l'entité : PARAMETRE</th><th>Référence</th><th style="width: 33%;">Code_parametre</th></tr>
+<tr scope="row"><td>a_parametre_utilisateur_Valeur</td><td>Nombre entier</td><td>a_parametre_utilisateur_Valeur</td></tr>
+<tr scope="row"><td>a_parametre_utilisateur_Actif</td><td>Nombre entier</td><td>a_parametre_utilisateur_Actif</td></tr>
+</tbody>
+</table>
+</div>
+
+</div>
+<hr><footer><p>© My Framework 2019</p></footer>
+</div>
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+</body>
+</html>
