@@ -52,6 +52,29 @@ class Fil_Ariane {
         return $code;
     }
 
+    function generer_code_template() {
+        $cmpt = 0;
+        $add = '';
+        $code = '
+            <nav aria-label="breadcrumb">
+				<ol class="breadcrumb">';
+        foreach ($this->liste_titres as $key => $titre) {
+            $cmpt++;
+            if ( $cmpt!=$this->nb_titres ) {
+                $code.='
+                    <li class="breadcrumb-item"><a href="'.$titre['link'].'">'.$titre['text'].'</a></li>';
+            } else {
+                $code.='
+                    <li class="breadcrumb-item active" aria-current="page">'.$titre['text'].'</li>';
+                $add = '<h1 class="header-title">'.$titre['text'].'</h1>';
+            }
+        }
+        $code.='
+                </ol>
+            </nav>';
+        return $add.$code;
+    }
+
     private function generer_bootstrap_code() {
         $code = '';
         $code.= '<ul class="breadcrumb">';

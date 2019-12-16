@@ -25,7 +25,10 @@ class Hook_utilisateur
         $mf_droits_defaut['utilisateur__AJOUTER'] = false;
         $mf_droits_defaut['utilisateur__CREER'] = false; // actualisation uniquement pour l'affichage
         // Mise à jour des droits
-        // ici le code
+        $db = new DB();
+        if ($db->utilisateur()->mf_compter() == 0) {
+            $mf_droits_defaut['utilisateur__AJOUTER'] = true;
+        }
     }
 
     static function autorisation_ajout(string $utilisateur_Identifiant, string $utilisateur_Password, string $utilisateur_Email, bool $utilisateur_Administrateur, bool $utilisateur_Developpeur)
