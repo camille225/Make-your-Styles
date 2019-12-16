@@ -60,7 +60,7 @@ define('IMAGES_HAUTEUR_MAXI', 768);
 define('MODE_RETINA', false); // true : permet de prendre en charge les ecrans retina en doublant la resolution des images
 
 define('USE_BOOTSTRAP', true);
-define('VERSION_BOOTSTRAP', '3'); // 3 ou 4
+define('VERSION_BOOTSTRAP', '4'); // 3 ou 4
 
 define('AUTOCOMPLETION_DEFAUT', false); // false pour plus d'optimisation
 define('AUTOCOMPLETION_RECURSIVE_DEFAUT', false); // false pour plus d'optimisation

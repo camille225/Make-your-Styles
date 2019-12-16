@@ -1,122 +1,100 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
-    <title>{titre_page}</title>
     <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-    <link rel="stylesheet" href="css/style.css">
-    <style>/* style boostrap */
-        /* Remove the navbar's default margin-bottom and rounded borders */
-        .navbar {
-            margin-bottom: 0;
-            border-radius: 0;
-        }
+    <meta name="description" content="">
+    <meta name="author" content="">
 
-        /* Set height of the grid so .sidenav can be 100% (adjust as needed) */
-        .row.content {height: 450px}
+    <title>{titre_page}</title>
 
-        /* Set gray background color and 100% height */
-        .sidenav {
-            padding-top: 20px;
-            background-color: #f1f1f1;
-            height: 100%;
-        }
+    <link href="template/docs/css/app.css" rel="stylesheet">
 
-        /* Set black background color, white text and some padding */
-        footer {
-            background-color: #555;
-            color: white;
-            padding: 15px;
-        }
-
-        /* On small screens, set height to 'auto' for sidenav and grid */
-        @media screen and (max-width: 767px) {
-            .sidenav {
-                height: auto;
-                padding: 15px;
-            }
-            .row.content {height:auto;}
-        }
-    </style>
+    <!--     <link rel="stylesheet" href="css/style.css"> -->
+    <link rel="stylesheet" href="css/make-your-style.css">
 
     {css}
-    {js}
 
 </head>
-<body>
 
-<nav class="navbar navbar-inverse">
-    <div class="container-fluid">
+<body class="theme-blue">
+
+<div class="wrapper">
+    <nav id="sidebar" class="sidebar">
         <div class="navbar-header">
-            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </button>
-            <a class="navbar-brand" href="#">Logo</a>
+            <a class="navbar-brand" href="index.php" style="padding: 0;">{logo}</a>
         </div>
-        <div class="collapse navbar-collapse" id="myNavbar">
+        <div class="sidebar-content">
             {menu_principal}
         </div>
-    </div>
-</nav>
+    </nav>
+    <div class="main">
+        <nav class="navbar navbar-expand navbar-dark" style="margin-top: -8px;">
+            <a class="sidebar-toggle d-flex mr-2">
+                <i class="hamburger align-self-center"></i>
+            </a>
 
-<div class="container-fluid text-center">
-    <div class="row content">
-        <div class="col-sm-12 text-left">
+            <!-- 				<form class="form-inline d-none d-sm-inline-block"> -->
+            <!-- 					<input class="form-control form-control-lite" type="text" placeholder="Search..."> -->
+            <!-- 				</form> -->
 
-            <br>
-
-            {fil_ariane}
-
-            {sections}
-
-            <script> /* script accordion */
-                var acc = document.getElementsByClassName("accordion");
-                var i;
-
-                for (i = 0; i < acc.length; i++) {
-                    acc[i].onclick = function() {
-                        this.classList.toggle("active");
-                        var accordion_panel = this.nextElementSibling;
-                        if (accordion_panel.style.maxHeight) {
-                            accordion_panel.style.maxHeight = null;
-                        } else {
-                            accordion_panel.style.maxHeight = "none";
-                        }
-                    }
-                    if (i==acc.length-1) {
-                        acc[i].classList.toggle("active");
-                        var accordion_panel = acc[i].nextElementSibling;
-                        if (accordion_panel.style.maxHeight) {
-                            accordion_panel.style.maxHeight = null;
-                        } else {
-                            accordion_panel.style.maxHeight = "none";
-                        }
-                    }
-                }
-            </script>
-
-        </div>
-        <!--
-        <div class="col-sm-2 sidenav">
-            <div class="well">
-                <p>Alerte 1</p>
+            <div class="navbar-collapse collapse">
+                <ul class="navbar-nav ml-auto">
+                    <!--                         {menu_messagerie} -->
+                    <!-- 						<li class="nav-item dropdown ml-lg-2"> -->
+                    <!-- 							<a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" data-toggle="dropdown"> -->
+                    <!--                                 <i class="align-middle fas fa-bell"></i> -->
+                    <!--                             </a> -->
+                    <!-- 							<div class="dropdown-menu dropdown-menu-lg dropdown-menu-right py-0" aria-labelledby="alertsDropdown"> -->
+                    <!-- 								<div class="dropdown-menu-header"> -->
+                    <!-- 									4 New Notifications -->
+                    <!-- 								</div> -->
+                    <!-- 								<div class="list-group"> -->
+                    <!-- 									<a href="#" class="list-group-item"> -->
+                    <!-- 										<div class="row no-gutters align-items-center"> -->
+                    <!-- 											<div class="col-2"> -->
+                    <!-- 												<i class="ml-1 text-danger fas fa-fw fa-bell"></i> -->
+                    <!-- 											</div> -->
+                    <!-- 											<div class="col-10"> -->
+                    <!-- 												<div class="text-dark">Update completed</div> -->
+                    <!-- 												<div class="text-muted small mt-1">Restart server 12 to complete the update.</div> -->
+                    <!-- 												<div class="text-muted small mt-1">2h ago</div> -->
+                    <!-- 											</div> -->
+                    <!-- 										</div> -->
+                    <!-- 									</a> -->
+                    <!-- 								</div> -->
+                    <!-- 								<div class="dropdown-menu-footer"> -->
+                    <!-- 									<a href="#" class="text-muted">Show all notifications</a> -->
+                    <!-- 								</div> -->
+                    <!-- 							</div> -->
+                    <!-- 						</li> -->
+                    {menu_option}
+                </ul>
             </div>
-            <div class="well">
-                <p>Alerte 2</p>
+
+        </nav>
+        <main class="content">
+            <div class="container-fluid">
+
+                <div class="header">
+                    {fil_ariane}
+                </div>
+                {sections}
             </div>
-        </div>
-         -->
+        </main>
+        {footer}
     </div>
+
 </div>
 
-{footer}
+<script src="template/docs/js/app.js"></script>
+<!-- jquery-ui -->
+<script src="lib/jquery-ui-1.12.1/jquery-ui.js"></script>
 
+{js}
 {script_end}
 
 </body>
+
 </html>
