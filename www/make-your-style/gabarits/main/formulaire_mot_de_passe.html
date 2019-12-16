@@ -1,0 +1,40 @@
+<div class="container h-100">
+  <div class="row h-100">
+    <div class="col-sm-10 col-md-8 col-lg-6 mx-auto d-table h-100">
+      <div class="d-table-cell align-middle">
+
+        <div class="block_dans_entete" style="background-color: #59D0C3d4;">
+          <div class="text-center">
+            <h1 class="h2">Mot de passe oublié</h1>
+            <p class="lead"></p>
+          </div>
+
+          <div style="background: none; color: white; font-size: 1.25em;">
+            <div class="m-sm-4">
+              <form class="box" method="post" action="index.php?act=connexion&mdp_oublie=1">
+                <div class="form-group" style="text-align: center">
+                  {message}
+                </div>
+                <div class="form-group">
+                  <label>Identifiant</label> {input_mf_connexion_login}
+                </div>
+                <div class="form-group">
+                  <label>Courriel</label> {input_mf_connexion_email}
+                </div>
+                <div class="text-center mt-3">
+                  <button type="submit" class="btn btn-lg btn-secondary">Demander un nouveau mot de passe</button>
+                  {input_hidden_cle_validation_formulaire}
+                </div>
+                <div class="form-group text-center">
+                  <small> <br> <a style="text-decoration: none; color: white;" href="?mdp_oublie=0">Se connecter</a>
+                  </small>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>

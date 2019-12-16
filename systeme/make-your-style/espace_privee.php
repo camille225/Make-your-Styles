@@ -167,7 +167,9 @@ if (! isset($_SESSION[PREFIXE_SESSION]['token'])) {
             $form->set_libelle_bouton(get_nom_colonne('mv_validation_form_nouveau_mdp'));
             $form->activer_picto_forget_password();
             $form->desactiver_le_mode_inline();
-            $code_html .= $form->generer_BS4_Forms() . '<p style="text-align: center; margin-top: 40px; font-style: italic;"><a style="text-decoration: none; color: gray;" href="?mdp_oublie=0">' . get_nom_colonne('mv_lien_vers_connexion') . '</a></p>';
+            /* début développement */
+            $code_html .= $form->generer_avec_gabarit('main/formulaire_mot_de_passe.html');
+            /* fin développement */
         } elseif ($mf_action != 'inscription') {
             $form = new Formulaire('', $mess);
             if (ACTIVER_CONNEXION_EMAIL) {
@@ -187,7 +189,9 @@ if (! isset($_SESSION[PREFIXE_SESSION]['token'])) {
             $form->set_libelle_bouton(get_nom_colonne('mv_validation_form_connexion'));
             $form->activer_picto_connexion();
             $form->desactiver_le_mode_inline();
-            $code_html .= $form->generer_BS4_Forms() . '<p style="text-align: center; margin-top: 40px; font-style: italic;"><a style="text-decoration: none; color: gray;" href="?mdp_oublie=1">' . get_nom_colonne('mv_lien_vers_nouveau_mdp') . '</a></p>';
+            /* début développement */
+            $code_html .= $form->generer_avec_gabarit('main/formulaire_connexion.html');
+            /* fin développement */
 
             if (GOOGLE_CLIENT_ID != '') {
                 $href = 'https://accounts.google.com/o/oauth2/v2/auth?scope=email&';

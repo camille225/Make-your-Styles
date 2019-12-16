@@ -11,7 +11,7 @@ define('BOUTON_LIBELLE_MODIFIER_PWD_PREC', '<span class="glyphicon glyphicon-loc
 define('BOUTON_LIBELLE_MODIFIER_PWD_SUIV', '');
 define('BOUTON_CLASSE_MODIFIER', 'btn btn-default');
 
-define('BOUTON_LIBELLE_SUPPRIMER_PREC', '<span class=""glyphicon glyphicon-trash""></span> ');
+define('BOUTON_LIBELLE_SUPPRIMER_PREC', '<span class="glyphicon glyphicon-trash"></span> ');
 define('BOUTON_LIBELLE_SUPPRIMER_SUIV', '');
 define('BOUTON_CLASSE_SUPPRIMER', 'btn btn-danger');
 
