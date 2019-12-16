@@ -1,0 +1,78 @@
+.settings {
+  display: none;
+
+  @include media-breakpoint-up(xl) {
+    display: block;
+  }
+}
+
+.settings-toggle {
+  background: $white;
+  color: $gray-900;
+  position: fixed;
+  top: 160px;
+  right: 0;
+  width: 46px;
+  padding: $spacer*0.75 $spacer*0.75;
+  border-top-left-radius: $border-radius;
+  border-bottom-left-radius: $border-radius;
+  box-shadow: -5px 0px 10px 0px rgba(0,0,0,0.1);
+  transition: all .1s ease-in-out;
+  cursor: pointer;
+  z-index: 100;
+
+  &:hover {
+    width: 52px;
+  }
+
+  svg {
+    width: 1.25rem !important;
+    height: 1.25rem !important;
+    margin-bottom: -4px;
+  }
+}
+
+.settings-panel {
+  background: $white;
+  border-top-left-radius: $card-border-radius;
+  border-bottom-left-radius: $card-border-radius;
+  box-shadow: -5px 0px 10px 0px rgba(0,0,0,0.1);
+  display: block;
+  height: 108px;
+  position: fixed;
+  width: 170px;
+  z-index: 100;
+  top: 150px;
+  bottom: 0;
+  right: -170px;
+  transition: right .2s ease-in-out;
+  padding: $spacer * 0.75;
+
+  .settings.open & {
+    right: 0;
+  }
+}
+
+.settings-title {
+  font-size: $font-size-sm;
+
+  .close {
+    line-height: 1rem;
+  }
+}
+
+.settings-theme {
+  width: 25px;
+  height: 25px;
+  display: inline-block;
+  margin-right: .1rem;
+  margin-bottom: .1rem;
+  border: 1px solid $gray-600;
+  cursor: pointer;
+
+  @each $color, $value in $bg-colors {
+    &[data-theme="#{$color}"] {
+      background: $value;
+    }
+  }
+}

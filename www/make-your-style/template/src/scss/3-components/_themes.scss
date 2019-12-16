@@ -1,0 +1,9 @@
+body {
+  @include theme(darken($blue, 30%));
+}
+
+@each $color, $value in $bg-colors {
+  .theme-#{$color} {
+    @include theme($value);
+  }
+}

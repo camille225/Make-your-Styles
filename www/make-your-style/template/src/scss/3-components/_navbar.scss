@@ -1,0 +1,66 @@
+.navbar .nav-item {
+  line-height: 3rem;
+
+  a {
+    text-decoration: none;
+  }
+
+  .indicator {
+    background: $primary;
+    border-radius: 50%;
+    display: block;
+    height: 18px;
+    width: 18px;
+    padding: 1px;
+    position: absolute;
+    top: 0;
+    right: -8px;
+    text-align: center;
+    transition: top .1s ease-out;
+    font-size: 0.675rem;
+    color: $white;
+  }
+
+  &:hover .indicator {
+    top: -4px;
+  }
+
+  a:focus {
+    outline: 0;
+  }
+
+  .dropdown-menu {
+    line-height: $line-height-base;
+  }
+
+  .nav-link {
+    font-weight: $font-weight-bold;
+
+    svg {
+      width: 1.125rem;
+      height: 1.125rem;
+    }
+
+    &:after {
+      display: none;
+    }
+  }
+}
+
+@include media-breakpoint-down(xs) {
+  .navbar {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  .dropdown,
+  .dropleft,
+  .dropright,
+  .dropup {
+    position: inherit;
+  }
+
+  .navbar-expand .navbar-nav .dropdown-menu-lg {
+    min-width: 100%;
+  }
+}

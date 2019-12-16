@@ -1,0 +1,11 @@
+@mixin theme($backgroundColor) {
+  .splash-icon,
+  .sidebar-brand,
+  .wrapper:before {
+    background: $backgroundColor;
+  }
+
+  .sidebar-brand svg {
+    fill: lighten($backgroundColor, 30%);
+  }
+}
