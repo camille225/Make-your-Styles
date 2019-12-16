@@ -28,16 +28,18 @@ if ( !$cache->start() )
     $menu_a_droite->ajouter_bouton_deconnexion();
 
     echo recuperer_gabarit('main/page.html', array(
-            '{titre_page}' => 'type_produit',
-            '{css}' => $css,
-            '{js}' => $js,
-            '{menu_principal}' => $menu,
-            '{fil_ariane}' => $fil_ariane->generer_code(),
-            '{sections}' => $code_html,
-            '{menu_secondaire}' => $menu_a_droite->generer_code(),
-            '{script_end}' => generer_script_maj_auto(),
-            '{header}' => recuperer_gabarit('main/header.html',array()),
-            '{footer}' => recuperer_gabarit('main/footer.html',array())
+        '{titre_page}' => 'type_produit',
+        '{css}' => $css,
+        '{js}' => $js,
+        '{menu_principal}' => $menu,
+        '{menu_option}' => menu_option_user(),
+        '{fil_ariane}' => $fil_ariane->generer_code_template(),
+        '{sections}' => $code_html,
+        '{menu_secondaire}' => $menu_a_droite->generer_code(),
+        '{script_end}' => generer_script_maj_auto(),
+        '{header}' => recuperer_gabarit('main/header.html',array()),
+        '{footer}' => recuperer_gabarit('main/footer.html',array()),
+        '{logo}' => '<p class="text-white mb-0" style="width: 230px;"><img src="images/logo.png" style="max-width: 250px; max-height: 50px;"> CRM Montessori 21</p>',
     ), true);
 
     $cache->end();
