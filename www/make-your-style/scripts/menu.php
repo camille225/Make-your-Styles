@@ -7,7 +7,7 @@ $pages_menu['Mon menu'][]=array( 'adresse' => 'utilisateur.php', 'nom' => 'utili
 $pages_menu['Mon menu'][]=array( 'adresse' => 'article.php', 'nom' => 'article' , 'icone' => 'fa fa-users fa-fw' );
 $pages_menu['Mon menu'][]=array( 'adresse' => 'commande.php', 'nom' => 'commande' , 'icone' => 'fa fa-users fa-fw' );
 $pages_menu['Mon menu'][]=array( 'adresse' => 'type_produit.php', 'nom' => 'type_produit' , 'icone' => 'fa fa-users fa-fw' );
-$pages_menu['Mon menu'][]=array( 'adresse' => 'parametre.php', 'nom' => 'parametre' , 'icone' => 'fa fa-users fa-fw' );
+$pages_menu['Mon menu'][]=array( 'adresse' => 'parametre.php', 'nom' => 'parametre' , 'icone' => 'fa fa-cogs fa-fw' );
 $pages_menu['Mon menu'][]=array( 'adresse' => 'filtre.php', 'nom' => 'filtre' , 'icone' => 'fa fa-users fa-fw' );
 $pages_menu['Mon menu'][]=array( 'adresse' => 'a_article_commande.php', 'nom' => 'a_article_commande' , 'icone' => 'fa fa-users fa-fw' );
 $pages_menu['Mon menu'][]=array( 'adresse' => 'a_filtre_produit.php', 'nom' => 'a_filtre_produit' , 'icone' => 'fa fa-users fa-fw' );
