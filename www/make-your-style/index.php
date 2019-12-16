@@ -19,7 +19,7 @@ if ( !$cache->start() )
 
     $mess = ( (isset($retour) && $retour['code_erreur']>0) ? (isset($mf_libelle_erreur[$retour['code_erreur']]) ? $mf_libelle_erreur[$retour['code_erreur']] : 'ERREUR N_'.$retour['code_erreur'] ) : '' );
 
-    $code_html = generer_menu_bandeau();
+    $code_html = '';
     /* Chargement des forms */
 
     $menu_a_droite->ajouter_bouton_deconnexion();
