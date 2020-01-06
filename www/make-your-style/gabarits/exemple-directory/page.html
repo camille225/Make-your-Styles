@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>{titre_page}</title>
+
+    <link href="template/docs/css/app.css" rel="stylesheet">
+
+    <!--     <link rel="stylesheet" href="css/style.css"> -->
+    <link rel="stylesheet" href="css/make-your-style.css">
+
+    {css}
+
+</head>
+
+<body class="theme-blue" style="background: black;">
+
+<div class="wrapper">
+    <nav id="sidebar" class="sidebar">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="index.php" style="padding: 0;">{logo}</a>
+        </div>
+        <div class="sidebar-content">
+            {menu_principal}
+        </div>
+    </nav>
+    <div class="main">
+        <nav class="navbar navbar-expand navbar-dark" style="margin-top: -8px;">
+            <a class="sidebar-toggle d-flex mr-2">
+                <i class="hamburger align-self-center"></i>
+            </a>
+
+            <!-- 				<form class="form-inline d-none d-sm-inline-block"> -->
+            <!-- 					<input class="form-control form-control-lite" type="text" placeholder="Search..."> -->
+            <!-- 				</form> -->
+
+            <div class="navbar-collapse collapse">
+                <ul class="navbar-nav ml-auto">
+                    <!--                         {menu_messagerie} -->
+                    <!-- 						<li class="nav-item dropdown ml-lg-2"> -->
+                    <!-- 							<a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" data-toggle="dropdown"> -->
+                    <!--                                 <i class="align-middle fas fa-bell"></i> -->
+                    <!--                             </a> -->
+                    <!-- 							<div class="dropdown-menu dropdown-menu-lg dropdown-menu-right py-0" aria-labelledby="alertsDropdown"> -->
+                    <!-- 								<div class="dropdown-menu-header"> -->
+                    <!-- 									4 New Notifications -->
+                    <!-- 								</div> -->
+                    <!-- 								<div class="list-group"> -->
+                    <!-- 									<a href="#" class="list-group-item"> -->
+                    <!-- 										<div class="row no-gutters align-items-center"> -->
+                    <!-- 											<div class="col-2"> -->
+                    <!-- 												<i class="ml-1 text-danger fas fa-fw fa-bell"></i> -->
+                    <!-- 											</div> -->
+                    <!-- 											<div class="col-10"> -->
+                    <!-- 												<div class="text-dark">Update completed</div> -->
+                    <!-- 												<div class="text-muted small mt-1">Restart server 12 to complete the update.</div> -->
+                    <!-- 												<div class="text-muted small mt-1">2h ago</div> -->
+                    <!-- 											</div> -->
+                    <!-- 										</div> -->
+                    <!-- 									</a> -->
+                    <!-- 								</div> -->
+                    <!-- 								<div class="dropdown-menu-footer"> -->
+                    <!-- 									<a href="#" class="text-muted">Show all notifications</a> -->
+                    <!-- 								</div> -->
+                    <!-- 							</div> -->
+                    <!-- 						</li> -->
+                    {menu_option}
+                </ul>
+            </div>
+
+        </nav>
+        <main class="content">
+            <div class="container-fluid">
+
+                <div class="header">
+                    {fil_ariane}
+                </div>
+                {sections}
+            </div>
+        </main>
+        {footer}
+    </div>
+
+</div>
+
+<script src="template/docs/js/app.js"></script>
+<!-- jquery-ui -->
+<script src="lib/jquery-ui-1.12.1/jquery-ui.js"></script>
+
+{js}
+{script_end}
+
+</body>
+
+</html>
