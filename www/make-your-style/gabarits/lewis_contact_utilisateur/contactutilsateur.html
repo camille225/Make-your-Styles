@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>{titre_page}</title>
+
+    <link href="template/docs/css/app.css" rel="stylesheet">
+
+    <!--     <link rel="stylesheet" href="css/style.css"> -->
+    
+    <link rel="stylesheet" href="css/contactutilisateur.css">
+
+    {css}
+
+</head>
+
+<body>
+         <h1>Nous contacter</h1>
+            <p class="desciptionarea">Nous vous répondrons avec plaisir et dans les plus brefs délais </p>
+            <form>
+                <div>
+                    <input type =text name = nom placeholder ="nom(s)"/>
+
+                    <input type =text name = prenoms placeholder ="prénom(s)"/><br/>
+                </div>
+                
+                <input type =email name = email placeholder ="Email"/><br/>
+
+                <select name="motif_du_contact">
+                    <option value="Sunday" selected>motif du contact</option>
+                    <option value="Sunday">informations</option>
+                    <option value="Monday">Retour d'un ou plusieur articles</option>
+                    <option value="Tuesday">remboursement</option>
+                    <option value="Saturday">autre</option>
+                </select>
+                <input type =text name = autre placeholder ="Si le motif du contact n'est pas présernt dans les choix, indiquez-le"/>
+
+                <textarea id = "textarea" name= message  placeholder ="Votre message"></textarea><br/>
+                <input id="soumission" type = "submit" value = "Envoyer votre message"/>
+    
+            </form>
+    </body>
+
+</html>
