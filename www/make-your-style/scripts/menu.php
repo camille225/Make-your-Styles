@@ -12,6 +12,7 @@ $pages_menu['Mon menu'][]=array( 'adresse' => 'filtre.php', 'nom' => 'filtre' , 
 $pages_menu['Mon menu'][]=array( 'adresse' => 'a_article_commande.php', 'nom' => 'a_article_commande' , 'icone' => 'fa fa-users fa-fw' );
 $pages_menu['Mon menu'][]=array( 'adresse' => 'a_filtre_produit.php', 'nom' => 'a_filtre_produit' , 'icone' => 'fa fa-users fa-fw' );
 $pages_menu['Mon menu'][]=array( 'adresse' => 'a_parametre_utilisateur.php', 'nom' => 'a_parametre_utilisateur' , 'icone' => 'fa fa-users fa-fw' );
+$pages_menu['Mon menu'][]=array( 'adresse' => 'compte_utilisateur.php', 'nom' => 'compte_utilisateur' , 'icone' => 'fa fa-users fa-fw' );
 
 // menu  spécial pour SB Admin 2
 function generer_menu_principal_bootstrap()
