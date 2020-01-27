@@ -24,7 +24,7 @@ if ( !$cache->start() )
 
     $menu_a_droite->ajouter_bouton_deconnexion();
     
-    echo recuperer_gabarit('compte/page_compte_utilisateur.html', array(
+    echo recuperer_gabarit('compte/page_compte_utilisateur.php', array(
         '{titre_page}' => 'Accueil',
         '{css}' => $css,
         '{js}' => $js,
