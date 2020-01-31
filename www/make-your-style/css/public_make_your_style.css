@@ -1,0 +1,95 @@
+* {
+    box-sizing: border-box;
+    margin: auto;
+}
+
+body {
+    font-family: "Quicksand";
+    background-color:  #363c8b;
+}
+
+.header{
+    padding-top: 5%;
+    padding-bottom: 3%;
+    border-bottom : 2px;
+}
+
+#menu{
+    display :flex;
+    align-content: center;
+    align-items: center;
+     color: white;
+    
+}
+
+h1{
+   color: white;
+    text-transform: capitalize;
+    font-style: italic;
+    display: flex;
+    flex-direction: column;
+    align-content: center;
+    align-items: center;
+    padding-top: 5%;
+    padding-bottom: 3%;
+    border-bottom : 2px;
+    border-color: red;
+    font-size: 70px;
+}
+
+#espacelog {
+    display: flex;
+    justify-content: space-around;
+    color: white;
+    align-content: center;
+    align-items: center;
+    border-top: 2px solid red;
+    padding-top: 5%;
+}
+
+#module_principal{
+    display: flex;
+    background-color :aliceblue;
+    background-size: 70%;
+    height: 60%;
+    width: auto;
+    padding-top: 5%;
+    border: 2px;
+    border-bottom-color: red;
+    padding: 5% 10% 5% 10%;
+    margin: 5% 10% 5% 10%;
+}
+#corps{
+    padding-left: 6%;
+}
+
+.bouton{
+    border:none;
+    border-radius: 10px;
+    text-align: center;
+    background-color:deeppink;
+    text-transform: uppercase;
+    color:white;
+    margin:auto;
+    padding 20px 20px 20px 20px;
+    width:150px;
+}
+
+img{
+    width: 400px;
+}
+
+.partie_du_corps {
+    font-weight: bolder;
+    color : red;
+    padding-left: 1%;
+}
+
+.footer{
+    display: flex;
+    height: 20%;
+}
+
+#texte_footer {
+    font-style: italic;
+}
