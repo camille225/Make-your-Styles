@@ -71,6 +71,8 @@ class Hook_utilisateur
         $mf_droits_defaut['api_modifier__utilisateur_Developpeur'] = false;
         // Mise à jour des droits
         // ici le code
+        $mf_droits_defaut['api_modifier__utilisateur_Email'] = true;
+        $mf_droits_defaut['utilisateur__MODIFIER_PWD'] = true;
     }
 
     static function autorisation_modification(int $Code_utilisateur, string $utilisateur_Identifiant__new, string $utilisateur_Password__new, string $utilisateur_Email__new, bool $utilisateur_Administrateur__new, bool $utilisateur_Developpeur__new)
