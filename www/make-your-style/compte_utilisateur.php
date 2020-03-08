@@ -26,13 +26,30 @@ if ( !$cache->start() )
     $Code_utilisateur = $_GET['Code_utilisateur'];
     $utilisateur = $table_utilisateur -> mf_get($Code_utilisateur);
         include __DIR__ . '/code/_utilisateur_get.php';
+        include __DIR__ . '/code/_utilisateur_form.php';
+        $trans['{code_html}'] = $code_html;
 
     /* utilisateur_Email */
         if ( $mf_droits_defaut['api_modifier__utilisateur_Email'] )
             $trans['{utilisateur_Email}'] = ajouter_champ_modifiable_interface([ 'liste_valeurs_cle_table' => array('Code_utilisateur' => $utilisateur['Code_utilisateur']) , 'DB_name' => 'utilisateur_Email' , 'valeur_initiale' => $utilisateur['utilisateur_Email'] , 'class' => 'infos', 'titre' => false , 'attributs' => [ 'placeholder' => 'Email' ] ]);
-        /* PASSWOOOOOOOOOOOORD */
-        $trans['{utilisateur_Password}'] = get_valeur_html_maj_auto_interface([ 'liste_valeurs_cle_table' => array('Code_utilisateur' => $utilisateur['Code_utilisateur']) , 'DB_name' => 'utilisateur_Password' , 'valeur_initiale' => $trans['{bouton_modpwd_utilisateur}'] , 'class' => 'html' , 'maj_auto' => false ]);
-
+        /* Password */
+        $trans['{utilisateur_Password}'] = get_valeur_html_maj_auto_interface([ 'liste_valeurs_cle_table' => array('Code_utilisateur' => $utilisateur['Code_utilisateur']) , 'DB_name' => 'utilisateur_Password' , 'valeur_initiale' => $trans['{bouton_modpwd_utilisateur}'] , 'class' => 'html' , 'maj_auto' => false, 'titre' => false ]);
+        if ( $mf_action=="modpwd" && isset($_POST['validation_formulaire']) && formulaire_valide($_POST['validation_formulaire']) )
+        {
+            $utilisateur_Password_old=$_POST["utilisateur_Password_old"];
+            $utilisateur_Password_new=$_POST["utilisateur_Password_new"];
+            $utilisateur_Password_verif=$_POST["utilisateur_Password_verif"];
+            $retour = $mf_connexion->changer_mot_de_passe($Code_utilisateur, $utilisateur_Password_old, $utilisateur_Password_new, $utilisateur_Password_verif);
+            if ( $retour['code_erreur']==0 )
+            {
+                $mf_action = "apercu_utilisateur";
+                $cache->clear();
+            }
+            else
+            {
+                $cache->clear_current_page();
+            }
+        }
 
     $menu_a_droite->ajouter_bouton_deconnexion();
     
