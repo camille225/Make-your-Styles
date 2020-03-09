@@ -5,18 +5,25 @@ CREATE TABLE utilisateur (Code_utilisateur int AUTO_INCREMENT NOT NULL,
 utilisateur_Identifiant VARCHAR,
 utilisateur_Password VARCHAR,
 utilisateur_Email VARCHAR,
+utilisateur_Prenom VARCHAR,
+utilisateur_Nom VARCHAR,
+utilisateur_Date_naissance DATE,
+utilisateur_Accepte_mail_publicitaire BOOL,
 utilisateur_Administrateur BOOL,
-utilisateur_Developpeur BOOL,
+utilisateur_Fournisseur BOOL,
 PRIMARY KEY (Code_utilisateur) ) ENGINE=InnoDB;
 
 DROP TABLE IF EXISTS article ;
 
 CREATE TABLE article (Code_article int AUTO_INCREMENT NOT NULL,
 article_Libelle VARCHAR,
+article_Description TEXT,
+article_Couleur VARCHAR,
+article_Taille_Pays_Type INT,
+article_Taille INT,
 article_Photo_Fichier VARCHAR,
 article_Prix FLOAT,
 article_Actif BOOL,
-Code_type_produit int NOT NULL,
 PRIMARY KEY (Code_article) ) ENGINE=InnoDB;
 
 DROP TABLE IF EXISTS commande ;
@@ -28,11 +35,11 @@ commande_Date_creation DATE,
 Code_utilisateur int NOT NULL,
 PRIMARY KEY (Code_commande) ) ENGINE=InnoDB;
 
-DROP TABLE IF EXISTS type_produit ;
+DROP TABLE IF EXISTS categorie_article ;
 
-CREATE TABLE type_produit (Code_type_produit int AUTO_INCREMENT NOT NULL,
-type_produit_Libelle VARCHAR,
-PRIMARY KEY (Code_type_produit) ) ENGINE=InnoDB;
+CREATE TABLE categorie_article (Code_categorie_article int AUTO_INCREMENT NOT NULL,
+categorie_article_Libelle VARCHAR,
+PRIMARY KEY (Code_categorie_article) ) ENGINE=InnoDB;
 
 DROP TABLE IF EXISTS parametre ;
 
@@ -40,32 +47,44 @@ CREATE TABLE parametre (Code_parametre int AUTO_INCREMENT NOT NULL,
 parametre_Libelle VARCHAR,
 PRIMARY KEY (Code_parametre) ) ENGINE=InnoDB;
 
-DROP TABLE IF EXISTS filtre ;
+DROP TABLE IF EXISTS vue_utilisateur ;
 
-CREATE TABLE filtre (Code_filtre int AUTO_INCREMENT NOT NULL,
-filtre_Libelle VARCHAR,
-Code_categorie_filtre int NOT NULL,
-PRIMARY KEY (Code_filtre) ) ENGINE=InnoDB;
+CREATE TABLE vue_utilisateur (Code_vue_utilisateur int AUTO_INCREMENT NOT NULL,
+vue_utilisateur_Recherche VARCHAR,
+vue_utilisateur_Filtre_Couleur VARCHAR,
+vue_utilisateur_Filtre_Taille_Pays_Type INT,
+vue_utilisateur_Filtre_Taille_Max INT,
+vue_utilisateur_Filtre_Taille_Min INT,
+PRIMARY KEY (Code_vue_utilisateur) ) ENGINE=InnoDB;
 
-DROP TABLE IF EXISTS categorie_filtre ;
+DROP TABLE IF EXISTS sous_categorie_article ;
 
-CREATE TABLE categorie_filtre (Code_categorie_filtre int AUTO_INCREMENT NOT NULL,
-categorie_filtre_Libelle VARCHAR,
-PRIMARY KEY (Code_categorie_filtre) ) ENGINE=InnoDB;
+CREATE TABLE sous_categorie_article (Code_sous_categorie_article int AUTO_INCREMENT NOT NULL,
+sous_categorie_article_Libelle VARCHAR,
+PRIMARY KEY (Code_sous_categorie_article) ) ENGINE=InnoDB;
 
-DROP TABLE IF EXISTS a_article_commande ;
+DROP TABLE IF EXISTS conseil ;
 
-CREATE TABLE a_article_commande (Code_commande int AUTO_INCREMENT NOT NULL,
+CREATE TABLE conseil (Code_conseil int AUTO_INCREMENT NOT NULL,
+conseil_Libelle VARCHAR,
+conseil_Description TEXT,
+conseil_Actif BOOL,
+PRIMARY KEY (Code_conseil) ) ENGINE=InnoDB;
+
+DROP TABLE IF EXISTS est_du_type ;
+
+CREATE TABLE est_du_type (Code_categorie_article int AUTO_INCREMENT NOT NULL,
+Code_sous_categorie_article int NOT NULL,
+PRIMARY KEY (Code_categorie_article,
+ Code_sous_categorie_article) ) ENGINE=InnoDB;
+
+DROP TABLE IF EXISTS a_commande_article ;
+
+CREATE TABLE a_commande_article (Code_commande int AUTO_INCREMENT NOT NULL,
 Code_article int NOT NULL,
+a_commande_article_Quantite INT,
+a_commande_article_Prix_ligne FLOAT,
 PRIMARY KEY (Code_commande,
- Code_article) ) ENGINE=InnoDB;
-
-DROP TABLE IF EXISTS a_filtre_produit ;
-
-CREATE TABLE a_filtre_produit (Code_filtre int AUTO_INCREMENT NOT NULL,
-Code_article int NOT NULL,
-a_filtre_produit_Actif INT,
-PRIMARY KEY (Code_filtre,
  Code_article) ) ENGINE=InnoDB;
 
 DROP TABLE IF EXISTS a_parametre_utilisateur ;
@@ -77,10 +96,16 @@ a_parametre_utilisateur_Actif INT,
 PRIMARY KEY (Code_utilisateur,
  Code_parametre) ) ENGINE=InnoDB;
 
-DROP TABLE IF EXISTS a_utilisateur_filtre ;
+DROP TABLE IF EXISTS a_filtrer ;
 
-CREATE TABLE a_utilisateur_filtre (Code_utilisateur int AUTO_INCREMENT NOT NULL,
-Code_filtre int NOT NULL,
-a_utilisateur_filtre_Actif BOOL,
+CREATE TABLE a_filtrer (Code_utilisateur int AUTO_INCREMENT NOT NULL,
+Code_vue_utilisateur int NOT NULL,
 PRIMARY KEY (Code_utilisateur,
- Code_filtre) ) ENGINE=InnoDB;
+ Code_vue_utilisateur) ) ENGINE=InnoDB;
+
+DROP TABLE IF EXISTS contient ;
+
+CREATE TABLE contient (Code_article int AUTO_INCREMENT NOT NULL,
+Code_sous_categorie_article int NOT NULL,
+PRIMARY KEY (Code_article,
+ Code_sous_categorie_article) ) ENGINE=InnoDB;
