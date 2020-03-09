@@ -25,6 +25,7 @@ class Hook_article
         $mf_droits_defaut['article__AJOUTER'] = false;
         $mf_droits_defaut['article__CREER'] = false; // actualisation uniquement pour l'affichage
         // Mise à jour des droits
+        $mf_droits_defaut['article__AJOUTER'] = true;
         // ici le code
     }
 

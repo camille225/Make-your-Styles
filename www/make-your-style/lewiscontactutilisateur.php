@@ -26,9 +26,32 @@ if ( !$cache->start() )
         include __DIR__ . '/code/_article_form.php';
 
     $menu_a_droite->ajouter_bouton_deconnexion();
+    
+    $msg = '';
+if(isset($_POST["envoie"])){
+                    
+                
+                
+                $header= "MIME-Version: 1.0\r\n";
+                $header.='from:$_POST["email"]';
+                $header.='Content-Type:text/html; charset="utf8"'."\n";
+                $header.='Content-Transfer-Encoding: 8bit';
+    
+//$r = sendemail("makeyourstyleee@gmail.com", $_POST["motif"], $_POST["message"]);
+    
+//    var_dump($r);
+                
+                $r=mail("makeyourstyleee@gmail.com",$_POST["motif"], $_POST["message"]);
+    var_dump($r);
+                    
+                echo "votre message avec le support make your style a été envoyé et sera traité dans les plus brefs délais"
+                ;
 
-    echo recuperer_gabarit('lewis_contact_utilisateur/contactutilsateur.html', array(
+}
+
+    echo recuperer_gabarit('lewis_contact_utilisateur/contactutilsateur.php', array(
         '{titre_page}' => 'article',
+        '{msg-retour}' => $msg,
         '{css}' => $css,
         '{js}' => $js,
         '{menu_principal}' => $menu,
