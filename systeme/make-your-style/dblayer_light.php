@@ -4,14 +4,14 @@ if (! session_start()) {
 }
 
 // http://php.net/manual/fr/security.magicquotes.disabling.php
-if (get_magic_quotes_gpc()) {
+//if (get_magic_quotes_gpc()) {
     $process = array(
         &$_GET,
         &$_POST,
         &$_COOKIE,
         &$_REQUEST
     );
-    while (list ($key, $val) = each($process)) {
+    foreach ($process as $key => $val) {
         foreach ($val as $k => $v) {
             unset($process[$key][$k]);
             if (is_array($v)) {
@@ -23,7 +23,7 @@ if (get_magic_quotes_gpc()) {
         }
     }
     unset($process);
-}
+//}
 
 if ($_SERVER['HTTP_HOST'] == 'localhost') {
     include __DIR__ . '/config_localhost.php';
