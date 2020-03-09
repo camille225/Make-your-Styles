@@ -25,7 +25,9 @@ class Hook_commande
         $mf_droits_defaut['commande__AJOUTER'] = false;
         $mf_droits_defaut['commande__CREER'] = false; // actualisation uniquement pour l'affichage
         // Mise à jour des droits
-        // ici le code
+        if (get_utilisateur_courant(MF_UTILISATEUR__ID) == $Code_utilisateur) {
+            $mf_droits_defaut['commande__AJOUTER'] = true;
+        }
     }
 
     static function autorisation_ajout(float $commande_Prix_total, string $commande_Date_livraison, string $commande_Date_creation, int $Code_utilisateur)

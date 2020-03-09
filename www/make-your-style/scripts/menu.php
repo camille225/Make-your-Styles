@@ -5,7 +5,7 @@ $pages_menu=array();
 $rubrique_param = '<i class="align-middle mr-2 fas fa-fw fa-cogs"></i> Paramétrage';
 $pages_menu['Mon menu'][]=array( 'adresse' => 'utilisateur.php', 'nom' => 'utilisateur' , 'icone' => 'fa fa-users fa-fw' );
 $pages_menu['Mon menu'][]=array( 'adresse' => 'article.php', 'nom' => 'article' , 'icone' => 'fa fa-users fa-fw' );
-$pages_menu['Mon menu'][]=array( 'adresse' => 'commande.php', 'nom' => 'commande' , 'icone' => 'fa fa-users fa-fw' );
+//$pages_menu['Mon menu'][]=array( 'adresse' => 'commande.php', 'nom' => 'commande' , 'icone' => 'fa fa-users fa-fw' );
 $pages_menu['Mon menu'][]=array( 'adresse' => 'type_produit.php', 'nom' => 'type_produit' , 'icone' => 'fa fa-users fa-fw' );
 $pages_menu['Mon menu'][]=array( 'adresse' => 'parametre.php', 'nom' => 'parametre' , 'icone' => 'fa fa-cogs fa-fw' );
 $pages_menu['Mon menu'][]=array( 'adresse' => 'filtre.php', 'nom' => 'filtre' , 'icone' => 'fa fa-users fa-fw' );

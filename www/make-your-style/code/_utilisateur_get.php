@@ -109,3 +109,5 @@
         else
             $trans['{utilisateur_Developpeur}'] = get_valeur_html_maj_auto_interface([ 'liste_valeurs_cle_table' => array('Code_utilisateur' => $utilisateur['Code_utilisateur']) , 'DB_name' => 'utilisateur_Developpeur' , 'valeur_initiale' => $utilisateur['utilisateur_Developpeur'] ]);
 
+        /* debut developpement */
+include __DIR__ . '/_commande_list.php';

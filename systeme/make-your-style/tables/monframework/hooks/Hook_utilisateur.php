@@ -26,7 +26,7 @@ class Hook_utilisateur
         $mf_droits_defaut['utilisateur__CREER'] = false; // actualisation uniquement pour l'affichage
         // Mise à jour des droits
         $db = new DB();
-        if ($db->utilisateur()->mf_compter() == 0) {
+        if ($db->utilisateur()->mf_compter() == 0 || est_administrateur()) {
             $mf_droits_defaut['utilisateur__AJOUTER'] = true;
         }
     }
@@ -70,7 +70,14 @@ class Hook_utilisateur
         $mf_droits_defaut['api_modifier__utilisateur_Administrateur'] = false;
         $mf_droits_defaut['api_modifier__utilisateur_Developpeur'] = false;
         // Mise à jour des droits
-        // ici le code
+        if (est_administrateur() && get_utilisateur_courant(MF_UTILISATEUR__ID) != $Code_utilisateur) {
+            $mf_droits_defaut['api_modifier__utilisateur_Administrateur'] = true;
+        }
+        if (get_utilisateur_courant(MF_UTILISATEUR__ID) == $Code_utilisateur) {
+            $mf_droits_defaut['api_modifier__utilisateur_Identifiant'] = true;
+            $mf_droits_defaut['utilisateur__MODIFIER_PWD'] = true;
+            $mf_droits_defaut['api_modifier__utilisateur_Email'] = true;
+        }
     }
 
     static function autorisation_modification(int $Code_utilisateur, string $utilisateur_Identifiant__new, string $utilisateur_Password__new, string $utilisateur_Email__new, bool $utilisateur_Administrateur__new, bool $utilisateur_Developpeur__new)
@@ -113,7 +120,9 @@ class Hook_utilisateur
         // Initialisation des droits
         $mf_droits_defaut['utilisateur__SUPPRIMER'] = false;
         // Mise à jour des droits
-        // Ici le code
+        if (est_administrateur() && get_utilisateur_courant(MF_UTILISATEUR__ID) != $Code_utilisateur) {
+            $mf_droits_defaut['utilisateur__SUPPRIMER'] = true;
+        }
         if ($Code_utilisateur != 0 && $mf_droits_defaut['utilisateur__SUPPRIMER']) {
             $table_commande = new commande();
             $mf_droits_defaut['utilisateur__SUPPRIMER'] = $table_commande->mfi_compter(array('Code_utilisateur'=>$Code_utilisateur))==0;
