@@ -1,47 +1,65 @@
 <!DOCTYPE html>
 <html lang="fr">
-    <head>
-        <meta charset="utf-8">
-        <title>Make your Style Acceuil</title>
-        <link href="../../css/public_make_your_style.css" rel="stylesheet">
-    </head>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>{titre_page}</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link href="css/public_make_your_style.css" rel="stylesheet">
     
+        
+
+</head>
+
+<body class="theme-blue">
     
-    <h2 id="menu">Menu en Include PHP</h2>
-    <body>
-        <header class="header">
-            <h1>make your style</h1>
-        </header>
-        
-        
-        <section id="espacelog">
-            <article>
+    {header}
+    
+    {menu}
+
+    <section id="espacelog">
+        <article>
                 <p>Déjà membre?</p>
-                <p class="bouton">Se connecter</p>
+                <button type="button" class="btn btn-info"> Se connecter </button></p>
             </article>
             <article>
                 <p>Devenir membre</p>
-                <p class="bouton">S'inscrire</p>
+                <button type="button" class="btn btn-info"> S'inscrire </button></p>
             </article>
-            
-        </section>
-        <section id= "module_principal">
-            <article class="images">
-                <img  src="../../images/image_user_acceuil.jpg" name="croquis"   alt="croquis">
-            </article>
-            <article id="corps">
-                <p><span class="partie_du_corps">Tete :</span> Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam</p>
-                <p><span class="partie_du_corps">Coup :</span> Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam</p>
-                <p><span class="partie_du_corps">Torse :</span> Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam</p>
-                <p><span class="partie_du_corps">Mains :</span> Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam</p>
-                <p><span class="partie_du_corps">Ceinture :</span> Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam</p>
-                <p><span class="partie_du_corps">Jambes :</span> Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam</p>
-                <p><span class="partie_du_corps">Pieds :</span> Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam</p>
-            </article>
-        </section>
+
+    </section>
+    <section id= "module_principal">
+        <article class="images">
+
+           <img  src="images/image_user_acceuil.jpg" name="croquis"   alt="croquis">
+        </article>
+        <article id="corps">
+            <p><span class="partie_du_corps">Tete :</span> Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+            <p><span class="partie_du_corps">Cou :</span> Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+            <p><span class="partie_du_corps">Torse :</span> Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+            <p><span class="partie_du_corps">Mains :</span> Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+            <p><span class="partie_du_corps">Ceinture :</span> Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+            <p><span class="partie_du_corps">Jambes :</span> Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+            <p><span class="partie_du_corps">Pieds :</span> Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+        </article>
+    </section>
         
-        <footer class="footer">
-            <p id="texte_footer"> Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam</p>
-        </footer>
-    </body>
+    {footer}
+    
+<script src="template/docs/js/app.js"></script>
+<!-- jquery-ui -->
+<script src="lib/jquery-ui-1.12.1/jquery-ui.js"></script>
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+
+{js}
+{script_end}
+
+</body>
+
 </html>
