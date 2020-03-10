@@ -5,6 +5,7 @@ CREATE TABLE utilisateur (Code_utilisateur int AUTO_INCREMENT NOT NULL,
 utilisateur_Identifiant VARCHAR,
 utilisateur_Password VARCHAR,
 utilisateur_Email VARCHAR,
+utilisateur_Civilite_Type INT,
 utilisateur_Prenom VARCHAR,
 utilisateur_Nom VARCHAR,
 utilisateur_Date_naissance DATE,
@@ -18,12 +19,17 @@ DROP TABLE IF EXISTS article ;
 CREATE TABLE article (Code_article int AUTO_INCREMENT NOT NULL,
 article_Libelle VARCHAR,
 article_Description TEXT,
+article_Saison_Type INT,
+article_Nom_fournisseur VARCHAR,
+article_Url VARCHAR,
+article_Reference VARCHAR,
 article_Couleur VARCHAR,
 article_Taille_Pays_Type INT,
 article_Taille INT,
 article_Photo_Fichier VARCHAR,
 article_Prix FLOAT,
 article_Actif BOOL,
+Code_sous_categorie_article int NOT NULL,
 PRIMARY KEY (Code_article) ) ENGINE=InnoDB;
 
 DROP TABLE IF EXISTS commande ;
@@ -51,6 +57,7 @@ DROP TABLE IF EXISTS vue_utilisateur ;
 
 CREATE TABLE vue_utilisateur (Code_vue_utilisateur int AUTO_INCREMENT NOT NULL,
 vue_utilisateur_Recherche VARCHAR,
+vue_utilisateur_Filtre_Saison_Type INT,
 vue_utilisateur_Filtre_Couleur VARCHAR,
 vue_utilisateur_Filtre_Taille_Pays_Type INT,
 vue_utilisateur_Filtre_Taille_Max INT,
@@ -61,6 +68,7 @@ DROP TABLE IF EXISTS sous_categorie_article ;
 
 CREATE TABLE sous_categorie_article (Code_sous_categorie_article int AUTO_INCREMENT NOT NULL,
 sous_categorie_article_Libelle VARCHAR,
+Code_categorie_article int,
 PRIMARY KEY (Code_sous_categorie_article) ) ENGINE=InnoDB;
 
 DROP TABLE IF EXISTS conseil ;
@@ -70,13 +78,6 @@ conseil_Libelle VARCHAR,
 conseil_Description TEXT,
 conseil_Actif BOOL,
 PRIMARY KEY (Code_conseil) ) ENGINE=InnoDB;
-
-DROP TABLE IF EXISTS est_du_type ;
-
-CREATE TABLE est_du_type (Code_categorie_article int AUTO_INCREMENT NOT NULL,
-Code_sous_categorie_article int NOT NULL,
-PRIMARY KEY (Code_categorie_article,
- Code_sous_categorie_article) ) ENGINE=InnoDB;
 
 DROP TABLE IF EXISTS a_commande_article ;
 
@@ -102,10 +103,3 @@ CREATE TABLE a_filtrer (Code_utilisateur int AUTO_INCREMENT NOT NULL,
 Code_vue_utilisateur int NOT NULL,
 PRIMARY KEY (Code_utilisateur,
  Code_vue_utilisateur) ) ENGINE=InnoDB;
-
-DROP TABLE IF EXISTS contient ;
-
-CREATE TABLE contient (Code_article int AUTO_INCREMENT NOT NULL,
-Code_sous_categorie_article int NOT NULL,
-PRIMARY KEY (Code_article,
- Code_sous_categorie_article) ) ENGINE=InnoDB;
