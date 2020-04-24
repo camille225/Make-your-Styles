@@ -9,4 +9,4 @@ if ( isset($_GET['cle']) ) { $cle = $_GET['cle']; } else { $cle = ''; }
 
 $Cache = new Cache();
 
-echo $Cache->read($cle, 60);
+echo $Cache->read($cle);
