@@ -37,12 +37,20 @@ class Fichier_Excel
         'Z' => 26
     ];
 
-    private function standardisation($str): string
+    /**
+     *
+     * @param string $str
+     * @return string
+     */
+    private function standardisation(string $str): string
     {
-        return strtr($str, [
-            '<x:' => '<',
-            '</x:' => '</'
-        ]);
+        $v = [];
+        for ($i=0; $i<26; $i++) {
+            $c = substr("abcdefghijklmnopqrstuvwxyz", $i, 1);
+            $v["<$c:"] = "<";
+            $v["</$c:"] = "</";
+        }
+        return strtr($str, $v);
     }
 
     private $db_table_name = null;
@@ -57,7 +65,13 @@ class Fichier_Excel
 
     private $log = [];
 
-    // partie publique
+    // The number of bytes to return
+    private $zip_entry_read_length = 67108864;
+
+    /**
+     * Fichier_Excel constructor.
+     * @param string $adresse
+     */
     function __construct(string $adresse)
     {
         $zip = zip_open($adresse);
@@ -66,7 +80,7 @@ class Fichier_Excel
             while ($file = zip_read($zip)) {
                 // liste des onglets
                 if (zip_entry_name($file) == 'xl/workbook.xml') {
-                    $elem = new SimpleXMLElement($this->standardisation(zip_entry_read($file, 16777216)));
+                    $elem = new SimpleXMLElement($this->standardisation(zip_entry_read($file, $this->zip_entry_read_length)));
                     $i = 1;
                     foreach ($elem->sheets->sheet as $sheet) {
                         $name = (string) $sheet['name'];
@@ -77,14 +91,14 @@ class Fichier_Excel
                 }
                 // dictionnaire
                 if (zip_entry_name($file) == 'xl/sharedStrings.xml') {
-                    $elem = new SimpleXMLElement($this->standardisation(zip_entry_read($file, 16777216)));
+                    $elem = new SimpleXMLElement($this->standardisation(zip_entry_read($file, $this->zip_entry_read_length)));
                     foreach ($elem->si as $si) {
                         $dictionnaire[] = (string) $si->t;
                     }
                 }
                 if (substr(zip_entry_name($file), 0, 19) == 'xl/worksheets/sheet') {
                     $i = (int) round(substr(zip_entry_name($file), 19));
-                    $elem = new SimpleXMLElement($this->standardisation(zip_entry_read($file, 16777216)));
+                    $elem = new SimpleXMLElement($this->standardisation(zip_entry_read($file, $this->zip_entry_read_length)));
                     $this->onglets[$i]['objet'] = $elem;
                 }
             }
@@ -126,7 +140,7 @@ class Fichier_Excel
                                 $row_min = $ref_row;
                                 $row_max = $ref_row;
                                 $col_min = $ref_col;
-                                $col_max = $col_max;
+                                $col_max = $ref_col;
                             } else {
                                 if ($ref_row < $row_min) {
                                     $row_min = $ref_row;
@@ -155,6 +169,9 @@ class Fichier_Excel
         }
     }
 
+    /**
+     * Fichier_Excel destructor.
+     */
     function __destruct()
     {
         if ($this->db_table_name !== null && count($this->log) > 0) {
@@ -162,7 +179,7 @@ class Fichier_Excel
             $db = new DB();
             $cond_sql = [];
             foreach ($this->db_column_list_ref as $key => $value) {
-                $cond_sql[] = $key . '=' . $value;
+                $cond_sql[] = "$key=$value";
             }
             $liste_log = $db->mf_table($this->db_table_name)->mf_lister_3([
                 OPTION_COND_MYSQL => $cond_sql
@@ -171,7 +188,7 @@ class Fichier_Excel
                 $nom_onglet = $log[$this->db_column_column_sheet];
                 $row = $log[$this->db_column_column_row];
                 $col = $log[$this->db_column_col];
-                $ind = $nom_onglet . 'x' . $row . 'x' . $col;
+                $ind = "{$nom_onglet}x{$row}x{$col}";
                 if (isset($this->log[$ind])) {
                     unset($this->log[$ind]);
                 }
@@ -185,7 +202,14 @@ class Fichier_Excel
         }
     }
 
-    function definir_statistiques($db_table_name, $db_column_column_sheet, $db_column_column_row, $db_column_col, $db_column_list_ref = [])
+    /**
+     * @param string $db_table_name
+     * @param string $db_column_column_sheet
+     * @param string $db_column_column_row
+     * @param string $db_column_col
+     * @param array $db_column_list_ref
+     */
+    function definir_statistiques(string $db_table_name, string $db_column_column_sheet, string $db_column_column_row, string $db_column_col, array $db_column_list_ref = [])
     {
         $this->db_table_name = $db_table_name;
         $this->db_column_column_sheet = $db_column_column_sheet;
@@ -194,7 +218,10 @@ class Fichier_Excel
         $this->db_column_list_ref = $db_column_list_ref; // = ['col_1' => val_1, ...]
     }
 
-    function get_liste_onglets()
+    /**
+     * @return array
+     */
+    function get_liste_onglets(): array
     {
         $liste = [];
         foreach ($this->conversion_name_onglet_vers_num as $name => $value) {
@@ -214,7 +241,13 @@ class Fichier_Excel
         return $this->onglets[$i]['properties'];
     }
 
-    function get_value($nom_onglet, $row, $col): ?string
+    /**
+     * @param string $nom_onglet
+     * @param int $row
+     * @param int $col
+     * @return string|null
+     */
+    function get_value(string $nom_onglet, int $row, int $col): ?string
     {
         if (! isset($this->conversion_name_onglet_vers_num[$nom_onglet])) {
             return null;
@@ -230,32 +263,63 @@ class Fichier_Excel
                 foreach ($this->db_column_list_ref as $key => $value) {
                     $v[$key] = $value;
                 }
-                $ind = $nom_onglet . 'x' . $row . 'x' . $col;
-                $this->log[$ind] = $v;
+                $this->log["{$nom_onglet}x{$row}x{$col}"] = $v;
             }
         }
         return (isset($this->onglets[$i]['data'][$row][$col]) ? (string) $this->onglets[$i]['data'][$row][$col] : null);
     }
 
-    function get_value_format_string($nom_onglet, $row, $col): string
+    /**
+     * @param string $nom_onglet
+     * @param int $row
+     * @param int $col
+     * @return string
+     */
+    function get_value_format_string(string $nom_onglet, int $row, int $col): string
     {
         $v = $this->get_value($nom_onglet, $row, $col);
         return ($v === null ? '' : $v);
     }
 
-    function get_value_format_date_str($nom_onglet, $row, $col): string
+    /**
+     * @param string $nom_onglet
+     * @param int $row
+     * @param int $col
+     * @return string
+     */
+    function get_value_format_date_str(string $nom_onglet, int $row, int $col): string
     {
         $v = $this->get_value($nom_onglet, $row, $col);
-        return format_date(substr($v, 6, 4) . '-' . substr($v, 3, 2) . '-' . substr($v, 0, 2));
+        $date_str = format_date(substr($v, 6, 4) . '-' . substr($v, 3, 2) . '-' . substr($v, 0, 2));
+        if ($date_str != '') {
+            return $date_str;
+        }
+        $v = intval($v);
+        if ($v > 0) {
+            return date_ajouter_nb_jours("1900-01-01", ($v - 2));
+        }
+        return '';
     }
 
-    function get_value_format_float($nom_onglet, $row, $col): float
+    /**
+     * @param string $nom_onglet
+     * @param int $row
+     * @param int $col
+     * @return float
+     */
+    function get_value_format_float(string $nom_onglet, int $row, int $col): float
     {
         $v = $this->get_value($nom_onglet, $row, $col);
         return ($v === null ? 0 : floatval(str_replace(' ', '', str_replace(',', '.', $v))));
     }
 
-    function get_value_format_int($nom_onglet, $row, $col): int
+    /**
+     * @param string $nom_onglet
+     * @param int $row
+     * @param int $col
+     * @return int
+     */
+    function get_value_format_int(string $nom_onglet, int $row, int $col): int
     {
         $v = $this->get_value($nom_onglet, $row, $col);
         return ($v === null ? 0 : (int) round(str_replace(' ', '', str_replace(',', '.', $v))));

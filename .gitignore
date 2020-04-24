@@ -2,6 +2,9 @@
 outil_developpeur.php
 data/*
 cache/*
+systeme/make-your-style/cache_systeme/*
+systeme/make-your-style/tables/monframework/cache/*
+systeme/make-your-style/tables/monframework/mf_connexion.sessions/*
 fichiers/*
 
 #eclipse

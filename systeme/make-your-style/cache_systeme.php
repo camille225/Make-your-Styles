@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 class Mf_Cache_systeme
 {
@@ -7,37 +7,27 @@ class Mf_Cache_systeme
 
     function __construct()
     {
-        $this->dossier_cache = __DIR__ . '/cache_systeme/';
-        if (! file_exists($this->dossier_cache)) {
-            mkdir($this->dossier_cache);
-        }
-        if (TABLE_INSTANCE != '') {
-            $instance = 'inst_' . get_instance();
-            $this->dossier_cache .= $instance . '/';
-            if (! file_exists($this->dossier_cache)) {
-                mkdir($this->dossier_cache);
-            }
-        }
+        $this->dossier_cache = get_dossier_data('systeme', 'cache');
     }
 
-    function read($cle)
+    function read(string $cle)
     {
-        $filename = $this->dossier_cache . md5('' . $cle) . '';
+        $filename = $this->dossier_cache . md5($cle);
         if (file_exists($filename)) {
             return unserialize(file_get_contents($filename));
         }
         return false;
     }
 
-    function write($cle, $variable)
+    function write(string $cle, $variable)
     {
-        $filename = $this->dossier_cache . md5('' . $cle) . '';
+        $filename = $this->dossier_cache . md5($cle);
         file_put_contents($filename, serialize($variable));
     }
 
     function clear()
     {
-        $files = glob($this->dossier_cache . '*');
+        $files = glob("{$this->dossier_cache}*");
         foreach ($files as $file) {
             unlink($file);
         }

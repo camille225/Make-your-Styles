@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 $lang_standard['a_parametre_utilisateur'] = 'a_parametre_utilisateur';
 
@@ -6,24 +6,24 @@ $lang_standard['a_parametre_utilisateur_Valeur'] = 'a_parametre_utilisateur_Vale
 $lang_standard['a_parametre_utilisateur_Actif'] = 'a_parametre_utilisateur_Actif';
 
 $lang_standard['bouton_ajouter_a_parametre_utilisateur'] = 'Ajouter';
-$lang_standard['bouton_creer_a_parametre_utilisateur'] = 'Creer';
+$lang_standard['bouton_creer_a_parametre_utilisateur'] = 'Créer';
 $lang_standard['bouton_modifier_a_parametre_utilisateur'] = 'Modifier';
 $lang_standard['bouton_supprimer_a_parametre_utilisateur'] = 'Supprimer';
 $lang_standard['bouton_modifier_a_parametre_utilisateur_Valeur'] = 'Modifier';
 $lang_standard['bouton_modifier_a_parametre_utilisateur_Actif'] = 'Modifier';
 
-$lang_standard['form_add_a_parametre_utilisateur'] = 'form_add_a_parametre_utilisateur';
-$lang_standard['form_edit_a_parametre_utilisateur'] = 'form_edit_a_parametre_utilisateur';
-$lang_standard['form_delete_a_parametre_utilisateur'] = 'form_delete_a_parametre_utilisateur';
+$lang_standard['form_add_a_parametre_utilisateur'] = 'Ajout d\'un nouvel enregistrement';
+$lang_standard['form_edit_a_parametre_utilisateur'] = 'Edition de l\'enregistrement';
+$lang_standard['form_delete_a_parametre_utilisateur'] = 'Confirmation de suppression de l\'enregistrement';
 
 $mf_titre_ligne_table['a_parametre_utilisateur'] = '{Code_utilisateur} - {Code_parametre}';
 
-$mf_tri_defaut_table['a_parametre_utilisateur'] = array( 'a_parametre_utilisateur_Valeur' => 'ASC' );
+$mf_tri_defaut_table['a_parametre_utilisateur'] = ['a_parametre_utilisateur_Valeur' => 'ASC'];
 
-$lang_standard['libelle_liste_a_parametre_utilisateur'] = 'libelle_liste_a_parametre_utilisateur';
+$lang_standard['libelle_liste_a_parametre_utilisateur'] = 'Enregistrement(s)';
 
-$mf_initialisation['a_parametre_utilisateur_Valeur'] = 0;
-$mf_initialisation['a_parametre_utilisateur_Actif'] = 0;
+$mf_initialisation['a_parametre_utilisateur_Valeur'] = null;
+$mf_initialisation['a_parametre_utilisateur_Actif'] = null;
 
 // code_erreur
 

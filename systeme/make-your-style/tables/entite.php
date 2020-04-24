@@ -1,6 +1,6 @@
-<?php
+<?php declare(strict_types=1);
 
-class entite
+class entite extends entite_monframework
 {
 
 }

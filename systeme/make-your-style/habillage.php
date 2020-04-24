@@ -1,19 +1,23 @@
 <?php
 
 // HABILLAGE BOUTONS
-define('BOUTON_LIBELLE_AJOUTER_PREC', '<span class="glyphicon glyphicon-plus"></span> ');
+define('BOUTON_LIBELLE_AJOUTER_PREC', '<span class="fa fa-plus"></span> ');
 define('BOUTON_LIBELLE_AJOUTER_SUIV', '');
 define('BOUTON_CLASSE_AJOUTER', 'btn btn-success');
 
-define('BOUTON_LIBELLE_MODIFIER_PREC', '<span class="glyphicon glyphicon-pencil"></span> ');
+define('BOUTON_LIBELLE_MODIFIER_PREC', '<span class="fa fa-pencil"></span> ');
 define('BOUTON_LIBELLE_MODIFIER_SUIV', '');
-define('BOUTON_LIBELLE_MODIFIER_PWD_PREC', '<span class="glyphicon glyphicon-lock"></span> ');
+define('BOUTON_LIBELLE_MODIFIER_PWD_PREC', '<span class="fa fa-key"></span> ');
 define('BOUTON_LIBELLE_MODIFIER_PWD_SUIV', '');
 define('BOUTON_CLASSE_MODIFIER', 'btn btn-default');
 
-define('BOUTON_LIBELLE_SUPPRIMER_PREC', '<span class="glyphicon glyphicon-trash"></span> ');
+define('BOUTON_LIBELLE_SUPPRIMER_PREC', '<span class="fa fa-trash"></span> ');
 define('BOUTON_LIBELLE_SUPPRIMER_SUIV', '');
 define('BOUTON_CLASSE_SUPPRIMER', 'btn btn-danger');
+
+define('CLASS_TABLE', 'table table-striped table-sm');
+
+define('EDIT_TABLE_ROW', '<i class="fa fa-pencil"></i>');
 
 function get_code_pager($prec, $suiv)
 {

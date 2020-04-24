@@ -1,9 +1,9 @@
-<?php
+<?php declare(strict_types=1);
 
 $lang_standard['Supprimer'] = 'Supprimer';
-$lang_standard['Supprimer_'] = array(0 => 'Non', 1 => 'Oui');
+$lang_standard['Supprimer_'] = [0 => "Non", 1 => "Oui"];
 $lang_standard['mf_valider'] = 'Valider';
-$lang_standard['mf_valider_'] = array(0 => 'Non', 1 => 'Oui');
+$lang_standard['mf_valider_'] = [0 => "Non", 1 => "Oui"];
 $lang_standard['mf_suivant'] = 'Suivant';
 $lang_standard['mf_precedent'] = 'Précédent';
 $lang_standard['mf_validation'] = 'Validation';
@@ -29,11 +29,11 @@ $lang_standard['utilisateur_Password_old'] = 'Mot de passe actuel';
 $lang_standard['utilisateur_Password_new'] = 'Nouveau mot de passe';
 $lang_standard['utilisateur_Password_verif'] = 'Confirmer le mot de passe';
 
-$lang_standard['liste_mois'] = array(1=>'janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre');
-$lang_standard['liste_jours'] = array('dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi');
+$lang_standard['liste_mois'] = [1=>'janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+$lang_standard['liste_jours'] = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
 
-$lang_standard['liste_mois_2'] = array(1=>'janv', 'févr', 'mars', 'avr', 'mai', 'juin', 'juil', 'août', 'sept', 'Oct', 'nov', 'déc');
-$lang_standard['liste_jours_2'] = array('dim.', 'lun.', 'mar.', 'mer.', 'jeu.', 'ven.', 'sam.');
+$lang_standard['liste_mois_2'] = [1 => 'janv', 'févr', 'mars', 'avr', 'mai', 'juin', 'juil', 'août', 'sept', 'Oct', 'nov', 'déc'];
+$lang_standard['liste_jours_2'] = ['dim.', 'lun.', 'mar.', 'mer.', 'jeu.', 'ven.', 'sam.'];
 
 // code_erreur
 
@@ -45,3 +45,4 @@ $mf_libelle_erreur[4] = 'Echec de génération d\'un lien par email';
 $mf_libelle_erreur[5] = 'Les mots de passe ne correspondent pas';
 $mf_libelle_erreur[6] = 'Les e-mails ne correspondent pas';
 $mf_libelle_erreur[7] = 'Echec de modification du mot de passe. Pour des questions de sécurité, il est nécessaire de reformuler votre demande depuis le formulaire de mot de passe oublié. Merci.';
+$mf_libelle_erreur[8] = 'Dépassement du nombre de données par requête';

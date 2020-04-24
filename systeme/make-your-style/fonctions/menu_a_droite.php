@@ -111,7 +111,7 @@ class Menu_a_droite
         }
     }
 
-    function generer_code_bouton($id, $class = 'btn btn-default', $local = false)
+    function generer_code_bouton($id, $class = 'btn btn-primary', $local = false)
     {
         $code = '';
         foreach ($this->liste_titres as $key => $titre) {

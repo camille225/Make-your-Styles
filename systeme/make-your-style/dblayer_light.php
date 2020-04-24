@@ -1,37 +1,67 @@
-<?php
+<?php declare(strict_types=1);
+
 if (! session_start()) {
     exit();
 }
 
-// http://php.net/manual/fr/security.magicquotes.disabling.php
-//if (get_magic_quotes_gpc()) {
-    $process = array(
-        &$_GET,
-        &$_POST,
-        &$_COOKIE,
-        &$_REQUEST
-    );
-    foreach ($process as $key => $val) {
-        foreach ($val as $k => $v) {
-            unset($process[$key][$k]);
-            if (is_array($v)) {
-                $process[$key][stripslashes($k)] = $v;
-                $process[] = &$process[$key][stripslashes($k)];
-            } else {
-                $process[$key][stripslashes($k)] = stripslashes($v);
-            }
-        }
-    }
-    unset($process);
-//}
+$now_microtime = microtime(true);
+$mf_now = date('Y-m-d H:i:s');
 
-if ($_SERVER['HTTP_HOST'] == 'localhost') {
-    include __DIR__ . '/config_localhost.php';
-} else {
-    include __DIR__ . '/config.php';
+/**
+ * Fonction qui permet de lire microtime. Une fois initialisée, la même valeur est alors retournée
+ * @return float
+ */
+function get_now_microtime(): float { global $now_microtime; return $now_microtime; }
+
+/**
+ * Donne le temps d'exécution depuis l'appel à get_now_microtime()
+ * @param int $precision
+ * @return float
+ */
+function get_execution_time(int $precision = 5): float
+{
+    return round(microtime(true) - get_now_microtime(), $precision);
 }
 
+/**
+ * Donne la date courante au début du script
+ * @return string
+ */
+function get_now(): string { global $mf_now; return $mf_now; }
+
+if (isset($_SERVER['HTTP_HOST'])) {
+    $mf_get_HTTP_HOST = strtolower(strtr($_SERVER['HTTP_HOST'], [
+        '.' => '_',
+        '-' => '_'
+    ]));
+    if (substr($mf_get_HTTP_HOST, 0, 4) == 'www_') {
+        $mf_get_HTTP_HOST = substr($mf_get_HTTP_HOST, 4);
+    }
+} else {
+    if (isset($mf_host)) {
+        $mf_get_HTTP_HOST = $mf_host;
+    } else {
+        $mf_get_HTTP_HOST = '';
+    }
+}
+
+if ($mf_get_HTTP_HOST == '') {
+    echo "L'application doit être lancée depuis un navigateur." . PHP_EOL;
+    echo "Seules les tâches planifiées peuvent être lancées depuis la console." . PHP_EOL;
+    exit();
+}
+
+$mf_config = __DIR__ . "/config_$mf_get_HTTP_HOST.php";
+if (! file_exists($mf_config)) {
+    copy(__DIR__ . '/config_structure.php', $mf_config);
+}
+include __DIR__ . '/config_globale.php';
+include $mf_config;
+unset($mf_config);
+
 include __DIR__ . '/constantes_systeme.php';
+
+include __DIR__ . '/habillage.php';
 
 set_error_handler(function ($niveau, $message, $fichier, $ligne) {
     $adresse_fichier_log = get_dossier_data('error_php') . 'error_php_' . substr(get_now(), 0, 10) . '.txt';
@@ -51,29 +81,43 @@ set_error_handler(function ($niveau, $message, $fichier, $ligne) {
     $txt .= 'Niveau      : ' . $niveau . PHP_EOL;
     $txt .= 'Fichier     : ' . $fichier . ' à la ligne n°' . $ligne . PHP_EOL;
     $txt .= 'Emplacement : ' . $sql_Emplacement . PHP_EOL;
-    $txt .= 'Adresse IP  : ' . get_ip() . ' (' . identification_log() . ')' . PHP_EOL;
+    $txt .= 'Adresse IP  : ' . get_ip() . (function_exists('identification_log') ? ' (' . identification_log() . ')' : '') . PHP_EOL;
 
     if (! MODE_PROD) {
-        echo '<html><head><title>Bah, qu\'est ce qui se passe ?</title></head><body style="background-color: black; color: #00e7ff; padding: 10px; font-family: monospace; font-size: 16px;"><h1>Erreur PHP</h1>' . str_replace('  ', '&nbsp; ', str_replace('  ', '&nbsp; ', str_replace(PHP_EOL, '<br>', $txt))) . '</body></html>';
-        exit();
+        mf_bah_quest_ce_qui_ce_passe("Erreur PHP", $txt, '#00e7ff');
     }
 
     $txt .= PHP_EOL . ' ---' . PHP_EOL . PHP_EOL;
 
     mf_file_append($adresse_fichier_log, $txt);
-    // sendemail(MAIL_ADMIN, 'Erreur php niv ' . $niveau . ' - ' . NOM_PROJET, text_html_br($txt));
+    // sendemail(MAIL_ADMIN, 'Erreur php niv ' . $niveau . ' - ' . NOM_PROJET . "_$mf_get_HTTP_HOST", text_html_br($txt));
 });
 
-// chargement de l'instance
-$_SESSION[PREFIXE_SESSION]['mf_instance'] = round(isset_parametre_api('mf_instance') ? lecture_parametre_api('mf_instance') : (isset($_SESSION[PREFIXE_SESSION]['mf_instance']) ? $_SESSION[PREFIXE_SESSION]['mf_instance'] : 0));
+function mf_bah_quest_ce_qui_ce_passe($titre, $txt, $color) {
+    echo '<html lang="fr">' . PHP_EOL;
+    echo '<head><title>Bah, qu\'est ce qui se passe ?</title></head>' . PHP_EOL;
+    echo '<body style="background-color: black; color: ' . $color . '; padding: 10px; font-family: monospace; font-size: 16px;">' . PHP_EOL;
+    echo '<h1>' . htmlspecialchars($titre) . '</h1>' . PHP_EOL;
+    echo str_replace('  ', '&nbsp; ', str_replace('  ', '&nbsp; ', str_replace(PHP_EOL, '<br>' . PHP_EOL, $txt))) . PHP_EOL;
+    echo '</body>' . PHP_EOL;
+    echo '</html>';
+    exit();
+}
 
-function get_instance()
+// chargement de l'instance
+$_SESSION[NOM_PROJET]['mf_instance'] = intval(isset_parametre_api('mf_instance') ? lecture_parametre_api('mf_instance') : (isset($_SESSION[NOM_PROJET]['mf_instance']) ? $_SESSION[NOM_PROJET]['mf_instance'] : 0));
+
+function get_instance(): int
 {
-    return $_SESSION[PREFIXE_SESSION]['mf_instance'];
+    return $_SESSION[NOM_PROJET]['mf_instance'];
 }
 $inst = [];
 
-function inst($table)
+/**
+ * @param string $table
+ * @return string
+ */
+function inst(string $table): string
 {
     if (TABLE_INSTANCE == '') {
         return $table;
@@ -89,10 +133,10 @@ function inst($table)
 function new_instance()
 {
     $db = new DB();
-    $_SESSION[PREFIXE_SESSION]['mf_instance'] = $db->mf_table(TABLE_INSTANCE)->mf_get_next_id();
+    $_SESSION[NOM_PROJET]['mf_instance'] = $db->mf_table(TABLE_INSTANCE)->mf_get_next_id();
     $r = $db->mf_table(TABLE_INSTANCE)->mf_creer(true);
-    $_SESSION[PREFIXE_SESSION]['mf_instance'] = $r['Code_' . strtolower(TABLE_INSTANCE)];
-    if ($_SESSION[PREFIXE_SESSION]['mf_instance'] != 0) {
+    $_SESSION[NOM_PROJET]['mf_instance'] = $r['Code_' . strtolower(TABLE_INSTANCE)];
+    if ($_SESSION[NOM_PROJET]['mf_instance'] != 0) {
         global $inst;
         $inst = [];
         generer_la_base();
@@ -100,37 +144,45 @@ function new_instance()
     db::mf_raz_instance();
 }
 
-$secure_connection = false;
-if (isset($_SERVER['HTTPS'])) {
-    if ($_SERVER['HTTPS'] == 'on') {
-        $secure_connection = true;
+if (isset($_SERVER['SERVER_NAME'])) {
+    $secure_connection = false;
+    if (isset($_SERVER['HTTPS'])) {
+        if ($_SERVER['HTTPS'] == 'on') {
+            $secure_connection = true;
+        }
     }
-}
-if (! $secure_connection && HTTPS_ON) {
-    header('Location: https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']);
-    exit();
+    if (! $secure_connection && HTTPS_ON) {
+        header('Location: https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']);
+        exit();
+    }
 }
 
 $_mf_get_adresse_url_base = null;
 
 function get_adresse_url_base()
 {
-    global $_mf_get_adresse_url_base;
-    if ($_mf_get_adresse_url_base === null) {
-        $racine = (HTTPS_ON ? 'https://' : 'http://') . $_SERVER['SERVER_NAME'] . $_SERVER['PHP_SELF'];
-        $p = 0;
-        $i = 0;
-        while ($i = stripos($racine, FIN_ADRESSE_RACINE . '/', $i + 1)) {
-            $p = $i;
+    if (isset($_SERVER['SERVER_NAME'])) {
+        global $_mf_get_adresse_url_base;
+        if ($_mf_get_adresse_url_base === null) {
+            $racine = (HTTPS_ON ? 'https://' : 'http://') . $_SERVER['SERVER_NAME'] . $_SERVER['PHP_SELF'];
+            $p = 0;
+            $i = 0;
+            while ($i = stripos($racine, FIN_ADRESSE_RACINE . '/', $i + 1)) {
+                $p = $i;
+            }
+            $_mf_get_adresse_url_base = substr($racine, 0, $p + strlen(FIN_ADRESSE_RACINE . '/'));
         }
-        $_mf_get_adresse_url_base = substr($racine, 0, $p + strlen(FIN_ADRESSE_RACINE . '/'));
+        return $_mf_get_adresse_url_base;
+    } else {
+        return 'console';
     }
-    return $_mf_get_adresse_url_base;
 }
 
-if (get_adresse_url_base() != ADRESSE_SITE && get_adresse_url_base() != ADRESSE_API) {
-    header('Location: ' . ADRESSE_SITE);
-    exit();
+if (isset($_SERVER['SERVER_NAME'])) {
+    if (get_adresse_url_base() != ADRESSE_SITE && get_adresse_url_base() != ADRESSE_API) {
+        header('Location: ' . ADRESSE_SITE);
+        exit();
+    }
 }
 
 $cle_aleatoire = '' . salt(10);
@@ -141,20 +193,20 @@ function mf_cle_aleatoire()
     return $cle_aleatoire;
 }
 if (isset($_GET['secur'])) {
-    $secur = '' . $_GET['secur'];
+    $secur = (string) $_GET['secur'];
     if ($secur != '') {
-        if (! isset($_SESSION[PREFIXE_SESSION]['valid_form'][$secur])) {
-            $_SESSION[PREFIXE_SESSION]['valid_form'][$secur] = $cle_aleatoire;
+        if (! isset($_SESSION[NOM_PROJET]['valid_form'][$secur])) {
+            $_SESSION[NOM_PROJET]['valid_form'][$secur] = $cle_aleatoire;
         } else {
-            $cle_aleatoire = $_SESSION[PREFIXE_SESSION]['valid_form'][$secur];
+            $cle_aleatoire = $_SESSION[NOM_PROJET]['valid_form'][$secur];
         }
     }
-    if (isset($_SESSION[PREFIXE_SESSION]['valid_form'])) {
+    if (isset($_SESSION[NOM_PROJET]['valid_form'])) {
         $i = 0;
-        $n = count($_SESSION[PREFIXE_SESSION]['valid_form']) - 5;
-        foreach ($_SESSION[PREFIXE_SESSION]['valid_form'] as $key => &$value) {
+        $n = count($_SESSION[NOM_PROJET]['valid_form']) - 5;
+        foreach ($_SESSION[NOM_PROJET]['valid_form'] as $key => &$value) {
             if ($i < $n) {
-                unset($_SESSION[PREFIXE_SESSION]['valid_form'][$key]);
+                unset($_SESSION[NOM_PROJET]['valid_form'][$key]);
             }
             $i ++;
         }
@@ -162,53 +214,49 @@ if (isset($_GET['secur'])) {
     }
 }
 
-$mf_get_dossier_data_base = null;
-$mf_get_dossier_data_personalise = [];
-
-function get_dossier_data($dossier)
+/**
+ * @param string $dossier
+ * @param string $dossier_main
+ * @return string
+ */
+function get_dossier_data(string $dossier, string $dossier_main = 'data'): string
 {
-    global $mf_get_dossier_data_base, $mf_get_dossier_data_personalise;
-    if (! isset($mf_get_dossier_data_personalise[$dossier])) {
+    global $mf_get_dossier_data_personalise;
+    if (! isset($mf_get_dossier_data_personalise["$dossier/$dossier_main"])) {
         // construction du dossier de base
-        if ($mf_get_dossier_data_base === null) {
-            $mf_get_dossier_data_base = __DIR__ . '/../../data/';
-            if (! file_exists($mf_get_dossier_data_base)) {
-                mkdir($mf_get_dossier_data_base);
+        global $mf_get_dossier_data_base;
+        if (! isset($mf_get_dossier_data_base[$dossier_main])) {
+            global $mf_get_HTTP_HOST;
+            $mf_get_dossier_data_base[$dossier_main] = __DIR__ . "/../../$dossier_main/";
+            if (! file_exists($mf_get_dossier_data_base[$dossier_main])) {
+                mkdir($mf_get_dossier_data_base[$dossier_main]);
             }
-            $mf_get_dossier_data_base .= NOM_PROJET . '/';
-            if (! file_exists($mf_get_dossier_data_base)) {
-                mkdir($mf_get_dossier_data_base);
+            $mf_get_dossier_data_base[$dossier_main] .= "$mf_get_HTTP_HOST/";
+            if (! file_exists($mf_get_dossier_data_base[$dossier_main])) {
+                mkdir($mf_get_dossier_data_base[$dossier_main]);
+            }
+            $mf_get_dossier_data_base[$dossier_main] .= NOM_PROJET . '/';
+            if (! file_exists($mf_get_dossier_data_base[$dossier_main])) {
+                mkdir($mf_get_dossier_data_base[$dossier_main]);
             }
             if (TABLE_INSTANCE != '') {
-                $mf_get_dossier_data_base .= 'inst_' . get_instance() . '/';
-                if (! file_exists($mf_get_dossier_data_base)) {
-                    mkdir($mf_get_dossier_data_base);
+                $mf_get_dossier_data_base[$dossier_main] .= 'inst_' . get_instance();
+                if (! file_exists($mf_get_dossier_data_base[$dossier_main])) {
+                    mkdir($mf_get_dossier_data_base[$dossier_main]);
                 }
             }
+            $mf_get_dossier_data_base[$dossier_main] = realpath($mf_get_dossier_data_base[$dossier_main]) . '/';
         }
         // construction du dossier de log
-        $mf_get_dossier_data_personalise[$dossier] = $mf_get_dossier_data_base . $dossier . '/';
-        if (! file_exists($mf_get_dossier_data_personalise[$dossier])) {
-            mkdir($mf_get_dossier_data_personalise[$dossier]);
+        $mf_get_dossier_data_personalise["$dossier/$dossier_main"] = "{$mf_get_dossier_data_base[$dossier_main]}$dossier/";
+        if (! file_exists($mf_get_dossier_data_personalise["$dossier/$dossier_main"])) {
+            mkdir($mf_get_dossier_data_personalise["$dossier/$dossier_main"]);
         }
     }
-    return $mf_get_dossier_data_personalise[$dossier];
+    return $mf_get_dossier_data_personalise["$dossier/$dossier_main"];
 }
-
-$now_microtime = microtime(true);
-
-function get_now_microtime()
-{
-    global $now_microtime;
-    return $now_microtime;
-} // microtime
-$now = date('Y-m-d H:i:s');
-
-function get_now()
-{
-    global $now;
-    return $now;
-}
+$mf_get_dossier_data_base = [];
+$mf_get_dossier_data_personalise = [];
 
 // horloge
 function get_diff_time_zone(): int
@@ -218,34 +266,39 @@ function get_diff_time_zone(): int
 
 class Autoloader
 {
-
     /**
      * Enregistre notre autoloader
      */
     static function register()
     {
-        spl_autoload_register(array(
-            __CLASS__,
-            'autoload'
-        ));
+        spl_autoload_register([__CLASS__, 'autoload']);
     }
 
     /**
      * Inclue le fichier correspondant à notre classe
-     *
-     * @param $class string
-     *            Le nom de la classe à charger
+     * @param string $class Le nom de la classe à charger
      */
-    static function autoload($class)
+    static function autoload(string $class)
     {
-        if (substr($class, - 13) == '_monframework') {
-            require __DIR__ . '/tables/monframework/' . substr($class, 0, strlen($class) - 13) . '.php';
+        if (file_exists(__DIR__ . "/rows/$class.php")) {
+            require __DIR__ . "/rows/$class.php";
+        } elseif (file_exists(__DIR__ . "/rows/monframework/$class.php")) {
+            require __DIR__ . "/rows/monframework/$class.php";
+        } elseif (file_exists(__DIR__ . '/tables/' . substr($class, 6) . '.php')) {
+            require __DIR__ . '/tables/' . substr($class, 6) . '.php';
+        } elseif (substr($class, - 13) == '_monframework') {
+            require __DIR__ . '/tables/monframework/' . substr($class, 6, strlen($class) - 19) . '.php';
         } elseif (substr($class, 0, 5) == 'Hook_') {
-            require __DIR__ . '/tables/monframework/hooks/' . $class . '.php';
-        } elseif (file_exists(__DIR__ . '/fonctions/' . strtolower($class) . '.php')) {
-            require __DIR__ . '/fonctions/' . strtolower($class) . '.php';
+            require __DIR__ . "/tables/monframework/hooks/$class.php";
+        } elseif (file_exists(__DIR__ . "/fonctions/$class.php")) {
+            require __DIR__ . "/fonctions/$class.php";
+        } elseif (file_exists(__DIR__ . "/fonctions/" . strtolower($class) . ".php")) { // A supprimer
+            require __DIR__ . "/fonctions/" . strtolower($class) . ".php"; // A supprimer
         } else {
-            require __DIR__ . '/tables/' . strtolower($class) . '.php';
+            if (! MODE_PROD) {
+                $txt = "La classe $class est introuvable." . PHP_EOL . "Autoloader::register() ne parvient pas à la trouver.";
+                mf_bah_quest_ce_qui_ce_passe("Erreur PHP", $txt, "#FF67F6");
+            }
         }
     }
 }
@@ -254,37 +307,41 @@ Autoloader::register();
 class Mf_cache_volatil // cache en ram qui dure le temps de l'exécution du script
 {
 
-    private $mf_cache_colatil_var = array();
+    private $mf_cache_volatil_var = array();
+    public $variables = array();
 
     private $memory_limit;
 
-    function __construct()
+    public function __construct()
     {
         $this->memory_limit = round(0.75 * return_bytes(ini_get('memory_limit')));
     }
 
-    function is_set($dossier, $cle)
+    public function is_set($dossier, $cle)
     {
-        return (isset($this->mf_cache_colatil_var[$dossier][$cle]));
+        return (isset($this->mf_cache_volatil_var[$dossier][$cle]));
     }
 
-    function get($dossier, $cle)
+    public function get($dossier, $cle)
     {
-        return $this->mf_cache_colatil_var[$dossier][$cle];
+        return $this->mf_cache_volatil_var[$dossier][$cle];
     }
 
-    function set($dossier, $cle, $contenu)
+    public function set($dossier, $cle, $contenu)
     {
         if (memory_get_usage() >= $this->memory_limit) {
-            $this->mf_cache_colatil_var = array();
+            $this->mf_cache_volatil_var = array();
         }
-        $this->mf_cache_colatil_var[$dossier][$cle] = $contenu;
+        $this->mf_cache_volatil_var[$dossier][$cle] = $contenu;
     }
 
-    function clear($dossier)
+    public function clear($dossier)
     {
-        if (isset($this->mf_cache_colatil_var[$dossier])) {
-            unset($this->mf_cache_colatil_var[$dossier]);
+        if (isset($this->mf_cache_volatil_var[$dossier])) {
+            unset($this->mf_cache_volatil_var[$dossier]);
+        }
+        if (isset($this->variables[$dossier])) {
+            unset($this->variables[$dossier]);
         }
     }
 }
@@ -292,17 +349,19 @@ $mf_cache_volatil = new Mf_cache_volatil();
 
 include __DIR__ . '/cache_systeme.php';
 
-$lang_standard = array();
-$mf_titre_ligne_table = array();
-$mf_tri_defaut_table = array();
-$mf_initialisation = array();
-$mf_droits_defaut = array();
-$mf_dictionnaire_db = array();
-$mf_libelle_erreur = array();
+$lang_standard = [];
+$mf_titre_ligne_table = [];
+$mf_tri_defaut_table = [];
+$mf_initialisation = [];
+$mf_droits_defaut = [];
+$mf_dictionnaire_db = [];
+$mf_libelle_erreur = [];
+$mf_dependances = [];
+$mf_type_table_enfant = [];
 
 function read_variable_systeme()
 {
-    global $lang_standard, $mf_titre_ligne_table, $mf_tri_defaut_table, $mf_initialisation, $mf_dictionnaire_db, $mf_libelle_erreur;
+    global $lang_standard, $mf_titre_ligne_table, $mf_tri_defaut_table, $mf_initialisation, $mf_dictionnaire_db, $mf_libelle_erreur, $mf_dependances, $mf_type_table_enfant;
     $cache_systeme = new Mf_Cache_systeme();
     if (($variables_systeme = $cache_systeme->read('variables_systeme')) && MODE_PROD) {
         $lang_standard = $variables_systeme['lang_standard'];
@@ -311,13 +370,17 @@ function read_variable_systeme()
         $mf_initialisation = $variables_systeme['mf_initialisation'];
         $mf_dictionnaire_db = $variables_systeme['mf_dictionnaire_db'];
         $mf_libelle_erreur = $variables_systeme['mf_libelle_erreur'];
+        $mf_dependances = $variables_systeme['mf_dependances'];
+        $mf_type_table_enfant = $variables_systeme['mf_type_table_enfant'];
     } else {
-        $lang_standard = array();
-        $mf_titre_ligne_table = array();
-        $mf_tri_defaut_table = array();
-        $mf_initialisation = array();
-        $mf_dictionnaire_db = array();
-        $mf_libelle_erreur = array();
+        $lang_standard = [];
+        $mf_titre_ligne_table = [];
+        $mf_tri_defaut_table = [];
+        $mf_initialisation = [];
+        $mf_dictionnaire_db = [];
+        $mf_libelle_erreur = [];
+        $mf_dependances = [];
+        $mf_type_table_enfant = [];
 
         include __DIR__ . '/langues/fr/systeme.php';
         include __DIR__ . '/chargement_variables_systemes.php';
@@ -330,12 +393,16 @@ function read_variable_systeme()
                 'mf_tri_defaut_table' => $mf_tri_defaut_table,
                 'mf_initialisation' => $mf_initialisation,
                 'mf_dictionnaire_db' => $mf_dictionnaire_db,
-                'mf_libelle_erreur' => $mf_libelle_erreur
+                'mf_libelle_erreur' => $mf_libelle_erreur,
+                'mf_dependances' => $mf_dependances,
+                'mf_type_table_enfant' => $mf_type_table_enfant
             ));
         }
     }
 }
 read_variable_systeme();
+
+require __DIR__ . '/constantes_systeme_auto.php';
 
 define('OPTION_COND_MYSQL', 'cond_mysql');
 define('OPTION_TRI', 'tris');
@@ -344,10 +411,29 @@ define('OPTION_AUTOCOMPLETION', 'autocompletion');
 define('OPTION_TOUTES_COLONNES', 'toutes_colonnes');
 define('OPTION_MAJ', 'maj');
 
-include_once __DIR__ . '/tables/entite.php';
-include_once __DIR__ . '/tables/monframework/entite.php';
+require __DIR__ . '/tables/monframework/entite.php';
+require __DIR__ . '/tables/db.php';
+require __DIR__ . '/tables/entite.php';
 
-include __DIR__ . '/tables/monframework/mf_connexion.php';
+require __DIR__ . '/tables/monframework/mf_connexion.php';
+
+function mf_get_liste_tables_enfants(string $table): array
+{
+    global $mf_dependances;
+    $liste_tables_enfants = [];
+    if (isset($mf_dependances[$table])) {
+        foreach ($mf_dependances[$table] as $table_fille) {
+            $liste_tables_enfants[] = $table_fille;
+        }
+    }
+    return $liste_tables_enfants;
+}
+
+function mf_get_liste_tables_parents(string $table): array
+{
+    $db = new DB();
+    return $db -> mf_table($table) -> mf_get_liste_tables_parents();
+}
 
 $mf_message_erreur_personalise = '';
 
@@ -361,13 +447,11 @@ function mf_personaliser_le_message($message_erreur)
 
 $link = null; // connexion uniquement si besoin ...
 
-$sauvegarde_base = true;
-
 function connexion_db(&$link)
 {
     $link = @mysqli_connect(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, DB_PORT);
     if (mysqli_connect_errno()) {
-        echo '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Connexion à la base de données</title></head><body>Failed to connect to MySQL:' . utf8_encode(mysqli_connect_error()) . '</body></html>';
+        echo '<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>Connexion à la base de données</title></head><body>Failed to connect to MySQL:' . utf8_encode(mysqli_connect_error()) . '</body></html>';
         exit();
     }
 }
@@ -376,7 +460,7 @@ function connexion_db_cache()
 {
     $link_cache = @mysqli_connect(DB_CACHE_HOST, DB_CACHE_USER, DB_CACHE_PASSWORD, DB_CACHE_NAME, DB_CACHE_PORT);
     if (mysqli_connect_errno()) {
-        echo '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Connexion à la base de données</title></head><body>Failed to connect to MySQL:' . utf8_encode(mysqli_connect_error()) . '</body></html>';
+        echo '<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>Connexion à la base de données</title></head><body>Failed to connect to MySQL:' . utf8_encode(mysqli_connect_error()) . '</body></html>';
         exit();
     }
     return $link_cache;
@@ -393,33 +477,7 @@ $mf_file_append_liste = [];
 function mf_file_append(string $filename, string $str): void
 {
     if ($str != '') {
-        if (DB_CACHE_HOST == '') {
-            // open resource
-            $fp = false;
-            while ($fp === false) {
-                $fp = fopen($filename, 'a');
-                if ($fp === false) {
-                    usleep(10);
-                }
-            }
-            // fwrite
-            $l = 0;
-            while ($str != '' && ($l = fwrite($fp, $str))) {
-                if ($l !== false) {
-                    $str = substr($str, $l);
-                } else {
-                    usleep(10);
-                }
-            }
-            // flush
-            while (! fflush($fp)) {
-                usleep(10);
-            }
-            // close resource
-            while (! fclose($fp)) {
-                usleep(10);
-            }
-        } else {
+        if (DB_CACHE_HOST != '') {
             global $mf_file_append_liste;
             $mf_file_append_liste[] = [
                 'microtime' => microtime(true),
@@ -433,7 +491,7 @@ function mf_file_append(string $filename, string $str): void
 function mf_file_append_flush(): void
 {
     if (DB_CACHE_HOST != '') {
-        global $mf_file_append_liste;
+        global $mf_file_append_liste, $mf_get_HTTP_HOST;
         if (count($mf_file_append_liste) > 0) {
             $link = connexion_db_cache();
             $res_requete = mysqli_query($link, 'show variables like \'max_allowed_packet\';');
@@ -446,7 +504,7 @@ function mf_file_append_flush(): void
             mysqli_free_result($res_requete);
             $data = '';
             $len = 1000;
-            $table = str_replace('-', '_', strtolower(NOM_PROJET)) . '_cache_' . get_instance();
+            $table = str_replace('-', '_', strtolower(NOM_PROJET . "_$mf_get_HTTP_HOST")) . '_cache_' . get_instance();
             foreach ($mf_file_append_liste as $key => &$value) {
                 $value['filename'] = mysqli_real_escape_string($link, $value['filename']);
                 $value['str'] = mysqli_real_escape_string($link, $value['str']);
@@ -468,68 +526,160 @@ function mf_file_append_flush(): void
 
 function mf_file_append_initialiser_structure(): void
 {
+    global $mf_get_HTTP_HOST;
     if (DB_CACHE_HOST != '') {
         $link = connexion_db_cache();
-        @mysqli_query($link, 'CREATE TABLE ' . str_replace('-', '_', strtolower(NOM_PROJET)) . '_cache_' . get_instance() . ' (id BIGINT UNSIGNED AUTO_INCREMENT NOT NULL, microtime DOUBLE, filename VARCHAR(255), str TEXT, synchro BOOL, PRIMARY KEY (id), INDEX(microtime), INDEX(synchro)) ENGINE=MyISAM;');
-        @mysqli_query($link, 'CREATE TABLE ' . str_replace('-', '_', strtolower(NOM_PROJET)) . '_worker (id INT NOT NULL, microtime_exe DOUBLE, cpt BIGINT UNSIGNED, PRIMARY KEY (id)) ENGINE=MyISAM;');
-        @mysqli_query($link, 'INSERT INTO ' . str_replace('-', '_', strtolower(NOM_PROJET)) . '_worker (id,microtime_exe,cpt) VALUES (' . get_instance() . ',0,0);');
+        @mysqli_query($link, 'CREATE TABLE ' . str_replace('-', '_', strtolower(NOM_PROJET . "_$mf_get_HTTP_HOST")) . '_cache_' . get_instance() . ' (id BIGINT UNSIGNED AUTO_INCREMENT NOT NULL, microtime DOUBLE, filename VARCHAR(255), str TEXT, synchro BOOL, PRIMARY KEY (id), INDEX(microtime), INDEX(synchro)) ENGINE=MyISAM;');
+        @mysqli_query($link, 'CREATE TABLE ' . str_replace('-', '_', strtolower(NOM_PROJET . "_$mf_get_HTTP_HOST")) . '_worker (id INT NOT NULL, microtime_exe DOUBLE, cpt BIGINT UNSIGNED, PRIMARY KEY (id)) ENGINE=MyISAM;');
+        @mysqli_query($link, 'INSERT INTO ' . str_replace('-', '_', strtolower(NOM_PROJET . "_$mf_get_HTTP_HOST")) . '_worker (id,microtime_exe,cpt) VALUES (' . get_instance() . ',0,0);');
         mysqli_close($link);
     }
+}
+
+function mf_initialiser_mf_index_login(): void
+{
+    if (TABLE_INSTANCE != '') {
+        if (! test_si_table_existe('mf_index_login')) {
+            executer_requete_mysql('CREATE TABLE mf_index_login (Code_mf_index_login BIGINT UNSIGNED NOT NULL AUTO_INCREMENT, PRIMARY KEY (Code_mf_index_login)) ENGINE=MyISAM;', false);
+            executer_requete_mysql('ALTER TABLE mf_index_login ADD instance BIGINT UNSIGNED;', false);
+            executer_requete_mysql('ALTER TABLE mf_index_login ADD id BIGINT UNSIGNED;', false);
+            executer_requete_mysql('ALTER TABLE mf_index_login ADD login VARCHAR(255);', false);
+            executer_requete_mysql('ALTER TABLE mf_index_login ADD email VARCHAR(255);', false);
+            executer_requete_mysql('ALTER TABLE mf_index_login ADD INDEX(instance);', false);
+            executer_requete_mysql('ALTER TABLE mf_index_login ADD INDEX(id);', false);
+            executer_requete_mysql('ALTER TABLE mf_index_login ADD INDEX(login);', false);
+            executer_requete_mysql('ALTER TABLE mf_index_login ADD INDEX(email);', false);
+        }
+    }
+}
+
+function maj_mf_index_login(): void
+{
+    if (TABLE_INSTANCE != '') {
+        // Liste des logins de la session courante
+        $connexion = new Mf_Connexion();
+        $liste_login = $connexion->get_liste_login();
+
+        // Liste des login de la session courante indexé
+        $liste_index = [];
+        $instance = get_instance();
+        $res_requete = executer_requete_mysql("SELECT * FROM mf_index_login WHERE instance = $instance", false);
+        while ($row_requete = mysqli_fetch_array($res_requete, MYSQLI_ASSOC)) {
+            $liste_index[(int)$row_requete['id']] = $row_requete;
+        }
+
+        // Mise à jour des index existants et suppression des index en trop
+        foreach ($liste_index as $id => $v) {
+            if (isset($liste_login[$id])) {
+                // Données déja indexé, controle de mise à jour
+                $login = $liste_login[$id]['login'];
+                if ($v['login'] != $login) {
+                    $login = text_sql($login);
+                    executer_requete_mysql("UPDATE mf_index_login SET login = '$login' WHERE id = $id AND instance = $instance;", false);
+                }
+                $email = $liste_login[$id]['email'];
+                if ($v['email'] != $email) {
+                    $email = text_sql($email);
+                    executer_requete_mysql("UPDATE mf_index_login SET email = '$email' WHERE id = $id AND instance = $instance;", false);
+                }
+                // On retire l'indexe corrigé
+                unset($liste_login[$id]);
+            } else {
+                // index en trop. On le supprime
+                executer_requete_mysql("DELETE FROM mf_index_login WHERE id = $id AND instance = $instance;", false);
+            }
+        }
+
+        // Ajout des nouveaux indexes
+        foreach ($liste_login as $login_a_ajouter) {
+            executer_requete_mysql("INSERT INTO mf_index_login (instance, id, login, email) VALUES ($instance, {$login_a_ajouter['id']}, '" . text_sql($login_a_ajouter['login']) . "', '" . text_sql($login_a_ajouter['email']) . "');", false);
+        }
+    }
+}
+
+function mf_saisie_login_vers_liste_instance($saisie): array
+{
+    $liste = [];
+    $saisie = text_sql($saisie);
+    if (ACTIVER_CONNEXION_EMAIL) {
+        $requete_sql = "SELECT instance FROM mf_index_login WHERE login = '$saisie' OR email = '$saisie'";
+    } else {
+        $requete_sql = "SELECT instance FROM mf_index_login WHERE login = '$saisie'";
+    }
+    $res_requete = executer_requete_mysql($requete_sql, false);
+    while ($row_requete = mysqli_fetch_array($res_requete, MYSQLI_ASSOC)) {
+        $liste[] = (int) $row_requete['instance'];
+    }
+    $db = new DB();
+    return $db -> mf_table(TABLE_INSTANCE) -> mf_lister_2($liste, ['controle_acces_donnees' => false]);
 }
 
 function mf_file_append_whrite(): bool
 {
     if (DB_CACHE_HOST != '') {
-        $table_cache = str_replace('-', '_', strtolower(NOM_PROJET)) . '_cache_' . get_instance();
+        global $mf_get_HTTP_HOST;
+        $nb_lectures_log = 64;
+        $table_cache = str_replace('-', '_', strtolower(NOM_PROJET . "_$mf_get_HTTP_HOST")) . '_cache_' . get_instance();
         $link = connexion_db_cache();
-        $res_requete = mysqli_query($link, 'SELECT * FROM ' . $table_cache . ' WHERE synchro=0 ORDER BY microtime ASC;');
-        $llog = [];
-        while ($row_requete = mysqli_fetch_array($res_requete, MYSQLI_ASSOC)) {
-            $llog[] = [
-                'id' => $row_requete['id'],
-                'filename' => $row_requete['filename'],
-                'str' => $row_requete['str']
-            ];
-        }
-        mysqli_free_result($res_requete);
-        foreach ($llog as $log) {
-            mysqli_query($link, 'UPDATE ' . $table_cache . ' SET synchro=1 WHERE id=' . $log['id'] . ';');
-            if (mysqli_affected_rows($link) == 1) {
-                $filename = $log['filename'];
-                $str = $log['str'];
-                // open resource
-                $fp = false;
-                while ($fp === false) {
-                    $fp = fopen($filename, 'a');
-                    if ($fp === false) {
-                        usleep(10);
-                    }
-                }
-                // fwrite
-                $l = 0;
-                while ($str != '' && ($l = fwrite($fp, $str))) {
-                    if ($l !== false) {
-                        $str = substr($str, $l);
-                    } else {
-                        usleep(10);
-                    }
-                }
-                // flush
-                while (! fflush($fp)) {
-                    usleep(10);
-                }
-                // close resource
-                while (! fclose($fp)) {
-                    usleep(10);
-                }
-            } else {
-                mysqli_close($link);
-                return false;
+
+        $continuer = true;
+        while ($continuer) {
+            $res_requete = mysqli_query($link, "SELECT * FROM $table_cache WHERE synchro=0 ORDER BY microtime ASC LIMIT 0, $nb_lectures_log;");
+            $llog = [];
+            while ($row_requete = mysqli_fetch_array($res_requete, MYSQLI_ASSOC)) {
+                $llog[] = [
+                    'id' => $row_requete['id'],
+                    'filename' => $row_requete['filename'],
+                    'str' => $row_requete['str']
+                ];
             }
+            $continuer = (count($llog) == $nb_lectures_log);
+            mysqli_free_result($res_requete);
+            foreach ($llog as $log) {
+                mysqli_query($link, 'UPDATE ' . $table_cache . ' SET synchro=1 WHERE id=' . $log['id'] . ';');
+                if (mysqli_affected_rows($link) == 1) {
+                    $filename = $log['filename'];
+                    $p = max([strrpos($filename, '\\'), strrpos($filename, '/')]);
+                    $path = substr($filename, 0, $p+1);
+                    if (! file_exists($path)) {
+                        mkdir($path);
+                    }
+                    $str = $log['str'];
+                    // open resource
+                    $fp = false;
+                    while ($fp === false) {
+                        $fp = fopen($filename, 'a');
+                        if ($fp === false) {
+                            usleep(10);
+                        }
+                    }
+                    // fwrite
+                    while ($str != '' && ($l = fwrite($fp, $str))) {
+                        if ($l !== false) {
+                            $str = substr($str, $l);
+                        } else {
+                            usleep(10);
+                        }
+                    }
+                    // flush
+                    while (!fflush($fp)) {
+                        usleep(10);
+                    }
+                    // close resource
+                    while (!fclose($fp)) {
+                        usleep(10);
+                    }
+                } else {
+                    mysqli_close($link);
+                    return false;
+                }
+                if (get_execution_time() > DELAI_EXECUTION_WORKER * 0.99) {
+                    $continuer = false;
+                    break;
+                }
+            }
+            mysqli_query($link, "DELETE IGNORE FROM $table_cache WHERE synchro=1;");
         }
-
-        mysqli_query($link, 'DELETE IGNORE FROM ' . $table_cache . ' WHERE synchro=1;');
-
         mysqli_close($link);
     }
     return true;
@@ -546,7 +696,7 @@ function executer_requete_mysql($query, $log = true)
         $mf_last_query = $query;
     }
 
-    global $link, $now, $sauvegarde_base, $mf_nb_requetes, $mf_nb_requetes_update;
+    global $link, $mf_nb_requetes, $mf_nb_requetes_update;
     $mf_nb_requetes ++;
     if ($link == null) {
         connexion_db($link);
@@ -554,27 +704,7 @@ function executer_requete_mysql($query, $log = true)
 
     $ln = PHP_EOL;
 
-    /* sauvegarde de la base de données */
-    if ($sauvegarde_base) {
-        $adresse_dossier_sauvegarde = get_dossier_data('dump');
-        $nom_fichier_sauvegarde = 'db_dump_' . substr($now, 0, 10) . '.sql.gz';
-        if (! file_exists($adresse_dossier_sauvegarde . $nom_fichier_sauvegarde)) {
-            if (DB_PORT != null) {
-                system('mysqldump --host=' . DB_HOST . ' --user=' . DB_USER . ' --port=' . DB_PORT . ' --password=' . DB_PASSWORD . ' ' . DB_NAME . ' ' . get_liste_dump() . ' | gzip > ' . $adresse_dossier_sauvegarde . $nom_fichier_sauvegarde);
-            } else {
-                system('mysqldump --host=' . DB_HOST . ' --user=' . DB_USER . ' --password=' . DB_PASSWORD . ' ' . DB_NAME . ' ' . get_liste_dump() . ' | gzip > ' . $adresse_dossier_sauvegarde . $nom_fichier_sauvegarde);
-            }
-        }
 
-        $files = glob($adresse_dossier_sauvegarde . '*');
-        foreach ($files as $file) {
-            if (time() - filemtime($file) > DUREE_HISTORIQUE * 86400) {
-                unlink($file);
-            }
-        }
-
-        $sauvegarde_base = false;
-    }
 
     $time_1 = microtime(true);
     $req = mysqli_query($link, $query);
@@ -589,18 +719,24 @@ function executer_requete_mysql($query, $log = true)
     $sql_Emplacement = '';
 
     if ($requete_update) {
+        $small_query = mf_limite_taille_log($query);
         $mf_nb_requetes_update ++;
         if ($erreur_sql_Num_erreur == 0 || test_requete_system($query)) { /* requete update */
             $affected_rows = round(mysqli_affected_rows($link));
             if ($affected_rows > 0 || test_requete_system($query)) {
-                $debug = debug_backtrace();
-                foreach ($debug as $t) {
-                    if ($sql_Emplacement != '')
-                        $sql_Emplacement = $ln . '                 ' . $sql_Emplacement;
-                    $sql_Emplacement = (isset($t['file']) ? $t['file'] : '-') . ' # ' . $t['function'] . ' (Ligne ' . (isset($t['line']) ? $t['line'] : '-') . ')' . $sql_Emplacement;
+                $adresse_fichier_log = get_dossier_data('update') . 'update_' . substr(get_now(), 0, 13) . '.sql';
+                if (MODE_PROD) {
+                    mf_file_append($adresse_fichier_log, '/*' . (function_exists('identification_log') ? identification_log() : '') . ";" . get_now() . ";{$duree}ms;{$affected_rows}r;" . get_ip() .  "*/$ln$small_query$ln");
+                } else {
+                    $debug = debug_backtrace();
+                    foreach ($debug as $t) {
+                        if ($sql_Emplacement != '') {
+                            $sql_Emplacement = $ln . '                 ' . $sql_Emplacement;
+                        }
+                        $sql_Emplacement = (isset($t['file']) ? $t['file'] : '-') . ' # ' . $t['function'] . ' (Ligne ' . (isset($t['line']) ? $t['line'] : '-') . ')' . $sql_Emplacement;
+                    }
+                    mf_file_append($adresse_fichier_log, '/*' . $ln . ' ' . (function_exists('identification_log') ? identification_log() : '') . $ln . ' Date          : ' . get_now() . $ln . ' Duree         : ' . $duree . 'ms' . $ln . ' Affected rows : ' . $affected_rows . $ln . ' Emplacement   : ' . $sql_Emplacement . $ln . ' Adresse IP    : ' . get_ip() . $ln . '*/' . $ln . $small_query . $ln . $ln);
                 }
-                $adresse_fichier_log = get_dossier_data('update') . 'update_' . substr($now, 0, 10) . '.sql';
-                mf_file_append($adresse_fichier_log, '/*' . $ln . ' ' . identification_log() . $ln . ' Date          : ' . $now . $ln . ' Duree         : ' . $duree . 'ms' . $ln . ' Affected rows : ' . $affected_rows . $ln . ' Emplacement   : ' . $sql_Emplacement . $ln . ' Adresse IP    : ' . get_ip() . $ln . '*/' . $ln . $query . $ln . $ln);
             }
         }
 
@@ -613,12 +749,13 @@ function executer_requete_mysql($query, $log = true)
                     $sql_Emplacement = (isset($t['file']) ? $t['file'] : '-') . ' # ' . $t['function'] . ' (Ligne ' . (isset($t['line']) ? $t['line'] : '-') . ')' . $sql_Emplacement;
                 }
             }
-            $adresse_fichier_log = get_dossier_data('slow_query') . 'slow_query_' . substr($now, 0, 10) . '.sql';
-            mf_file_append($adresse_fichier_log, '/*' . $ln . ' ' . identification_log() . $ln . ' Date          : ' . $now . $ln . ' Duree         : ' . $duree . 'ms' . $ln . ' Affected rows : ' . $affected_rows . $ln . ' Emplacement   : ' . $sql_Emplacement . $ln . ' Adresse IP    : ' . get_ip() . $ln . '*/' . $ln . $query . $ln . $ln);
+            $adresse_fichier_log = get_dossier_data('slow_query') . 'slow_query_' . substr(get_now(), 0, 10) . '.sql';
+            mf_file_append($adresse_fichier_log, '/*' . $ln . ' ' . (function_exists('identification_log') ? identification_log() : '') . $ln . ' Date          : ' . get_now() . $ln . ' Duree         : ' . $duree . 'ms' . $ln . ' Affected rows : ' . $affected_rows . $ln . ' Emplacement   : ' . $sql_Emplacement . $ln . ' Adresse IP    : ' . get_ip() . $ln . '*/' . $ln . $small_query . $ln . $ln);
         }
     }
 
     if ($erreur_sql_Num_erreur != 0) { /* Erreurs SQL */
+        $small_query = mf_limite_taille_log($query, 16384);
         $debug = debug_backtrace();
         foreach ($debug as $t) {
             if ($sql_Emplacement != '')
@@ -626,15 +763,15 @@ function executer_requete_mysql($query, $log = true)
             $sql_Emplacement = (isset($t['file']) ? $t['file'] : '-') . ' # ' . $t['function'] . ' (Ligne ' . (isset($t['line']) ? $t['line'] : '-') . ')' . $sql_Emplacement;
         }
         $error = mysqli_error($link);
-        $adresse_fichier_log = get_dossier_data('error_mysql') . 'error_mysql_' . substr($now, 0, 10) . '.sql';
-        $error_str = '/*' . $ln . ' ' . identification_log() . $ln . ' Date          : ' . $now . $ln . ' Duree         : ' . $duree . 'ms' . $ln . ' Code erreur   : ' . $erreur_sql_Num_erreur . $ln . ' Description   : ' . $error . $ln . ' Emplacement   : ' . $sql_Emplacement . $ln . ' Adresse IP    : ' . get_ip() . $ln . '*/' . $ln . $query;
+        $adresse_fichier_log = get_dossier_data('error_mysql') . 'error_mysql_' . substr(get_now(), 0, 10) . '.sql';
+        $error_str = '/*' . $ln . ' ' . (function_exists('identification_log') ? identification_log() : '') . $ln . ' Date          : ' . get_now() . $ln . ' Duree         : ' . $duree . 'ms' . $ln . ' Code erreur   : ' . $erreur_sql_Num_erreur . $ln . ' Description   : ' . $error . $ln . ' Emplacement   : ' . $sql_Emplacement . $ln . ' Adresse IP    : ' . get_ip() . $ln . '*/' . $ln . $small_query;
         if (! MODE_PROD) {
-            echo '<html><head><title>Bah, qu\'est ce qui se passe ?</title></head><body style="background-color: black; color: #00ffa1; padding: 10px; font-family: monospace; font-size: 16px;"><h1>Erreur SQL</h1>' . str_replace('  ', '&nbsp; ', str_replace('  ', '&nbsp; ', str_replace(PHP_EOL, '<br>', $error_str))) . '</body></html>';
-            exit();
+            mf_bah_quest_ce_qui_ce_passe("Erreur PHP", $error_str, "#00ffa1");
         }
         $error_str .= $ln . $ln;
         mf_file_append($adresse_fichier_log, $error_str);
-        sendemail(MAIL_ADMIN, 'Erreur ' . $erreur_sql_Num_erreur . ' - ' . NOM_PROJET, text_html_br($error_str));
+        global $mf_get_HTTP_HOST;
+        sendemail(MAIL_ADMIN, 'Erreur ' . $erreur_sql_Num_erreur . ' - ' . NOM_PROJET . "_$mf_get_HTTP_HOST", text_html_br($error_str));
     }
 
     return $req;
@@ -650,10 +787,22 @@ function set_log($txt)
 
 function log_api($txt)
 {
-    global $now;
     $ln = PHP_EOL;
     $adresse_fichier_log = get_dossier_data('log_api') . '/log_api_' . substr(get_now(), 0, 10) . '.txt';
-    mf_file_append($adresse_fichier_log, $now . $ln . $txt . $ln . '---' . $ln);
+    mf_file_append($adresse_fichier_log, get_now() . "$ln$txt$ln");
+}
+
+/**
+ * @param string $txt
+ * @param int $size_max
+ * @param string $indicator
+ * @return string
+ */
+function mf_limite_taille_log(string $txt, int $size_max = 4096, string $indicator = '…') {
+    if (strlen($txt) > $size_max) {
+        return substr($txt, 0, $size_max) . $indicator;
+    }
+    return $txt;
 }
 
 function fermeture_connexion_db()
@@ -664,14 +813,15 @@ function fermeture_connexion_db()
         $link = null;
     }
     mf_file_append_flush();
-    if (! MODE_PROD) {
-        mf_file_append_whrite();
-    }
 }
 
 function get_ip()
 {
-    return isset($_SERVER['HTTP_X_FORWARDED_FOR']) ? $_SERVER['HTTP_X_FORWARDED_FOR'] : $_SERVER['REMOTE_ADDR'];
+    if (isset($_SERVER['HTTP_HOST'])) {
+        return isset($_SERVER['HTTP_X_FORWARDED_FOR']) ? $_SERVER['HTTP_X_FORWARDED_FOR'] : $_SERVER['REMOTE_ADDR'];
+    } else {
+        return 'console/cron';
+    }
 }
 
 function test_requete_update($query)
@@ -721,7 +871,6 @@ function db_mysqli_close()
         mysqli_close($link);
         $link = null;
     }
-    ;
 }
 
 function test_si_table_existe($nom_table)
@@ -737,9 +886,13 @@ function test_si_table_existe($nom_table)
     return $retour;
 }
 
-function lister_les_colonnes($nom_table)
+/**
+ * @param string $nom_table
+ * @return array
+ */
+function lister_les_colonnes(string $nom_table): array
 {
-    $res_requete = executer_requete_mysql('SHOW COLUMNS FROM ' . $nom_table . ';');
+    $res_requete = executer_requete_mysql('SHOW COLUMNS FROM ' . inst($nom_table) . ';');
     $liste = array();
     while ($row_requete = mysqli_fetch_array($res_requete, MYSQLI_ASSOC)) {
         $liste[$row_requete['Field']] = $row_requete;
@@ -748,7 +901,28 @@ function lister_les_colonnes($nom_table)
     return $liste; // Field, Type, Null, Key, Default, Extra
 }
 
-function typeMyql2Sql($type_mysql)
+/**
+ * @param string $nom_table
+ * @return array
+ */
+function lister_les_colonnes_primaires(string $nom_table): array
+{
+    $res_requete = executer_requete_mysql('SHOW INDEX FROM ' . inst($nom_table) . ';');
+    $liste = array();
+    while ($row_requete = mysqli_fetch_array($res_requete, MYSQLI_ASSOC)) {
+        if ($row_requete['Key_name'] == 'PRIMARY') {
+            $liste[$row_requete['Column_name']] = $row_requete['Column_name'];
+        }
+    }
+    mysqli_free_result($res_requete);
+    return $liste;
+}
+
+/**
+ * @param string $type_mysql
+ * @return string
+ */
+function typeMyql2Sql(string $type_mysql): string
 {
     $type_sql = '';
     if (substr($type_mysql, 0, 4) == 'int(') {
@@ -769,6 +943,8 @@ function typeMyql2Sql($type_mysql)
         $type_sql = 'DATE';
     } elseif ($type_mysql == 'double') {
         $type_sql = 'DOUBLE';
+    } elseif ($type_mysql == 'float') {
+        $type_sql = 'FLOAT';
     } elseif ($type_mysql == 'datetime') {
         $type_sql = 'DATETIME';
     } elseif ($type_mysql == 'tinyint(1)') {
@@ -783,72 +959,491 @@ function generer_la_base()
     if (! $cache_systeme->read('generer_base_ok')) {
         include __DIR__ . '/tables/monframework/mf_generer_db.php';
         $cache_systeme->write('generer_base_ok', true);
+        // Fichier de config
+        global $lang_standard, $mf_initialisation, $mf_dictionnaire_db, $mf_type_table_enfant;
+        $txt = '<?php declare(strict_types=1);' . PHP_EOL;
+        foreach ($mf_dictionnaire_db as $key => &$value) {
+            if (isset($lang_standard["{$key}_"]) && $value['type'] == 'INT') {
+                $choice = $lang_standard["{$key}_"];
+                $txt .= PHP_EOL . "// $key" . PHP_EOL;
+                foreach ($choice as $code => $label) {
+                    $label = strtr($label, ['(' => '', ')' => '', '%' => 'P']);
+                    $label = strtoupper(mf_string_formatage_variable("{$key}_{$label}"));
+                    $txt .= "define('$label', $code);" . PHP_EOL;
+                }
+            }
+        }
+        unset($value);
+        if (! file_exists(__DIR__ . '/constantes_systeme_auto.php')) {
+            file_put_contents(__DIR__ . '/constantes_systeme_auto.php', $txt);
+        } else {
+            if (file_get_contents(__DIR__ . '/constantes_systeme_auto.php') != $txt) {
+                file_put_contents(__DIR__ . '/constantes_systeme_auto.php', $txt);
+            }
+        }
+        // Génération des classes
+        $doss = __DIR__ . "/rows/"; if (! file_exists($doss)) { mkdir($doss); }
+        $doss = __DIR__ . "/rows/monframework/"; if (! file_exists($doss)) { mkdir($doss); }
+        // Functions
+        function lister_colonnes_db($entite, $type_entite) {
+            $l = [];
+            global $mf_dictionnaire_db;
+            $i = 0;
+            foreach ($mf_dictionnaire_db as $colonne => $infos) {
+                if ($infos['entite'] == $entite && $infos['src'] == 'db') {
+                    if ($type_entite != 'entite' || $i>0) {
+                        $l[$colonne] = $infos;
+                    }
+                    $i++;
+                }
+            }
+            return $l;
+        }
+        function lister_colonnes_compl($entite) {
+            $l = [];
+            global $mf_dictionnaire_db;
+            foreach ($mf_dictionnaire_db as $colonne => $infos) {
+                if ($infos['entite'] == $entite && $infos['src'] == 'compl') {
+                    $l[$colonne] = $infos;
+                }
+            }
+            return $l;
+        }
+        function declaration_colonnes_parentes_recursive($entite) {
+            global $mf_type_table_enfant;
+            $from = [];
+            if ($mf_type_table_enfant[$entite] == 'entite') {
+                $l = mf_get_liste_tables_parents($entite);
+                foreach ($l as $parent_1) {
+                    $l2 = mf_get_liste_tables_parents($parent_1);
+                    foreach ($l2 as $parent_2) {
+                        $from[$parent_2] = $parent_1;
+                    }
+                    $from2 = declaration_colonnes_parentes_recursive($parent_1);
+                    foreach ($from2 as $b => $a) {
+                        $from[$b] = $a;
+                    }
+                }
+            }
+            return $from;
+        }
+
+        // Génration
+        foreach ($mf_type_table_enfant as $entite => $type_entite) {
+            // Génération de la classe
+            $txt = '<?php declare(strict_types=1);' . PHP_EOL;
+            $txt .= PHP_EOL;
+            $txt .= "/*" . PHP_EOL;
+            $txt .= "    +------------------------------+" . PHP_EOL;
+            $txt .= "    |  NE PAS MODIFIER CE FICHIER  |" . PHP_EOL;
+            $txt .= "    +------------------------------+" . PHP_EOL;
+            $txt .= " */" . PHP_EOL;
+            $txt .= PHP_EOL;
+            $txt .= "class monframework_{$entite}" . PHP_EOL;
+            $txt .= "{" . PHP_EOL;
+            $txt .= PHP_EOL;
+
+            // Partie privée
+            // Key
+            $txt .= '    // Key' . PHP_EOL;
+            if ($type_entite == 'entite') {
+                $txt .= '    private $Code_' . $entite . ';' . PHP_EOL;
+            } else {
+                $l = mf_get_liste_tables_parents($entite);
+                foreach ($l as $parent) {
+                    $txt .= '    private $Code_' . $parent . ';' . PHP_EOL;
+                }
+            }
+            $txt .= PHP_EOL;
+
+            // Column
+            $l = lister_colonnes_db($entite, $type_entite);
+            if (count($l) > 0) {
+                $txt .= '    // Column' . PHP_EOL;
+                foreach ($l as $colonne => $infos) {
+                    if ($infos['type'] == 'TINYTEXT' || $infos['type'] == 'TEXT' || $infos['type'] == 'MEDIUMTEXT' || $infos['type'] == 'LONGTEXT' || $infos['type'] == 'VARCHAR' || $infos['type'] == 'TIMESTAMP' || $infos['type'] == 'DATETIME' || $infos['type'] == 'DATE') {
+                        $c = "'" . str_replace("'", "\'", $mf_initialisation[$colonne]) . "'";
+                    } elseif ($infos['type'] == 'BOOL') {
+                        $c = ($mf_initialisation[$colonne] == 1 ? 'true' : 'false');
+                    } else {
+                        if (isset($mf_initialisation[$colonne])) {
+                            $c = ($mf_initialisation[$colonne] === null ? 'null' : $mf_initialisation[$colonne] . (is_float($mf_initialisation[$colonne]) ? '.' : ''));
+                        } else {
+                            $c = 'null';
+                        }
+                    }
+                    if ($c === '') { // Si mot de passe
+                        $c = "''";
+                    }
+                    $txt .= "    private $$colonne = $c;" . PHP_EOL;
+                }
+                $txt .= PHP_EOL;
+            }
+
+            // Referecences
+            if ($type_entite == 'entite') {
+                $l = mf_get_liste_tables_parents($entite);
+                if (count($l)>0) {
+                    $txt .= '    // Referecences' . PHP_EOL;
+                    foreach ($l as $parent) {
+                        $txt .= '    private $Code_' . $parent . ';' . PHP_EOL;
+                    }
+                    $txt .= PHP_EOL;
+                }
+            }
+
+            // Indirect references
+            $from = declaration_colonnes_parentes_recursive($entite);
+            if (count($from) > 0) {
+                foreach ($l as $elem) {
+                    if (isset($from[$elem])) {
+                        unset($from[$elem]);
+                    }
+                }
+            }
+            if (count($from) > 0) {
+                $txt .= '    // Indirect references' . PHP_EOL;
+                foreach ($from as $parent_2 => $parent_1) {
+                    $txt .= '    private $Code_' . $parent_2 . ';' . PHP_EOL;
+                }
+                $txt .= PHP_EOL;
+            }
+
+            // Completion
+            $l_compl = lister_colonnes_compl($entite);
+            if (count($l_compl)>0) {
+                $txt .= "    // Completion" . PHP_EOL;
+                foreach ($l_compl as $colonne => $infos) {
+                    $txt .= "    private $$colonne;" . PHP_EOL;
+                }
+                $txt .= PHP_EOL;
+            }
+
+            // Lecture
+            $arguments = '';
+            $arguments_opt = '';
+            $arguments_2 = '';
+            $arguments_first = '';
+            $test_parametres_enseignes = '';
+            if ($type_entite == 'entite') {
+                $arguments = 'int $Code_' . $entite;
+                $arguments_opt = '?int $Code_' . $entite . ' = null';
+                $arguments_2 = '$Code_' . $entite;
+                $arguments_first = 'Code_' . $entite;
+                $test_parametres_enseignes = '$Code_' . $entite . ' !== null';
+            } else {
+                $l = mf_get_liste_tables_parents($entite);
+                foreach ($l as $parent) {
+                    $arguments .= ($arguments != '' ? ', ' : '') . 'int $Code_' . $parent;
+                    $arguments_opt .= ($arguments_opt != '' ? ', ' : '') . '?int $Code_' . $parent . ' = null';
+                    $arguments_2 .= ($arguments_2 != '' ? ', ' : '') . '$Code_' . $parent;
+                    $test_parametres_enseignes .= ($test_parametres_enseignes != '' ? ' && ' : '') . '$Code_' . $parent . ' !== null';
+                    if ($arguments_first == '') {
+                        $arguments_first = 'Code_' . $parent;
+                    }
+                }
+            }
+
+            $txt .= '    /**' . PHP_EOL;
+            $txt .= "     * $entite constructor." . PHP_EOL;
+            if ($type_entite == 'entite') {
+                $txt .= '     * @param int|null $Code_' . $entite . PHP_EOL;
+            } else {
+                $l = mf_get_liste_tables_parents($entite);
+                foreach ($l as $parent) {
+                    $txt .= '     * @param int|null $Code_' . $parent . PHP_EOL;
+                }
+            }
+            $txt .= '     */' . PHP_EOL;
+            $txt .= '    function __construct(' . $arguments_opt . ')' . PHP_EOL;
+            $txt .= '    {' . PHP_EOL;
+            $txt .= '        if (' . $test_parametres_enseignes . ') {' . PHP_EOL;
+            $txt .= '            $this->read_from_db(' . $arguments_2 . ');' . PHP_EOL;
+            $txt .= '        }' . PHP_EOL;
+            $txt .= '    }' . PHP_EOL;
+            $txt .= PHP_EOL;
+
+            $txt .= '    // Read' . PHP_EOL;
+            $txt .= '    public function read_from_db(' . $arguments . '): bool' . PHP_EOL;
+            $txt .= '    {' . PHP_EOL;
+            $txt .= '        $db = new DB();' . PHP_EOL;
+            $txt .= '        $' . $entite . ' = $db->' . $entite . '()->mf_get_2(' . $arguments_2 . ');' . PHP_EOL;
+            $txt .= '        if (isset($' . $entite . '[\'' . $arguments_first . '\'])) {' . PHP_EOL;
+            foreach ($mf_dictionnaire_db as $colonne => $infos) {
+                if ($infos['entite'] == $entite && $infos['src'] == 'db') {
+                    $txt .= '            $this->' . $colonne . ' = $' . $entite . "['$colonne'];" . PHP_EOL;
+                }
+            }
+            $l = mf_get_liste_tables_parents($entite);
+            foreach ($l as $parent) {
+                $txt .= '            $this->Code_' . $parent . ' = $' . $entite . "['Code_$parent'];" . PHP_EOL;
+            }
+            if (count($l_compl) > 0) {
+                $txt .= '            $this->completion();' . PHP_EOL;
+            }
+            if (count($from) > 0) {
+                $txt .= '            $this->genealogy();' . PHP_EOL;
+            }
+            $txt .= '            return true;' . PHP_EOL;
+            $txt .= '        } else {' . PHP_EOL;
+            $txt .= '            return false;' . PHP_EOL;
+            $txt .= '        }' . PHP_EOL;
+            $txt .= '    }' . PHP_EOL;
+            $txt .= PHP_EOL;
+
+            // Gettteur et setteur
+            $txt .= PHP_EOL;
+            $txt .= '    // Getters & setters' . PHP_EOL;
+            $txt .= PHP_EOL;
+            $txt .= '    // Key' . PHP_EOL;
+            if ($type_entite == 'entite') {
+                $txt .= '    public function get_Code_' . $entite . '(): int { return $this->Code_' . $entite . '; }' . PHP_EOL;
+            } else {
+                $l = mf_get_liste_tables_parents($entite);
+                foreach ($l as $parent) {
+                    $txt .= '    // Code_' . $parent . PHP_EOL;
+                    $txt .= '    public function get_Code_' . $parent . '(): int { return $this->Code_' . $parent . '; }' . PHP_EOL;
+                }
+            }
+            $txt .= PHP_EOL;
+
+            $write = false;
+            $l = lister_colonnes_db($entite, $type_entite);
+            if (count($l)>0) {
+                $txt .= '    // Columns' . PHP_EOL;
+                foreach ($l  as $colonne => $infos) {
+                    $colonne_synthese = substr($colonne, strlen($entite) + 1);
+                    $txt .= '    // ' . $colonne . PHP_EOL;
+                    $c = mf_type_sql2php($infos['type']);
+                    $txt .= '    public function get_' . $colonne_synthese . '(): ' . $c . ' { return $this->' . $colonne . '; }' . PHP_EOL;
+                    $txt .= '    public function set_' . $colonne_synthese . '(' . $c . ' $' . $colonne . ') ' . ' { $this->' . $colonne . ' = $' . $colonne . ';' . (count($l_compl) > 0 ? ' $this->completion();' : '' ) . ' }' . PHP_EOL;
+                    $write = true;
+                }
+                $txt .= PHP_EOL;
+            }
+
+            if ($type_entite == 'entite') {
+                $l = mf_get_liste_tables_parents($entite);
+                if (count($l)>0) {
+                    $txt .= '    // Referecences' . PHP_EOL;
+                    foreach ($l as $parent) {
+                        $txt .= '    // Code_' . $parent . PHP_EOL;
+                        $txt .= '    public function get_Code_' . $parent . '(): int { return $this->Code_' . $parent . '; }' . PHP_EOL;
+                        $txt .= '    public function set_Code_' . $parent . '(int $Code_' . $parent . ') { $this->Code_' . $parent . ' = $Code_' . $parent . ';' . (count($l_compl) > 0 ? ' $this->completion();' : '' ) . (count($from) > 0 ? ' $this->genealogy();' : '') . ' }' . PHP_EOL;
+                        $write = true;
+                    }
+                    $txt .= PHP_EOL;
+                }
+            }
+
+            if ($write) {
+                // Ecriture
+                $txt .= '    // Write in DB' . PHP_EOL;
+                $txt .= '    public function write(bool $force=false): array' . PHP_EOL;
+                $txt .= '    {' . PHP_EOL;
+                $txt .= '        $' . $entite . ' = [];' . PHP_EOL;
+                foreach ($mf_dictionnaire_db as $colonne => $infos) {
+                    if ($infos['entite'] == $entite && $infos['src'] == 'db') {
+                        $txt .= '        $' . $entite . "['$colonne']" . ' = $this->' . $colonne . ';' . PHP_EOL;
+                    }
+                }
+                $l = mf_get_liste_tables_parents($entite);
+                foreach ($l as $parent) {
+                    $txt .= '        $' . $entite . "['Code_$parent']" . ' = $this->Code_' . $parent . ';' . PHP_EOL;
+                }
+                $txt .= '        $db = new DB();' . PHP_EOL;
+                if ($type_entite == 'entite') {
+                    $txt .= '        return $db->' . $entite . '()->mf_modifier_2([$this->Code_' . $entite . ' => $' . $entite . '], $force);' . PHP_EOL;
+                } else {
+                    $txt .= '        return $db->' . $entite . '()->mf_modifier_2([$' . $entite . '], $force);' . PHP_EOL;
+                }
+                $txt .= '    }' . PHP_EOL;
+                $txt .= PHP_EOL;
+            }
+
+            if ($type_entite == 'entite') {
+                // Copy
+                $txt .= '    // Write as new in DB' . PHP_EOL;
+                $txt .= '    public function write_as_new(bool $force=false): int' . PHP_EOL;
+                $txt .= '    {' . PHP_EOL;
+                $txt .= '        $' . $entite . ' = [];' . PHP_EOL;
+                foreach ($mf_dictionnaire_db as $colonne => $infos) {
+                    if ($infos['entite'] == $entite && $infos['src'] == 'db') {
+                        if ($colonne != "Code_$entite") {
+                            $txt .= '        $' . $entite . "['$colonne']" . ' = $this->' . $colonne . ';' . PHP_EOL;
+                        }
+                    }
+                }
+                $l = mf_get_liste_tables_parents($entite);
+                foreach ($l as $parent) {
+                    $txt .= '        $' . $entite . "['Code_$parent']" . ' = $this->Code_' . $parent . ';' . PHP_EOL;
+                }
+                $txt .= '        $db = new DB();' . PHP_EOL;
+                $txt .= '        $r = $db->' . $entite . '()->mf_ajouter_2($' . $entite . ', $force);' . PHP_EOL;
+                $txt .= '        return $r[\'Code_' . $entite . '\'];' . PHP_EOL;
+                $txt .= '    }' . PHP_EOL;
+                $txt .= PHP_EOL;
+            }
+
+            // Indirect references
+            if (count($from) > 0) {
+                $txt .= '    // Indirect references' . PHP_EOL;
+                foreach ($from as $parent_2 => $parent_1) {
+                    $txt .= '    // Code_' . $parent_2 . PHP_EOL;
+                    $txt .= '    public function get_Code_' . $parent_2 . '(): int { return $this->Code_' . $parent_2 . '; }' . PHP_EOL;
+                }
+                $txt .= PHP_EOL;
+            }
+
+            // Completion
+            if (count($l_compl) > 0) {
+                $txt .= "    // Completion" . PHP_EOL;
+                foreach ($l_compl as $colonne => $infos) {
+                    $colonne_synthese = substr($colonne, strlen($entite) + 1);
+                    $txt .= '    // ' . $colonne . PHP_EOL;
+                    $c = mf_type_sql2php($infos['type']);
+                    $txt .= '    public function get_' . $colonne_synthese . '(): ' . $c . ' { return $this->' . $colonne . '; }' . PHP_EOL;
+                }
+                $txt .= PHP_EOL;
+
+                $txt .= '    private function completion()' . PHP_EOL;
+                $txt .= '    {' . PHP_EOL;
+                $txt .= '        $donnees = [];' . PHP_EOL;
+                $l = lister_colonnes_db($entite, '');
+                foreach ($l as $colonne => $infos) {
+                    $txt .= '        $donnees[\'' . $colonne . '\'] = $this->' . $colonne . ';' . PHP_EOL;
+                }
+                $l = mf_get_liste_tables_parents($entite);
+                foreach ($l as $parent) {
+                    $txt .= '        $donnees[\'Code_' . $parent . '\'] = $this->Code_' . $parent . ';' . PHP_EOL;
+                }
+                foreach ($l_compl as $colonne => $infos) {
+                    $txt .= '        $donnees[\'' . $colonne . '\'] = $this->' . $colonne . ';' . PHP_EOL;
+                }
+                $txt .= '        Hook_' . $entite . '::completion($donnees, 0);' . PHP_EOL;
+                foreach ($l_compl as $colonne => $infos) {
+                    $txt .= '        $this->' . $colonne . ' = $donnees[\'' . $colonne . '\'];' . PHP_EOL;
+                }
+                $txt .= '    }' . PHP_EOL;
+                $txt .= PHP_EOL;
+            }
+
+            // Indirect references
+            if (count($from) > 0) {
+                $txt .= '    // Indirect references' . PHP_EOL;
+                $txt .= '    private function genealogy()' . PHP_EOL;
+                $txt .= '    {' . PHP_EOL;
+                $txt .= '        $db = new DB();' . PHP_EOL;
+                foreach ($from as $parent_2 => $parent_1) {
+                    $txt .= '        $this->Code_' . $parent_2 . ' = $db->' . $parent_1 . '()->mf_convertir_Code_' . $parent_1 . '_vers_Code_' . $parent_2 . '($this->Code_' . $parent_1 . ');' . PHP_EOL;
+                }
+                $txt .= '    }' . PHP_EOL;
+                $txt .= PHP_EOL;
+            }
+
+            $txt .= "}" . PHP_EOL;
+
+            // Enregistremet
+            $doss = __DIR__ . "/rows/monframework/monframework_{$entite}.php";
+            if (! file_exists($doss)) {
+                file_put_contents($doss, $txt);
+            } else {
+                if (file_get_contents($doss) != $txt) {
+                    file_put_contents($doss, $txt);
+                }
+            }
+
+            //
+            $txt = '<?php declare(strict_types=1);' . PHP_EOL;
+            $txt .= PHP_EOL;
+            $txt .= "class {$entite} extends monframework_{$entite}" . PHP_EOL;
+            $txt .= "{" . PHP_EOL;
+            $txt .= PHP_EOL;
+            $txt .= "}" . PHP_EOL;
+
+            // Enregistremet
+            $doss = __DIR__ . "/rows/$entite.php";
+            if (! file_exists($doss)) {
+                file_put_contents($doss, $txt);
+            }
+        }
+    }
+    // Construction du worker (un worker par domaine)
+    $source = __DIR__ . "/cron/mf_cron_run_script.txt";
+    global $mf_get_HTTP_HOST;
+    $dest = __DIR__ . "/cron/mf_cron_run_$mf_get_HTTP_HOST.php";
+    $content = @file_get_contents($source);
+    $content = str_replace('{host}', $mf_get_HTTP_HOST, $content);
+    if (! file_exists($dest) || file_get_contents($dest) != $content) {
+        file_put_contents($dest, $content);
     }
 }
-generer_la_base();
 
-function format_sql($colonne, $valeur)
+function format_sql(string $colonne, $valeur): string
 {
-    $script_sql = '';
+    if (is_null($valeur)) {
+        return 'NULL';
+    }
     global $mf_dictionnaire_db;
     if (isset($mf_dictionnaire_db[$colonne])) {
         switch ($mf_dictionnaire_db[$colonne]['type']) {
             case 'INT':
-                $script_sql = round($valeur);
-                break;
+            case 'BIGINT':
+            case 'INTEGER':
+                return (string) (int) $valeur;
+            case 'TINYTEXT':
+            case 'TEXT':
+            case 'MEDIUMTEXT':
+            case 'LONGTEXT':
             case 'VARCHAR':
-                $script_sql = '\'' . text_sql($valeur) . '\'';
-                break;
+                $valeur = text_sql((string) $valeur);
+                return "'$valeur'";
             case 'BOOL':
-                $script_sql = ($valeur == 1 ? 1 : 0);
-                break;
+                return ($valeur == true ? '1' : '0');
+            case 'TIMESTAMP':
             case 'DATETIME':
                 $valeur = format_datetime($valeur);
-                $script_sql = ($valeur != '' ? '\'' . $valeur . '\'' : 'NULL');
-                break;
-            case 'TIMESTAMP':
-                $valeur = format_datetime($valeur);
-                $script_sql = ($valeur != '' ? '\'' . $valeur . '\'' : 'NULL');
-                break;
-            case 'TINYTEXT':
-                $script_sql = '\'' . text_sql($valeur) . '\'';
-                break;
-            case 'TEXT':
-                $script_sql = '\'' . text_sql($valeur) . '\'';
-                break;
-            case 'MEDIUMTEXT':
-                $script_sql = '\'' . text_sql($valeur) . '\'';
-                break;
-            case 'LONGTEXT':
-                $script_sql = '\'' . text_sql($valeur) . '\'';
-                break;
+                return ($valeur != '' ? "'$valeur'" : 'NULL');
             case 'DOUBLE':
-                $script_sql = floatval(str_replace(',', '.', $valeur));
-                break;
+                return (string) mf_significantDigit(floatval(str_replace(',', '.', $valeur)), 15);
             case 'FLOAT':
-                $script_sql = floatval(str_replace(',', '.', $valeur));
-                break;
+                return (string) mf_significantDigit(floatval(str_replace(',', '.', $valeur)), 6);
             case 'DATE':
                 $valeur = format_date($valeur);
-                $script_sql = ($valeur != '' ? '\'' . $valeur . '\'' : 'NULL');
-                break;
+                return ($valeur != '' ? "'$valeur'" : 'NULL');
             case 'PASSWORD':
                 $salt = salt(100);
-                $script_sql = '\'' . md5($valeur . $salt) . ':' . $salt . '\'';
-                break;
+                $valeur = md5($valeur . $salt);
+                return "'$valeur:$salt'";
             case 'TIME':
                 $valeur = format_time($valeur);
-                $script_sql = ($valeur != '' ? '\'' . $valeur . '\'' : 'NULL');
-                break;
+                return ($valeur != '' ? "'$valeur'" : 'NULL');
         }
     }
-    return $script_sql;
+    return 'NULL';
+}
+
+function mf_type_sql2php(string $type_sql, bool $nullable = true): string
+{
+    switch ($type_sql) {
+        case 'INT':
+        case 'BIGINT':
+        case 'INTEGER':
+            return ($nullable ? '?' : '') . 'int';
+        case 'BOOL':
+            return ($nullable ? '?' : '') . 'bool';
+        case 'FLOAT':
+        case 'DOUBLE':
+            return ($nullable ? '?' : '') . 'float';
+        default:
+            return "string";
+    }
 }
 
 $etsl_colonne_tri = '';
 $etsl_mode_colonne_tri = '';
-$etsl_position_dans_langue;
-$etsl_initialisation;
+$etsl_position_dans_langue = array();
+$etsl_initialisation = false;
 
 function effectuer_tri_suivant_langue(&$liste, $colonne, $tri)
 {
@@ -857,23 +1452,22 @@ function effectuer_tri_suivant_langue(&$liste, $colonne, $tri)
     $etsl_mode_colonne_tri = $tri;
     $etsl_initialisation = false;
     if (! function_exists('cmp')) {
-
-        function cmp($a, $b)
-        {
+        function cmp($a, $b) {
             global $lang_standard, $etsl_colonne_tri, $etsl_mode_colonne_tri, $etsl_position_dans_langue, $etsl_initialisation;
             if (! $etsl_initialisation) {
                 $etsl_position_dans_langue = array();
                 if (isset($lang_standard[$etsl_colonne_tri . '_'])) {
                     $i = 0;
-                    foreach ($lang_standard[$etsl_colonne_tri . '_'] as $code => $val) {
+                    foreach ($lang_standard[$etsl_colonne_tri . '_'] as $code => &$val) {
                         $etsl_position_dans_langue[$code] = $i;
                         $i ++;
                     }
+                    unset($val);
                 }
                 $etsl_initialisation = true;
             }
-            $v_a = isset($etsl_position_dans_langue[$a[$etsl_colonne_tri]]) ? $etsl_position_dans_langue[$a[$etsl_colonne_tri]] : 0;
-            $v_b = isset($etsl_position_dans_langue[$b[$etsl_colonne_tri]]) ? $etsl_position_dans_langue[$b[$etsl_colonne_tri]] : 0;
+            $v_a = isset($a[$etsl_colonne_tri]) && isset($etsl_position_dans_langue[$a[$etsl_colonne_tri]]) ? $etsl_position_dans_langue[$a[$etsl_colonne_tri]] : 0;
+            $v_b = isset($b[$etsl_colonne_tri]) && isset($etsl_position_dans_langue[$b[$etsl_colonne_tri]]) ? $etsl_position_dans_langue[$b[$etsl_colonne_tri]] : 0;
             if ($v_a == $v_b) {
                 return 0;
             }
@@ -956,7 +1550,6 @@ function prec_suiv(&$liste, $code_central)
 {
     $prec = array();
     $suiv = array();
-    $trouve = false;
     $suiv_a_initialiser = false;
     $prec_initialiser = false;
     foreach ($liste as $Code_temp => &$value) {
@@ -987,7 +1580,7 @@ function vue_api_echo(&$donnees)
             echo json_encode($donnees);
             break;
         case 'tableau':
-            echo '<!DOCTYPE html><html><head><meta charset=\'UTF-8\'><title></title></head><body>' . vue_tableau_html($donnees) . '</body></html>';
+            echo '<!DOCTYPE html><html lang="fr"><head><meta charset=\'UTF-8\'><title></title></head><body>' . vue_tableau_html($donnees) . '</body></html>';
             break;
         default:
             echo json_encode($donnees);
@@ -1031,21 +1624,26 @@ function controle_parametre($DB_name, $valeur)
     global $lang_standard;
     $valeur = round($valeur);
     if (isset($lang_standard[$DB_name . '_'])) {
-        foreach ($lang_standard[$DB_name . '_'] as $key => $value) {
+        foreach ($lang_standard[$DB_name . '_'] as $key => &$value) {
             if ($key == $valeur)
                 return true;
         }
+        unset($value);
     }
     return false;
 }
 
-function text_sql($txt)
+/**
+ * Formatage d'une chaine pour l'intégrer dans une requête SQL
+ * @param string $txt
+ * @return string
+ */
+function text_sql(string $txt): string
 {
     global $link;
     if ($link == null) {
         connexion_db($link);
     }
-
     return mysqli_real_escape_string($link, $txt);
 }
 
@@ -1077,20 +1675,24 @@ function nom_fichier_formate(string $string): string
     return $string;
 }
 
-function format_date($date)
+/**
+ * @param string $date_str
+ * @return string
+ */
+function format_date(string $date_str): string
 {
-    $d = explode('-', $date);
-    $AAAA = (isset($d[0]) ? round($d[0]) : 0);
-    $MM = (isset($d[1]) ? round($d[1]) : 0);
-    $JJ = (isset($d[2]) ? round($d[2]) : 0);
-    if (strlen($MM) == 1)
-        $MM = '0' . $MM;
-    if (strlen($JJ) == 1)
-        $JJ = '0' . $JJ;
-    if (10000 > $AAAA && $AAAA > 999 && 13 > $MM && $MM > 0 && 32 > $JJ && $JJ > 0 && checkdate($MM, $JJ, $AAAA))
-        return $AAAA . '-' . $MM . '-' . $JJ;
-    else
-        return '';
+    $d = explode('-', $date_str);
+    $AAAA = (isset($d[0]) ? intval($d[0]) : 0);
+    $MM = (isset($d[1]) ? intval($d[1]) : 0);
+    $JJ = (isset($d[2]) ? intval($d[2]) : 0);
+    if (1000 <= $AAAA && $AAAA <= 9999) {
+        if (checkdate($MM, $JJ, $AAAA)) {
+            if ($MM < 10) { $MM = '0' . $MM; }
+            if ($JJ < 10) { $JJ = '0' . $JJ; }
+            return "$AAAA-$MM-$JJ";
+        }
+    }
+    return '';
 }
 
 function Sql_Format_Liste($liste)
@@ -1131,31 +1733,38 @@ function format_datetime($datetime)
         return '';
 }
 
-function format_time($time)
+/**
+ * @param string $time
+ * @return string
+ */
+function format_time(string $time): string
 {
     $time = str_replace('Z', '', $time);
     $time = substr($time, - 8);
     $d = explode(':', $time);
-    $hh = (isset($d[0]) ? round($d[0]) : 0);
-    $mm = (isset($d[1]) ? round($d[1]) : 0);
-    $ss = (isset($d[2]) ? round($d[2]) : 0);
-    if (strlen($hh) == 1) {
-        $hh = '0' . $hh;
-    }
-    if (strlen($mm) == 1) {
-        $mm = '0' . $mm;
-    }
-    if (strlen($ss) == 1) {
-        $ss = '0' . $ss;
-    }
+    $hh = (isset($d[0]) ? intval($d[0]) : 0);
+    $mm = (isset($d[1]) ? intval($d[1]) : 0);
+    $ss = (isset($d[2]) ? intval($d[2]) : 0);
     if (24 > $hh && $hh >= 0 && 60 > $mm && $mm >= 0 && 60 > $ss && $ss >= 0) {
+        if ($hh < 10) {
+            $hh = "0$hh";
+        }
+        if ($mm < 10) {
+            $mm = "0$mm";
+        }
+        if ($ss < 1) {
+            $ss = "0$ss";
+        }
         return $hh . ':' . $mm . ':' . $ss;
-    } else {
-        return '';
     }
+    return '';
 }
 
-function conversion_heure_vers_secondes($heure_str)
+/**
+ * @param string $heure_str
+ * @return float|null
+ */
+function conversion_heure_vers_secondes(string $heure_str): ?float
 {
     $heure_str = format_time($heure_str);
     if ($heure_str != '') {
@@ -1164,10 +1773,14 @@ function conversion_heure_vers_secondes($heure_str)
         $s = round(substr($heure_str, 6, 2));
         return ($h * 3600 + $m * 60 + $s);
     }
-    return false;
+    return null;
 }
 
-function conversion_secondes_vers_heure($nb_secondes)
+/**
+ * @param int $nb_secondes
+ * @return string
+ */
+function conversion_secondes_vers_heure(int $nb_secondes): string
 {
     $nb_secondes = round($nb_secondes);
     if ($nb_secondes < 0)
@@ -1191,170 +1804,314 @@ function conversion_secondes_vers_heure($nb_secondes)
     return $hh . ':' . $mm . ':' . $ss;
 }
 
-function date_debut_annee($date_str)
+/**
+ * @param string $date_str
+ * @return string
+ */
+function date_debut_annee(string $date_str): string
 {
     $date_str = format_date($date_str);
     $date_str = substr($date_str, 0, 5) . '01-01';
     return format_date($date_str);
 }
 
-function date_fin_annee($date_str)
+/**
+ * @param string $date_str
+ * @return string
+ */
+function date_fin_annee(string $date_str): string
 {
     $date_str = format_date($date_str);
     $date_str = substr($date_str, 0, 5) . '12-31';
     return format_date($date_str);
 }
 
-function date_debut_mois($date_str)
+/**
+ * @param string $date_str
+ * @return string
+ */
+function date_debut_mois(string $date_str): string
 {
     $date_str = format_date($date_str);
     $date_str = substr($date_str, 0, 8) . '01'; // pour etre certain de prendre le premier jour du mois
     return $date_str;
 }
 
-function date_fin_mois($date_str)
+/**
+ * @param string $date_str
+ * @return string
+ */
+function date_fin_mois(string $date_str): string
 {
     $date_str = format_date($date_str);
     if ($date_str != '') {
         $date_str = substr($date_str, 0, 8) . '01'; // pour etre certain de prendre le premier jour du mois
-        $date = new DateTime($date_str);
-        $diff1Month = new DateInterval('P1M');
-        $date->add($diff1Month); // on ajouter un mois
-        $diff1Day = new DateInterval('P1D');
-        $date->sub($diff1Day); // on retire un jour
-        return $date->format('Y-m-d');
+        try {
+            $date = new DateTime($date_str);
+            $diff1Month = new DateInterval('P1M');
+            $date->add($diff1Month); // on ajouter un mois
+            $diff1Day = new DateInterval('P1D');
+            $date->sub($diff1Day); // on retire un jour
+            return $date->format('Y-m-d');
+        } catch (Exception $e) {
+            set_log($e->getTraceAsString());
+            return '';
+        }
     }
     return '';
 }
 
-function date_debut_semaine($date_str)
+/**
+ * @param string $date_str
+ * @return string
+ */
+function date_debut_semaine(string $date_str): string
 {
     $date_str = format_date($date_str);
-    $date = new DateTime($date_str);
-    $diff1Day = new DateInterval('P1D');
-    while ($date->format('w') != 1) {
-        $date->sub($diff1Day);
+    try {
+        $date = new DateTime($date_str);
+        $diff1Day = new DateInterval('P1D');
+        while ($date->format('w') != 1) {
+            $date->sub($diff1Day);
+        }
+        return $date->format('Y-m-d');
+    } catch (Exception $e) {
+        set_log($e->getTraceAsString());
+        return '';
     }
-    return $date->format('Y-m-d');
 }
 
-function date_fin_semaine($date_str)
+/**
+ * @param string $date_str
+ * @return string
+ */
+function date_fin_semaine(string $date_str): string
 {
     $date_str = format_date($date_str);
-    $date = new DateTime($date_str);
-    $diff1Day = new DateInterval('P1D');
-    while ($date->format('w') != 0) {
-        $date->add($diff1Day);
+    try {
+        $date = new DateTime($date_str);
+        $diff1Day = new DateInterval('P1D');
+        while ($date->format('w') != 0) {
+            $date->add($diff1Day);
+        }
+        return $date->format('Y-m-d');
+    } catch (Exception $e) {
+        set_log($e->getTraceAsString());
+        return '';
     }
-    return $date->format('Y-m-d');
 }
 
-function date_ajouter_nb_jours($date_str, $nb_jours)
+/**
+ * Convertion d'une date en temps unix
+ * @param string $date_str
+ * @return int|null
+ */
+
+function date_vers_unix_sec(string $date_str): ?int
+{
+    $date_str = format_date($date_str);
+    if ($date_str != '') {
+        try {
+            $date = new DateTime($date_str);
+            return (int) $date->format('U');
+        } catch (Exception $e) {
+            set_log($e->getTraceAsString());
+            return null;
+        }
+    } else {
+        return null;
+    }
+}
+
+/**
+ * @param string $date_str
+ * @param int $nb_jours
+ * @return string
+ */
+function date_ajouter_nb_jours(string $date_str, int $nb_jours): string
 {
     if ($nb_jours < 0) {
-        return date_soustraire_nb_jours($date_str, - $nb_jours);
+        return date_soustraire_nb_jours($date_str, -$nb_jours);
     }
-    $date = new DateTime(format_date($date_str));
-    $diff1Day = new DateInterval('P1D');
-    $nb_jours = round($nb_jours);
-    for ($n = 0; $n < $nb_jours; $n ++) {
-        $date->add($diff1Day);
+    try {
+        $date = new DateTime(format_date($date_str));
+        $date->add(new DateInterval("P{$nb_jours}D"));
+        return $date->format('Y-m-d');
+    } catch (Exception $e) {
+        set_log($e->getTraceAsString());
+        return '';
     }
-    return $date->format('Y-m-d');
 }
 
-function date_soustraire_nb_jours($date_str, $nb_jours)
+/**
+ * @param string $date_str
+ * @param int $nb_jours
+ * @return string
+ */
+function date_soustraire_nb_jours(string $date_str, int $nb_jours): string
 {
     if ($nb_jours < 0) {
-        return date_ajouter_nb_jours($date_str, - $nb_jours);
+        return date_ajouter_nb_jours($date_str, -$nb_jours);
     }
-    $date = new DateTime(format_date($date_str));
-    $diff1Day = new DateInterval('P1D');
-    $nb_jours = round($nb_jours);
-    for ($n = 0; $n < $nb_jours; $n ++) {
-        $date->sub($diff1Day);
+    try {
+        $date = new DateTime(format_date($date_str));
+        $date->sub(new DateInterval("P{$nb_jours}D"));
+        return $date->format('Y-m-d');
+    } catch (Exception $e) {
+        set_log($e->getTraceAsString());
+        return '';
     }
-    return $date->format('Y-m-d');
 }
 
-function datetime_ajouter_nb_jours($datetime_str, $nb_jours)
+/**
+ * @param string $datetime_str
+ * @param int $nb_jours
+ * @return string
+ */
+function datetime_ajouter_nb_jours(string $datetime_str, int $nb_jours): string
 {
     if ($nb_jours < 0) {
-        return datetime_soustraire_nb_jours($datetime_str, - $nb_jours);
+        return datetime_soustraire_nb_jours($datetime_str, -$nb_jours);
     }
-    $date = new DateTime(format_datetime($datetime_str));
-    $diff1Day = new DateInterval('P1D');
-    $nb_jours = round($nb_jours);
-    for ($n = 0; $n < $nb_jours; $n ++) {
-        $date->add($diff1Day);
+    try {
+        $date = new DateTime(format_datetime($datetime_str));
+        $diff1Day = new DateInterval('P1D');
+        $nb_jours = round($nb_jours);
+        for ($n = 0; $n < $nb_jours; $n ++) {
+            $date->add($diff1Day);
+        }
+        return $date->format('Y-m-d H:i:s');
+    } catch (Exception $e) {
+        set_log($e->getTraceAsString());
+        return '';
     }
-    return $date->format('Y-m-d H:i:s');
 }
 
-function datetime_soustraire_nb_jours($datetime_str, $nb_jours)
+/**
+ * @param string $datetime_str
+ * @param int $nb_jours
+ * @return string
+ */
+function datetime_soustraire_nb_jours(string $datetime_str, int $nb_jours): string
 {
     if ($nb_jours < 0) {
         return datetime_ajouter_nb_jours($datetime_str, - $nb_jours);
     }
-    $date = new DateTime(format_datetime($datetime_str));
-    $diff1Day = new DateInterval('P1D');
-    $nb_jours = round($nb_jours);
-    for ($n = 0; $n < $nb_jours; $n ++) {
-        $date->sub($diff1Day);
+    try {
+        $date = new DateTime(format_datetime($datetime_str));
+        $diff1Day = new DateInterval('P1D');
+        $nb_jours = round($nb_jours);
+        for ($n = 0; $n < $nb_jours; $n ++) {
+            $date->sub($diff1Day);
+        }
+        return $date->format('Y-m-d H:i:s');
+    } catch (Exception $e) {
+        set_log($e->getTraceAsString());
+        return '';
     }
-    return $date->format('Y-m-d H:i:s');
 }
 
-function datetime_tronquer_a_la_minute($datetime_str)
+/**
+ * @param string $datetime_str
+ * @return string
+ */
+function datetime_tronquer_a_la_minute(string $datetime_str): string
 {
     $datetime_str = format_datetime($datetime_str);
     return substr($datetime_str, 0, 17) . '00';
 }
 
-function datetime_ajouter_time($datetime_str, $time)
+/**
+ * @param string $datetime_str
+ * @param string $time
+ * @return string
+ */
+function datetime_ajouter_time(string $datetime_str, string $time): string
 {
-    $date = new DateTime(format_datetime($datetime_str));
-    $diff = new DateInterval('PT' . conversion_heure_vers_secondes($time) . 'S');
-    $date->add($diff);
-    return $date->format('Y-m-d H:i:s');
-}
-
-function datetime_ajouter_sec(string $datetime_str, int $sec)
-{
-    $date = new DateTime(format_datetime($datetime_str));
-    $sec = round($sec);
-    if ($sec < 0) {
-        datetime_soustraire_sec($datetime_str, (int) - $sec);
+    try {
+        $date = new DateTime(format_datetime($datetime_str));
+        $diff = new DateInterval('PT' . conversion_heure_vers_secondes($time) . 'S');
+        $date->add($diff);
+        return $date->format('Y-m-d H:i:s');
+    } catch (Exception $e) {
+        set_log($e->getTraceAsString());
+        return '';
     }
-    $diff = new DateInterval('PT' . $sec . 'S');
-    $date->add($diff);
-    return $date->format('Y-m-d H:i:s');
 }
 
-function datetime_soustraire_sec(string $datetime_str, int $sec)
+/**
+ * @param string $datetime_str
+ * @param int $sec
+ * @return string
+ */
+function datetime_ajouter_sec(string $datetime_str, int $sec): string
 {
-    $date = new DateTime(format_datetime($datetime_str));
-    $sec = round($sec);
     if ($sec < 0) {
-        datetime_ajouter_sec($datetime_str, (int) - $sec);
+        return datetime_soustraire_sec($datetime_str, - $sec);
     }
-    $diff = new DateInterval('PT' . $sec . 'S');
-    $date->sub($diff);
-    return $date->format('Y-m-d H:i:s');
+    try {
+        $date = new DateTime(format_datetime($datetime_str));
+        $diff = new DateInterval('PT' . $sec . 'S');
+        $date->add($diff);
+        return $date->format('Y-m-d H:i:s');
+    } catch (Exception $e) {
+        set_log($e->getTraceAsString());
+        return '';
+    }
 }
 
-function datetime_soustraire_time($datetime_str, $time)
+/**
+ * @param string $datetime_str
+ * @param int $sec
+ * @return string
+ */
+function datetime_soustraire_sec(string $datetime_str, int $sec): string
 {
-    $date = new DateTime(format_datetime($datetime_str));
-    $diff = new DateInterval('PT' . conversion_heure_vers_secondes($time) . 'S');
-    $date->sub($diff);
-    return $date->format('Y-m-d H:i:s');
+    if ($sec < 0) {
+        return datetime_ajouter_sec($datetime_str, - $sec);
+    }
+    try {
+        $date = new DateTime(format_datetime($datetime_str));
+        $diff = new DateInterval('PT' . $sec . 'S');
+        $date->sub($diff);
+        return $date->format('Y-m-d H:i:s');
+    } catch (Exception $e) {
+        set_log($e->getTraceAsString());
+        return '';
+    }
 }
 
-function datetime_vers_secondes_unix($datetime_str)
+/**
+ * @param string $datetime_str
+ * @param string $time
+ * @return string
+ */
+function datetime_soustraire_time(string $datetime_str, string $time): string
 {
-    $date = new DateTime(format_datetime($datetime_str));
-    return $date->format('U');
+    try {
+        $date = new DateTime(format_datetime($datetime_str));
+        $diff = new DateInterval('PT' . conversion_heure_vers_secondes($time) . 'S');
+        $date->sub($diff);
+        return $date->format('Y-m-d H:i:s');
+    } catch (Exception $e) {
+        set_log($e->getTraceAsString());
+        return '';
+    }
+}
+
+/**
+ * @param string $datetime_str
+ * @return int|null
+ */
+function datetime_vers_secondes_unix(string $datetime_str): ?int
+{
+    try {
+        $date = new DateTime(format_datetime($datetime_str));
+        return (int) $date->format('U');
+    } catch (Exception $e) {
+        set_log($e->getTraceAsString());
+        return null;
+    }
 }
 
 function get_nom_valeur($DB_name, $valeur)
@@ -1409,22 +2166,22 @@ function get_valeur_formate($DB_name, $valeur)
         case 'TIME':
             return format_time_fr($valeur);
             break;
+        case 'MEDIUMTEXT':
+        case 'VARCHAR':
         case 'TEXT':
             return '' . $valeur;
             break;
-        case 'MEDIUMTEXT':
-            return '' . $valeur;
-            break;
-        case 'VARCHAR':
-            return '' . $valeur;
-            break;
         default:
-            return htmlspecialchars($valeur);
+            return htmlspecialchars((string) $valeur);
             break;
     }
 }
 
-function format_date_fr($date)
+/**
+ * @param string $date
+ * @return string
+ */
+function format_date_fr(string $date): string
 {
     $date = format_date($date);
     if ($date != '') {
@@ -1444,29 +2201,43 @@ function format_date_fr($date)
     }
 }
 
-function format_date_fr_en_lettre($date, $mode = 0): string
+/**
+ * @param string $date
+ * @param int $mode
+ * @return string
+ */
+function format_date_fr_en_lettre(string $date, int $mode = 0): string
 {
     $date = format_date($date);
     if ($date != '') {
         global $lang_standard;
-        $date = new DateTime($date);
-        switch ($mode) {
-            case 0:
-                return $lang_standard['liste_jours'][$date->format('w')] . ' ' . $date->format('j') . ' ' . $lang_standard['liste_mois'][$date->format('n')] . ' ' . $date->format('Y');
-                break;
-            case 1:
-                return $lang_standard['liste_jours_2'][$date->format('w')] . ' ' . $date->format('j') . ' ' . $lang_standard['liste_mois_2'][$date->format('n')] . ' ' . $date->format('Y');
-                break;
-            case 2:
-                return $date->format('j') . ' ' . $lang_standard['liste_mois'][$date->format('n')] . ' ' . $date->format('Y');
-                break;
+        try {
+            $date = new DateTime($date);
+            switch ($mode) {
+                case 0:
+                    return $lang_standard['liste_jours'][$date->format('w')] . ' ' . $date->format('j') . ' ' . $lang_standard['liste_mois'][$date->format('n')] . ' ' . $date->format('Y');
+                    break;
+                case 1:
+                    return $lang_standard['liste_jours_2'][$date->format('w')] . ' ' . $date->format('j') . ' ' . $lang_standard['liste_mois_2'][$date->format('n')] . ' ' . $date->format('Y');
+                    break;
+                case 2:
+                    return $date->format('j') . ' ' . $lang_standard['liste_mois'][$date->format('n')] . ' ' . $date->format('Y');
+                    break;
+            }
+        } catch (Exception $e) {
+            set_log($e->getTraceAsString());
+            return '';
         }
-    } else {
-        return '';
     }
+    return '';
 }
 
-function format_datetime_fr($datetime)
+/**
+ * @param string $datetime
+ * @param bool $aff_secondes
+ * @return string
+ */
+function format_datetime_fr(string $datetime, bool $aff_secondes = true): string
 {
     $p = strrpos($datetime, ' ');
     if ($p == 0)
@@ -1478,7 +2249,7 @@ function format_datetime_fr($datetime)
         return '';
     }
     $date = format_date_fr($date);
-    if (substr(format_time($time), 5) == ':00')
+    if (! $aff_secondes || substr(format_time($time), 5) == ':00')
         $time = substr(format_time($time), 0, 5);
     if ($date != '' && $time != '')
         return $date . ' à ' . $time;
@@ -1505,7 +2276,7 @@ function get_nom_colonne($DB_name)
         return $DB_name;
 }
 
-function text_html_br($txt)
+function text_html_br(string $txt): string
 {
     return strtr(htmlspecialchars($txt), array(
         "\r\n" => '<br>',
@@ -1514,22 +2285,23 @@ function text_html_br($txt)
     ));
 }
 
-function salt($len)
+function salt(int $len): string
 {
     $list = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     $l = strlen($list);
-    mt_srand(10000000 * (double) microtime());
+    mt_srand((int) (10000000 * (double) microtime()));
     $salt = '';
-    for ($i = 0; $i < $len; $i ++)
+    for ($i = 0; $i < $len; $i ++) {
         $salt .= $list[mt_rand(0, $l - 1)];
+    }
     return $salt;
 }
 
-function salt_minuscules($len)
+function salt_minuscules(int $len): string
 {
     $list = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     $l = strlen($list);
-    mt_srand(10000000 * (double) microtime());
+    mt_srand((int) (10000000 * (double) microtime()));
     $salt = '';
     while (strlen($salt) < $len) {
         $salt_temp = '';
@@ -1540,17 +2312,22 @@ function salt_minuscules($len)
     return substr($salt, 0, $len);
 }
 
-function vue_tableau_html($donnees, $prefixe = '')
+/**
+ * @param $donnees
+ * @param string $prefixe
+ * @return string
+ */
+function vue_tableau_html($donnees, string $prefixe = ''): string
 {
     $txt = '';
     if (is_array($donnees)) {
-        $txt .= '<table border="1" style="border-collapse: collapse; border-color: #ddd;">';
+        $txt .= '<table style="border-collapse: collapse; border: 1px solid gray;">';
         foreach ($donnees as $key => $value) {
             $txt .= '<tr><td>' . $key . '</td><td>' . vue_tableau_html($value, $prefixe) . '</td></tr>';
         }
         $txt .= '</table>';
     } else {
-        $txt .= $prefixe . htmlspecialchars($donnees);
+        $txt .= $prefixe . htmlspecialchars((string) $donnees);
     }
     return $txt;
 }
@@ -1574,10 +2351,15 @@ function definir_colonne_completion($ratachement_table, $nom_colonne, $db_type, 
         if (! isset($mf_titre_ligne_table[$ratachement_table])) {
             echo '<b><i>ATTENTION : l\'entité "<u>' . $ratachement_table . '</u>" n\'existe pas !</i></b>';
         }
+        if (isset($mf_dictionnaire_db[$nom_colonne])) {
+            $txt = "La colonne $nom_colonne est déjà existante.";
+            mf_bah_quest_ce_qui_ce_passe("Erreur conflit", $txt, '#FF0A27');
+        }
     }
     $lang_standard[$nom_colonne] = $libelle_langue;
     $mf_dictionnaire_db[$nom_colonne]['type'] = $db_type;
     $mf_dictionnaire_db[$nom_colonne]['entite'] = $ratachement_table;
+    $mf_dictionnaire_db[$nom_colonne]['src'] = 'compl';
 }
 
 function hex2rgb($color)
@@ -1620,7 +2402,15 @@ function luminosite_hex($color)
     return 0;
 }
 
-function set_luminosite_rgb($r, $g, $b, $new_lum)
+/**
+ * Définir la luminosité
+ * @param int $r
+ * @param int $g
+ * @param int $b
+ * @param float $new_lum
+ * @return array
+ */
+function set_luminosite_rgb(int $r, int $g, int $b, float $new_lum)
 {
     if ($r == 0) {
         $r = 1;
@@ -1639,18 +2429,9 @@ function set_luminosite_rgb($r, $g, $b, $new_lum)
         $g_old = $g;
         $b_old = $b;
         $lum = luminosite_rgb($r, $g, $b);
-        $r = min(array(
-            round($r * $new_lum / $lum, 2),
-            255
-        ));
-        $g = min(array(
-            round($g * $new_lum / $lum, 2),
-            255
-        ));
-        $b = min(array(
-            round($b * $new_lum / $lum, 2),
-            255
-        ));
+        $r = min([round($r * $new_lum / $lum, 2), 255]);
+        $g = min([round($g * $new_lum / $lum, 2), 255]);
+        $b = min([round($b * $new_lum / $lum, 2), 255]);
     }
     return array(
         'r' => round($r),
@@ -1672,19 +2453,23 @@ function maj_plage_horaire(&$debut_new, &$fin_new, &$duree_new, $debut_old, $fin
     if ($duree_new <= 0) {
         $duree_new = $duree_old;
     }
-    if ($duree_new != $duree_old || $debut_new != $debut_old) {
-        $date = new DateTime($debut_new);
-        $date->add(new DateInterval('PT' . round(3600 * $duree_new) . 'S'));
-        $fin_new = $date->format('Y-m-d H:i:s');
-    } elseif ($fin_new != $fin_old) {
-        if ($fin_new > $debut_new) {
-            $datetime1 = new DateTime($debut_new);
-            $datetime2 = new DateTime($fin_new);
-            $secondes = $datetime2->getTimestamp() - $datetime1->getTimestamp();
-            $duree_new = round($secondes / 3600, 2);
-        } else {
-            $fin_new = $debut_old;
+    try {
+        if ($duree_new != $duree_old || $debut_new != $debut_old) {
+            $date = new DateTime($debut_new);
+            $date->add(new DateInterval('PT' . round(3600 * $duree_new) . 'S'));
+            $fin_new = $date->format('Y-m-d H:i:s');
+        } elseif ($fin_new != $fin_old) {
+            if ($fin_new > $debut_new) {
+                $datetime1 = new DateTime($debut_new);
+                $datetime2 = new DateTime($fin_new);
+                $secondes = $datetime2->getTimestamp() - $datetime1->getTimestamp();
+                $duree_new = round($secondes / 3600, 2);
+            } else {
+                $fin_new = $debut_old;
+            }
         }
+    } catch (Exception $e) {
+        set_log($e->getTraceAsString());
     }
     $debut_new = arrondir_date_minute($debut_new);
     $fin_new = arrondir_date_minute($fin_new);
@@ -1701,6 +2486,7 @@ function lister_cles($liste)
     foreach ($liste as $code => &$value) {
         $liste_key[] = $code;
     }
+    unset($value);
     return $liste_key;
 }
 
@@ -1753,13 +2539,18 @@ function liste_union_A_et_B($liste_cle_A, $liste_cle_B)
     return $retour;
 }
 
-function get_image($valeur, $width = IMAGES_LARGEUR_MAXI, $height = IMAGES_HAUTEUR_MAXI, $mode_remplissage = true, $alt = '', $format_png = false, $style = '', $class = '', $rotate = 0)
+function get_image($valeur, $width = IMAGES_LARGEUR_MAXI, $height = IMAGES_HAUTEUR_MAXI, $mode_remplissage = true, $alt = '', $format_png = false, $style = '', $class = '', $rotate = 0): string
 {
     if ($valeur != '') {
-        return '<img class="' . $class . '" alt="' . htmlspecialchars($alt) . '" title="' . htmlspecialchars($alt) . '" src="mf_fichier.php?n=' . $valeur . ($format_png ? '&format_png=1' : '&format_png=0') . '&width=' . (MODE_RETINA ? 2 * $width : $width) . '&height=' . (MODE_RETINA ? 2 * $height : $height) . ($mode_remplissage ? '&troncage=1' : '') . '&rotate=' . $rotate . '" class="fichier_photo" style="max-width: ' . $width . 'px; max-height: ' . $height . 'px; ' . $style . '">';
+        return '<img class="' . $class . '" alt="' . htmlspecialchars($alt) . '" title="' . htmlspecialchars($alt) . '" src="' . mf_get_image_src($valeur, (MODE_RETINA ? 2 * $width : $width), (MODE_RETINA ? 2 * $height : $height), $mode_remplissage, $format_png, $rotate) . '" class="fichier_photo" style="max-width: ' . $width . 'px; max-height: ' . $height . 'px; ' . $style . '">';
     } else {
         return '…';
     }
+}
+
+function mf_get_image_src(string $valeur, int $width = IMAGES_LARGEUR_MAXI, int $height = IMAGES_HAUTEUR_MAXI, bool $mode_remplissage = true, bool $format_png = false, int $rotate = 0): string
+{
+    return 'mf_fichier.php?n=' . $valeur . ($format_png ? '&format_png=1' : '&format_png=0') . '&width=' . $width . '&height=' . $height . ($mode_remplissage ? '&troncage=1' : '') . '&rotate=' . $rotate;
 }
 
 $num_sendemail = 1;
@@ -1844,7 +2635,8 @@ function sendemail($to, $title, $content, $from = MAIL_NOREPLY, $attachement_str
     $message_txt = strip_tags(strtr($content, $trans));
     $title = strip_tags($title);
 
-    if ($_SERVER['HTTP_HOST'] != 'localhost') {
+    global $mf_get_HTTP_HOST;
+    if ($mf_get_HTTP_HOST != 'localhost') {
 
         if ($attachement_str == '') {
             // Création du boundary
@@ -1876,7 +2668,8 @@ function sendemail($to, $title, $content, $from = MAIL_NOREPLY, $attachement_str
         } else {
 
             if (! file_exists($attachement_str)) {
-                $attachement_folder = __DIR__ . '/../../fichiers/' . NOM_PROJET . '/';
+                global $mf_get_HTTP_HOST;
+                $attachement_folder = __DIR__ . "/../../fichiers/$mf_get_HTTP_HOST/" . NOM_PROJET . "/";
                 if (TABLE_INSTANCE != '') {
                     $instance = 'inst_' . get_instance();
                     $attachement_folder .= $instance . '/';
@@ -1954,11 +2747,13 @@ function sendemail($to, $title, $content, $from = MAIL_NOREPLY, $attachement_str
         $fichier_html = $dossier_sauvegarde . $fichier_html_local;
         $num_sendemail ++;
 
-        $message_html = '<html><head><meta charset="utf-8"><title>' . htmlspecialchars('Message envoyé le ' . format_datetime_fr(get_now()) . ' à ' . $to) . '</title></head><body>';
+        $message_html = '<html lang="fr"><head><meta charset="utf-8"><title>' . htmlspecialchars('Message envoyé le ' . format_datetime_fr(get_now()) . ' à ' . $to) . '</title></head><body>';
         $tyle_contenant = ' style="float:none;clear:both"';
         $tyle_label = ' style="float:left; padding: 11px 0;"';
         $tyle_div = ' style="float:right; width: 75%; border: 1px solid #aaa; padding: 10px; margin-bottom: 10px;"';
         $message_html .= '<div' . $tyle_contenant . '><label' . $tyle_label . '>Destinataire :</label><div' . $tyle_div . '>' . htmlspecialchars($to) . '</div></div>';
+        $message_html .= '<div' . $tyle_contenant . '><label' . $tyle_label . '>Email d\'envoi :</label><div' . $tyle_div . '>' . htmlspecialchars($from) . '</div></div>';
+        $message_html .= '<div' . $tyle_contenant . '><label' . $tyle_label . '>Email de retour :</label><div' . $tyle_div . '>' . htmlspecialchars($replyto) . '</div></div>';
         $message_html .= '<div' . $tyle_contenant . '><label' . $tyle_label . '>Titre :</label><div' . $tyle_div . '>' . htmlspecialchars($title) . '</div></div>';
         $message_html .= '<div' . $tyle_contenant . '><label' . $tyle_label . '>Message :</label><div' . $tyle_div . '><iframe style="width: 100%; height: 600px; border: none;" src="' . $fichier_html_local . '"></iframe></div></div>';
         $message_html .= '<div' . $tyle_contenant . '><label' . $tyle_label . '>Texte :</label><div' . $tyle_div . '><textarea style="width:100%; height:300px; border:none; resize:vertical;">' . $message_txt . '</textarea></div></div>';
@@ -1994,6 +2789,7 @@ function get_gabarit($filename, $trans)
     }
     $trans['{ADRESSE_SITE}'] = ADRESSE_SITE;
     $trans['{ADRESSE_API}'] = ADRESSE_API;
+    $trans['{NUMERO_INSTANCE}'] = get_instance();
     return strtr(file_get_contents($adress), $trans);
 }
 
@@ -2048,14 +2844,15 @@ function suppr_accents($str, $encoding = 'utf-8')
     return $str;
 }
 
-function formatage_telephone($tel)
+function formatage_telephone(string $tel): string
 {
     $d = strlen($tel);
     $temp = '';
     for ($i = 0; $i < $d; $i ++) {
         $o = ord($tel[$i]);
-        if ($o == 43 || (48 <= $o && $o <= 57))
+        if ($o == 43 || (48 <= $o && $o <= 57)) {
             $temp .= $tel[$i];
+        }
     }
 
     $d = strlen($temp);
@@ -2067,66 +2864,117 @@ function formatage_telephone($tel)
     return $res;
 }
 
-function conserver_uniquement_chiffres($str)
+function mf_string_formatage_variable(string $str): string
+{
+    $str = suppr_accents($str);
+    $d = strlen($str);
+    for ($i = 0; $i < $d; $i ++) {
+        $o = ord($str[$i]);
+        if (! ((48 <= $o && $o <= 57) || (65 <= $o && $o <= 90) || (97 <= $o && $o <= 122))) {
+            $str[$i] = '_';
+        }
+    }
+    $d = 0;
+    while ($d != strlen($str)) {
+        $d = strlen($str);
+        $str = str_replace("__", "_", $str);
+    }
+    return $str;
+}
+
+/**
+ * @param string $str
+ * @return string
+ */
+function conserver_uniquement_chiffres(string $str): string
 {
     $d = strlen($str);
     $temp = '';
     for ($i = 0; $i < $d; $i ++) {
         $o = ord($str[$i]);
-        if (48 <= $o && $o <= 57)
+        if (48 <= $o && $o <= 57) {
             $temp .= $str[$i];
+        }
     }
     return $temp;
 }
 
-function Sql_StdDev_Pond($X, $W)
+function Sql_StdDev_Pond(string $X, string $W): string
 {
     return "SQRT(ABS(SUM($W*POW($X,2))/SUM($W)-POW(SUM($X*$W)/SUM($W),2)))";
 }
 
-function Sql_StdDev_Stat($X, $S, $N)
+function Sql_StdDev_Stat(string $X, string $S, string $N): string
 { // $X : moyenne[i], $S : sigma[i], $N : nb[i]
     return "SQRT(ABS(SUM($N*(POW($S,2)+POW($X,2)))/SUM($N)-POW(SUM($N*$X)/SUM($N),2)))";
 }
 
-function test_email_valide($email)
+/**
+ * @param string $email
+ * @return bool
+ */
+function test_email_valide(string $email): bool
 {
     return strlen($email) < 256 && filter_var($email, FILTER_VALIDATE_EMAIL);
 }
 
-function test_mot_de_passe_valide($mdp)
+function test_mot_de_passe_valide(string $mdp): bool
 {
     return preg_match('#^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])#', $mdp) && strlen($mdp) > 7;
 }
 
-function format_date_fr_en_lettre_reduit($date, $abrege = false)
-{
-    $date = format_date($date);
-    if ($date != '') {
-        global $lang_standard;
-        $date = new DateTime($date);
-        if ($abrege)
-            return $lang_standard['liste_jours_2'][$date->format('w')] . ' ' . $date->format('j') . ' ' . $lang_standard['liste_mois_2'][$date->format('n')];
-        else
-            return $lang_standard['liste_jours'][$date->format('w')] . ' ' . $date->format('j') . ' ' . $lang_standard['liste_mois'][$date->format('n')];
-    } else {
-        return '';
-    }
-}
-
-function format_date_fr_get_libelle_mois($date_str)
+/**
+ * @param string $date_str
+ * @param bool $abrege
+ * @return string
+ */
+function format_date_fr_en_lettre_reduit(string $date_str, bool $abrege = false): string
 {
     $date_str = format_date($date_str);
     if ($date_str != '') {
         global $lang_standard;
-        $date = new DateTime($date_str);
-        return $lang_standard['liste_mois'][$date->format('n')] . ' ' . $date->format('Y');
+        try {
+            $date = new DateTime($date_str);
+            if ($abrege) {
+                return $lang_standard['liste_jours_2'][$date->format('w')] . ' ' . $date->format('j') . ' ' . $lang_standard['liste_mois_2'][$date->format('n')];
+            } else {
+                return $lang_standard['liste_jours'][$date->format('w')] . ' ' . $date->format('j') . ' ' . $lang_standard['liste_mois'][$date->format('n')];
+            }
+        } catch (Exception $e) {
+            set_log($e->getTraceAsString());
+            return '';
+        }
     } else {
         return '';
     }
 }
 
-function format_time_fr($time)
+/**
+ * @param string $date_str
+ * @return string
+ */
+function format_date_fr_get_libelle_mois(string $date_str): string
+{
+    $date_str = format_date($date_str);
+    if ($date_str != '') {
+        global $lang_standard;
+        try {
+            $date = new DateTime($date_str);
+            return $lang_standard['liste_mois'][$date->format('n')] . ' ' . $date->format('Y');
+        } catch (Exception $e) {
+            set_log($e->getTraceAsString());
+            return '';
+        }
+    } else {
+        return '';
+    }
+}
+
+/**
+ * @param string $time
+ * @return string
+ */
+function format_time_fr(string $time): string
 {
     return str_replace(':', 'h', substr(format_time($time), 0, 5));
 }
@@ -2177,7 +3025,22 @@ function utf8_fopen_read($fileName, $in_charset = 'Windows-1252')
 }
 
 // Transformer image
-function transformer_image($nom_fichier_image, $format_png = false, $width = IMAGES_LARGEUR_MAXI, $height = IMAGES_HAUTEUR_MAXI, $troncage = false, $rotate = 0, $zoom = 100, $xpos = 50, $ypos = 50, $qualite = 75, $ecraser_fichier = false, $pourcentage_color = 100)
+/**
+ * @param string $nom_fichier_image
+ * @param bool $format_png
+ * @param int $width
+ * @param int $height
+ * @param bool $troncage
+ * @param int $rotate
+ * @param int $zoom
+ * @param int $xpos
+ * @param int $ypos
+ * @param int $qualite
+ * @param bool $ecraser_fichier
+ * @param int $pourcentage_color
+ * @return bool
+ */
+function transformer_image(string $nom_fichier_image, bool $format_png = false, int $width = IMAGES_LARGEUR_MAXI, int $height = IMAGES_HAUTEUR_MAXI, bool $troncage = false, int $rotate = 0, int $zoom = 100, $xpos = 50, $ypos = 50, int $qualite = 75, $ecraser_fichier = false, $pourcentage_color = 100): bool
 {
     $fichier = new Fichier();
     $ext = $fichier->get_extention($nom_fichier_image);
@@ -2190,10 +3053,8 @@ function transformer_image($nom_fichier_image, $format_png = false, $width = IMA
             imageAlphaBlending($image, true);
             imageSaveAlpha($image, true);
             break;
-        case 'jpg':
-            $image = imagecreatefromjpeg($filename);
-            break;
         case 'jpeg':
+        case 'jpg':
             $image = imagecreatefromjpeg($filename);
             break;
         default:
@@ -2233,15 +3094,17 @@ function transformer_image($nom_fichier_image, $format_png = false, $width = IMA
     }
     // choix du zoom
     if ($troncage) {
-        if ($width / $old_width > $height / $old_height)
+        if ($width / $old_width > $height / $old_height) {
             $r = $width / $old_width;
-        else
+        } else {
             $r = $height / $old_height;
+        }
     } else {
-        if ($width / $old_width < $height / $old_height)
+        if ($width / $old_width < $height / $old_height) {
             $r = $width / $old_width;
-        else
+        } else {
             $r = $height / $old_height;
+        }
     }
     //
     $dst_x = 0;
@@ -2251,20 +3114,20 @@ function transformer_image($nom_fichier_image, $format_png = false, $width = IMA
     if ($troncage) {
         // troncage
         if ($width / $old_width < $height / $old_height) {
-            $largeur_origine_calcule = round($width / $r);
+            $largeur_origine_calcule = (int) round($width / $r);
             $distance_a_tronquer = $old_width - $largeur_origine_calcule;
-            $src_x = round($distance_a_tronquer / 2);
+            $src_x = (int) round($distance_a_tronquer / 2);
             $old_width = $largeur_origine_calcule;
         } elseif ($width / $old_width > $height / $old_height) {
-            $hauteur_origine_calcule = round($height / $r);
+            $hauteur_origine_calcule = (int) round($height / $r);
             $distance_a_tronquer = $old_height - $hauteur_origine_calcule;
-            $src_y = round($distance_a_tronquer / 2);
+            $src_y = (int) round($distance_a_tronquer / 2);
             $old_height = $hauteur_origine_calcule;
         }
     } else {
         // redimentionnement (sans troncage)
-        $width = round($old_width * $r);
-        $height = round($old_height * $r);
+        $width = (int) round($old_width * $r);
+        $height = (int) round($old_height * $r);
     }
     // Zoom
     if ($zoom < 100) {
@@ -2274,10 +3137,10 @@ function transformer_image($nom_fichier_image, $format_png = false, $width = IMA
         $zoom = 1000;
     }
     $coef_zoom = 100 / $zoom;
-    $old_width_2 = round($old_width * $coef_zoom);
-    $old_height_2 = round($old_height * $coef_zoom);
-    $src_x = round($src_x + ($old_width - $old_width_2) / 2);
-    $src_y = round($src_y + ($old_height - $old_height_2) / 2);
+    $old_width_2 = (int) round($old_width * $coef_zoom);
+    $old_height_2 = (int) round($old_height * $coef_zoom);
+    $src_x = (int) round($src_x + ($old_width - $old_width_2) / 2);
+    $src_y = (int) round($src_y + ($old_height - $old_height_2) / 2);
     // déplacement du cadre
     if ($xpos < 0) {
         $xpos = 0;
@@ -2291,8 +3154,8 @@ function transformer_image($nom_fichier_image, $format_png = false, $width = IMA
     if ($ypos > 100) {
         $ypos = 100;
     }
-    $src_x = round($src_x * $xpos / 50);
-    $src_y = round($src_y * $ypos / 50);
+    $src_x = (int) round($src_x * $xpos / 50);
+    $src_y = (int) round($src_y * $ypos / 50);
     // redimentionnement
     $image_p = imagecreatetruecolor($width, $height);
     if ($format_png) {
@@ -2318,6 +3181,7 @@ function transformer_image($nom_fichier_image, $format_png = false, $width = IMA
     }
     imagedestroy($image_p);
     imagedestroy($image);
+    return true;
 }
 
 // Paramétrage de l'appel du worker
@@ -2342,64 +3206,31 @@ function mf_worker_get_adress_run()
     return $mf_worker_get_adress_run;
 }
 
-function mf_worker_run(bool $prioritaire = false): string
+function mf_worker_run(): string
 {
     global $mf_nb_requetes, $mf_nb_requetes_update;
     $log = '-';
-    if ((get_nom_page_courante() == 'mf_worker_run.php') == $prioritaire) {
-        if ($prioritaire) {
-            $delai = DELAI_EXECUTION_WORKER;
-        } else {
-            $delai = DELAI_EXECUTION_WORKER * 2;
-        }
-        if (DB_CACHE_HOST == '') {
-            $worker_en_cours = mf_worker_get_adress_run();
-            if (file_exists($worker_en_cours)) {
-                $last = file_get_contents($worker_en_cours);
-                $limit = datetime_ajouter_sec($last, $delai);
-                if ($limit < get_now()) {
-                    @unlink($worker_en_cours);
-                }
-            }
-            if (! file_exists($worker_en_cours) && file_put_contents($worker_en_cours, get_now(), LOCK_EX) !== false) {
-                $time_start = microtime(true);
-                $cache = new Cache('mf_system');
-                if (! $i = $cache->read('i_worker', 999999999)) {
-                    $i = 1;
-                }
-                $cache->write('i_worker', ($i + 1));
-                Hook_mf_systeme::worker($i);
-                $time_end = microtime(true);
-                $execution_time = round($time_end - $time_start, 3);
-                $ln = PHP_EOL;
-                $adresse_fichier_log = get_dossier_data('log_worker') . 'log_' . substr(get_now(), 0, 10) . '.txt';
-                $log = 'Worker n°' . $i . ' at ' . get_now() . ' in ' . $execution_time . 's' . ' (' . $mf_nb_requetes . ' requête(s), ' . $mf_nb_requetes_update . ' modification(s), ' . Mf_Cachedb::$nb_lectures_disque . ' lecture(s) disque)' . $ln . '---' . $ln;
-                mf_file_append($adresse_fichier_log, $log);
-            }
-        } else {
-            $link = connexion_db_cache();
-            $now = microtime(true);
-            $limit = $now - $delai;
-            $res_requete = mysqli_query($link, 'SELECT * FROM ' . str_replace('-', '_', strtolower(NOM_PROJET)) . '_worker WHERE id = ' . get_instance() . ' AND microtime_exe < ' . $limit . ';');
-            while ($row_requete = mysqli_fetch_array($res_requete, MYSQLI_ASSOC)) {
-                $id = $row_requete['id'];
-                $i = $row_requete['cpt'] + 1;
-                mysqli_query($link, 'UPDATE ' . str_replace('-', '_', strtolower(NOM_PROJET)) . '_worker SET microtime_exe = ' . $now . ', cpt = ' . $i . ' WHERE id = ' . $id . ' AND microtime_exe < ' . $limit . ';');
-                if (mysqli_affected_rows($link) == 1) {
-                    $time_start = microtime(true);
-                    Hook_mf_systeme::worker($i);
-                    $time_end = microtime(true);
-                    $execution_time = round($time_end - $time_start, 3);
-                    $ln = PHP_EOL;
-                    $adresse_fichier_log = get_dossier_data('log_worker') . 'log_' . substr(get_now(), 0, 10) . '.txt';
-                    $log = 'Worker n°' . $i . ' at ' . get_now() . ' in ' . $execution_time . 's' . ' (' . $mf_nb_requetes . ' requête(s), ' . $mf_nb_requetes_update . ' modification(s), ' . Mf_Cachedb::$nb_lectures_disque . ' lecture(s) disque)' . $ln . '---' . $ln;
-                    mf_file_append($adresse_fichier_log, $log);
-                }
-            }
-            mysqli_free_result($res_requete);
-            mysqli_close($link);
+    global $mf_get_HTTP_HOST;
+    $link = connexion_db_cache();
+    $now = microtime(true);
+    $limit = $now - DELAI_EXECUTION_WORKER;
+    $res_requete = mysqli_query($link, 'SELECT * FROM ' . str_replace('-', '_', strtolower(NOM_PROJET . "_$mf_get_HTTP_HOST")) . '_worker WHERE id = ' . get_instance() . " AND microtime_exe<$limit;");
+    while ($row_requete = mysqli_fetch_array($res_requete, MYSQLI_ASSOC)) {
+        $id = $row_requete['id'];
+        $i = $row_requete['cpt'] + 1;
+        mysqli_query($link, 'UPDATE ' . str_replace('-', '_', strtolower(NOM_PROJET . "_$mf_get_HTTP_HOST")) . "_worker SET microtime_exe=$now, cpt=$i WHERE id=$id AND microtime_exe<$limit;");
+        if (mysqli_affected_rows($link) == 1) {
+            $time_start = microtime(true);
+            Hook_mf_systeme::worker($i);
+            $time_end = microtime(true);
+            $execution_time = round($time_end - $time_start, 3);
+            $adresse_fichier_log = get_dossier_data('log_worker') . 'log_' . NOM_PROJET . '_' . substr(get_now(), 0, 10) . '.txt';
+            $log = "Worker n°$i at " . get_now() . " in {$execution_time}s ($mf_nb_requetes requête(s), $mf_nb_requetes_update modification(s), " . Mf_Cachedb::$nb_lectures_disque . " lecture(s) disque)" . PHP_EOL;
+            mf_file_append($adresse_fichier_log, $log);
         }
     }
+    mysqli_free_result($res_requete);
+    mysqli_close($link);
     return $log;
 }
 
@@ -2423,71 +3254,32 @@ function mf_worker_get_adress_lock(): string
     return $mf_worker_get_adress_lock;
 }
 
-function mf_add_lock(string $name, int $ms_max = 1000): bool
+function mf_get_value_session(string $name, $undifundefined_value = null)
 {
-    $file = mf_worker_get_adress_lock() . md5($name);
-    $lock = false;
-    $cp = 0;
-    while (! $lock && $cp < $ms_max) {
-        if (! file_exists($file) && file_put_contents($file, get_now_microtime(), LOCK_EX) !== false) {
-            usleep(1000); // 1ms
-            $c = file_get_contents($file);
-            if ($c !== false) {
-                if ((string) get_now_microtime() == (string) $c) {
-                    $lock = true;
-                    return true;
-                } else {
-                    usleep(1000); // 1ms
-                    $cp ++;
-                }
-            }
-        } else {
-            $c = file_get_contents($file);
-            if ($c !== false) {
-                $c = (float) $c;
-                if (get_now_microtime() - $c > 1) {
-                    mf_release_lock($name);
-                }
-            }
-            usleep(1000); // 1ms
-            $cp ++;
-        }
-    }
-    return $lock;
-}
-
-function mf_release_lock(string $name)
-{
-    $file = mf_worker_get_adress_lock() . md5($name);
-    while (file_exists($file)) {
-        if (! @unlink($file)) {
-            usleep(1000); // 1ms
-            clearstatcache();
-        }
-    }
-}
-
-function mf_get_value_session($name, $undifundefined_value = null)
-{
-    return (isset($_SESSION[PREFIXE_SESSION]['parametres'][$name]) ? $_SESSION[PREFIXE_SESSION]['parametres'][$name] : $undifundefined_value);
+    $cache = new Cache('mf_session', session_id());
+    return $cache->read($name, $undifundefined_value);
 }
 
 function mf_set_value_session($name, $value)
 {
-    $_SESSION[PREFIXE_SESSION]['parametres'][$name] = $value;
+    $cache = new Cache('mf_session', session_id());
+    $cache->write($name, $value);
 }
 
 function mf_get_trace_session()
 {
-    if (isset($_SESSION[PREFIXE_SESSION]['parametres'])) {
-        $trace = '';
-        foreach ($_SESSION[PREFIXE_SESSION]['parametres'] as &$value) {
-            $trace .= '-' . $value;
-        }
-        return md5($trace);
-    } else {
-        return '';
+    $liste_sessions = mf_get_list_session_values();
+    $trace = '';
+    foreach ($liste_sessions as &$value) {
+        $trace .= "-$value";
     }
+    return md5($trace);
+}
+
+function mf_get_list_session_values()
+{
+    $cache = new Cache('mf_session', session_id());
+    return $cache->read_all();
 }
 
 function mf_formatage_db_type_php(array &$donnees): void
@@ -2500,12 +3292,21 @@ function mf_formatage_db_type_php(array &$donnees): void
                     $value = (bool) $value;
                     break;
                 case 'INT':
+                case 'BIGINT':
                 case 'INTEGER':
-                    $value = (int) $value;
+                    if (is_null($value)) {
+                        $value = null;
+                    } else {
+                        $value = (int) $value;
+                    }
                     break;
                 case 'DOUBLE':
                 case 'FLOAT':
-                    $value = (float) $value;
+                    if (is_null($value)) {
+                        $value = null;
+                    } else {
+                        $value = (float)$value;
+                    }
                     break;
                 default:
                     $value = (string) $value;
@@ -2519,7 +3320,8 @@ function get_nom_page_courante()
 {
     global $mf_get_nom_page_courante;
     if (! isset($mf_get_nom_page_courante)) {
-        $mf_get_nom_page_courante = substr($_SERVER['PHP_SELF'], strlen($_SERVER['PHP_SELF']) - stripos(strrev($_SERVER['PHP_SELF']), '/'));
+        $php_self = str_replace("\\", "/", $_SERVER['PHP_SELF']);
+        $mf_get_nom_page_courante = substr($php_self, strlen($php_self) - stripos(strrev($php_self), '/'));
     }
     return $mf_get_nom_page_courante;
 }
@@ -2531,8 +3333,188 @@ function appli_mobile()
 
 function test_action_formulaire()
 {
-    global $mf_action;
-    return (isset($mf_action) && (substr($mf_action, 0, 7) == 'ajouter' || substr($mf_action, 0, 8) == 'modifier' || substr($mf_action, 0, 9) == 'supprimer' || $mf_action == 'modpwd'));
+    return isset($_GET['secur']);
+//    return (isset($mf_action) && (substr($mf_action, 0, 7) == 'ajouter' || substr($mf_action, 0, 8) == 'modifier' || substr($mf_action, 0, 9) == 'supprimer' || $mf_action == 'modpwd'));
+}
+
+/**
+ * Conservation d'un nombre de chiffres significatifs données
+ * @param float $value
+ * @param int $digits
+ * @return float
+ */
+function mf_significantDigit(float $value, int $digits): float
+{
+    if ($value == 0) {
+        $decimalPlaces = $digits - 1;
+    } else {
+        $decimalPlaces = $digits - floor(log10(abs($value))) - 1;
+    }
+    return round($value, (int) $decimalPlaces);
+}
+
+/**
+ * Nombre de chiffres composants la partie entière
+ * @param float $value
+ * @return int
+ */
+function mf_get_nb_digits_floor(float $value): int
+{
+    if ($value == 0) {
+        return 0;
+    } else {
+        $nb = (int) floor(log10(abs($value))) + 1;
+        return ($nb > 0 ? $nb : 0);
+    }
+}
+
+/**
+ * Permet de retrouver la TVA à partir d'un prix TTC
+ * @param float $prix_ttc
+ * @param float $taux
+ * @return float
+ */
+function mf_extraire_tva(float $prix_ttc, float $taux): float
+{
+    $prix_ht = round($prix_ttc / (1 + $taux), 2);
+    return $prix_ttc - $prix_ht;
+}
+
+function mf_liste_colonnes_titre(string $table): array
+{
+    global $mf_dictionnaire_db, $mf_titre_ligne_table;
+    $liste_colonnes = [];
+    foreach ($mf_dictionnaire_db as $key => &$mf_colonne) {
+        if ($mf_colonne['src'] == 'db' && stripos($mf_titre_ligne_table[$table], "{{$key}}") !== false) {
+            $liste_colonnes[] = $key;
+        }
+    }
+    unset($mf_colonne);
+    return $liste_colonnes;
+}
+
+/*
+ * Permet d'avoir le message correspondant au http_response_code
+ */
+function mf_message_http_response_code(string $code): string
+{
+    switch ($code) {
+        case 100:
+            $text = 'Continue';
+            break;
+        case 101:
+            $text = 'Switching Protocols';
+            break;
+        case 200:
+            $text = 'OK';
+            break;
+        case 201:
+            $text = 'Created';
+            break;
+        case 202:
+            $text = 'Accepted';
+            break;
+        case 203:
+            $text = 'Non-Authoritative Information';
+            break;
+        case 204:
+            $text = 'No Content';
+            break;
+        case 205:
+            $text = 'Reset Content';
+            break;
+        case 206:
+            $text = 'Partial Content';
+            break;
+        case 300:
+            $text = 'Multiple Choices';
+            break;
+        case 301:
+            $text = 'Moved Permanently';
+            break;
+        case 302:
+            $text = 'Moved Temporarily';
+            break;
+        case 303:
+            $text = 'See Other';
+            break;
+        case 304:
+            $text = 'Not Modified';
+            break;
+        case 305:
+            $text = 'Use Proxy';
+            break;
+        case 400:
+            $text = 'Bad Request';
+            break;
+        case 401:
+            $text = 'Unauthorized';
+            break;
+        case 402:
+            $text = 'Payment Required';
+            break;
+        case 403:
+            $text = 'Forbidden';
+            break;
+        case 404:
+            $text = 'Not Found';
+            break;
+        case 405:
+            $text = 'Method Not Allowed';
+            break;
+        case 406:
+            $text = 'Not Acceptable';
+            break;
+        case 407:
+            $text = 'Proxy Authentication Required';
+            break;
+        case 408:
+            $text = 'Request Time-out';
+            break;
+        case 409:
+            $text = 'Conflict';
+            break;
+        case 410:
+            $text = 'Gone';
+            break;
+        case 411:
+            $text = 'Length Required';
+            break;
+        case 412:
+            $text = 'Precondition Failed';
+            break;
+        case 413:
+            $text = 'Request Entity Too Large';
+            break;
+        case 414:
+            $text = 'Request-URI Too Large';
+            break;
+        case 415:
+            $text = 'Unsupported Media Type';
+            break;
+        case 500:
+            $text = 'Internal Server Error';
+            break;
+        case 501:
+            $text = 'Not Implemented';
+            break;
+        case 502:
+            $text = 'Bad Gateway';
+            break;
+        case 503:
+            $text = 'Service Unavailable';
+            break;
+        case 504:
+            $text = 'Gateway Time-out';
+            break;
+        case 505:
+            $text = 'HTTP Version not supported';
+            break;
+        default:
+            $text = 'Unknown http status code "' . htmlentities($code) . '"';
+            break;
+    }
+    return $text;
 }
 
 /* Colonnes de la base de données */
@@ -2542,16 +3524,35 @@ define('MF_UTILISATEUR__ID', 'Code_utilisateur');
 define('MF_UTILISATEUR_IDENTIFIANT', 'utilisateur_Identifiant');
 define('MF_UTILISATEUR_PASSWORD', 'utilisateur_Password');
 define('MF_UTILISATEUR_EMAIL', 'utilisateur_Email');
+define('MF_UTILISATEUR_CIVILITE_TYPE', 'utilisateur_Civilite_Type');
+define('MF_UTILISATEUR_PRENOM', 'utilisateur_Prenom');
+define('MF_UTILISATEUR_NOM', 'utilisateur_Nom');
+define('MF_UTILISATEUR_ADRESSE_1', 'utilisateur_Adresse_1');
+define('MF_UTILISATEUR_ADRESSE_2', 'utilisateur_Adresse_2');
+define('MF_UTILISATEUR_VILLE', 'utilisateur_Ville');
+define('MF_UTILISATEUR_CODE_POSTAL', 'utilisateur_Code_postal');
+define('MF_UTILISATEUR_DATE_NAISSANCE', 'utilisateur_Date_naissance');
+define('MF_UTILISATEUR_ACCEPTE_MAIL_PUBLICITAIRE', 'utilisateur_Accepte_mail_publicitaire');
 define('MF_UTILISATEUR_ADMINISTRATEUR', 'utilisateur_Administrateur');
-define('MF_UTILISATEUR_DEVELOPPEUR', 'utilisateur_Developpeur');
+define('MF_UTILISATEUR_FOURNISSEUR', 'utilisateur_Fournisseur');
 
 // ARTICLE
 define('MF_ARTICLE__ID', 'Code_article');
 define('MF_ARTICLE_LIBELLE', 'article_Libelle');
+define('MF_ARTICLE_DESCRIPTION', 'article_Description');
+define('MF_ARTICLE_SAISON_TYPE', 'article_Saison_Type');
+define('MF_ARTICLE_NOM_FOURNISSEUR', 'article_Nom_fournisseur');
+define('MF_ARTICLE_URL', 'article_Url');
+define('MF_ARTICLE_REFERENCE', 'article_Reference');
+define('MF_ARTICLE_COULEUR', 'article_Couleur');
+define('MF_ARTICLE_CODE_COULEUR_SVG', 'article_Code_couleur_svg');
+define('MF_ARTICLE_TAILLE_PAYS_TYPE', 'article_Taille_Pays_Type');
+define('MF_ARTICLE_TAILLE', 'article_Taille');
+define('MF_ARTICLE_MATIERE', 'article_Matiere');
 define('MF_ARTICLE_PHOTO_FICHIER', 'article_Photo_Fichier');
 define('MF_ARTICLE_PRIX', 'article_Prix');
 define('MF_ARTICLE_ACTIF', 'article_Actif');
-define('MF_ARTICLE_CODE_TYPE_PRODUIT', 'Code_type_produit');
+define('MF_ARTICLE_CODE_SOUS_CATEGORIE_ARTICLE', 'Code_sous_categorie_article');
 
 // COMMANDE
 define('MF_COMMANDE__ID', 'Code_commande');
@@ -2560,26 +3561,39 @@ define('MF_COMMANDE_DATE_LIVRAISON', 'commande_Date_livraison');
 define('MF_COMMANDE_DATE_CREATION', 'commande_Date_creation');
 define('MF_COMMANDE_CODE_UTILISATEUR', 'Code_utilisateur');
 
-// TYPE_PRODUIT
-define('MF_TYPE_PRODUIT__ID', 'Code_type_produit');
-define('MF_TYPE_PRODUIT_LIBELLE', 'type_produit_Libelle');
+// CATEGORIE_ARTICLE
+define('MF_CATEGORIE_ARTICLE__ID', 'Code_categorie_article');
+define('MF_CATEGORIE_ARTICLE_LIBELLE', 'categorie_article_Libelle');
 
 // PARAMETRE
 define('MF_PARAMETRE__ID', 'Code_parametre');
 define('MF_PARAMETRE_LIBELLE', 'parametre_Libelle');
 
-// FILTRE
-define('MF_FILTRE__ID', 'Code_filtre');
-define('MF_FILTRE_LIBELLE', 'filtre_Libelle');
+// VUE_UTILISATEUR
+define('MF_VUE_UTILISATEUR__ID', 'Code_vue_utilisateur');
+define('MF_VUE_UTILISATEUR_RECHERCHE', 'vue_utilisateur_Recherche');
+define('MF_VUE_UTILISATEUR_FILTRE_SAISON_TYPE', 'vue_utilisateur_Filtre_Saison_Type');
+define('MF_VUE_UTILISATEUR_FILTRE_COULEUR', 'vue_utilisateur_Filtre_Couleur');
+define('MF_VUE_UTILISATEUR_FILTRE_TAILLE_PAYS_TYPE', 'vue_utilisateur_Filtre_Taille_Pays_Type');
+define('MF_VUE_UTILISATEUR_FILTRE_TAILLE_MAX', 'vue_utilisateur_Filtre_Taille_Max');
+define('MF_VUE_UTILISATEUR_FILTRE_TAILLE_MIN', 'vue_utilisateur_Filtre_Taille_Min');
 
-// A_ARTICLE_COMMANDE
-define('MF_A_ARTICLE_COMMANDE_CODE_COMMANDE', 'Code_commande');
-define('MF_A_ARTICLE_COMMANDE_CODE_ARTICLE', 'Code_article');
+// SOUS_CATEGORIE_ARTICLE
+define('MF_SOUS_CATEGORIE_ARTICLE__ID', 'Code_sous_categorie_article');
+define('MF_SOUS_CATEGORIE_ARTICLE_LIBELLE', 'sous_categorie_article_Libelle');
+define('MF_SOUS_CATEGORIE_ARTICLE_CODE_CATEGORIE_ARTICLE', 'Code_categorie_article');
 
-// A_FILTRE_PRODUIT
-define('MF_A_FILTRE_PRODUIT_CODE_FILTRE', 'Code_filtre');
-define('MF_A_FILTRE_PRODUIT_CODE_ARTICLE', 'Code_article');
-define('MF_A_FILTRE_PRODUIT_ACTIF', 'a_filtre_produit_Actif');
+// CONSEIL
+define('MF_CONSEIL__ID', 'Code_conseil');
+define('MF_CONSEIL_LIBELLE', 'conseil_Libelle');
+define('MF_CONSEIL_DESCRIPTION', 'conseil_Description');
+define('MF_CONSEIL_ACTIF', 'conseil_Actif');
+
+// A_COMMANDE_ARTICLE
+define('MF_A_COMMANDE_ARTICLE_CODE_COMMANDE', 'Code_commande');
+define('MF_A_COMMANDE_ARTICLE_CODE_ARTICLE', 'Code_article');
+define('MF_A_COMMANDE_ARTICLE_QUANTITE', 'a_commande_article_Quantite');
+define('MF_A_COMMANDE_ARTICLE_PRIX_LIGNE', 'a_commande_article_Prix_ligne');
 
 // A_PARAMETRE_UTILISATEUR
 define('MF_A_PARAMETRE_UTILISATEUR_CODE_UTILISATEUR', 'Code_utilisateur');
@@ -2587,13 +3601,17 @@ define('MF_A_PARAMETRE_UTILISATEUR_CODE_PARAMETRE', 'Code_parametre');
 define('MF_A_PARAMETRE_UTILISATEUR_VALEUR', 'a_parametre_utilisateur_Valeur');
 define('MF_A_PARAMETRE_UTILISATEUR_ACTIF', 'a_parametre_utilisateur_Actif');
 
+// A_FILTRER
+define('MF_A_FILTRER_CODE_UTILISATEUR', 'Code_utilisateur');
+define('MF_A_FILTRER_CODE_VUE_UTILISATEUR', 'Code_vue_utilisateur');
+
 include __DIR__ . '/fonctions_additionnelles.php';
 
 function get_liste_dump()
 {
-    return inst('utilisateur') . ' ' . inst('article') . ' ' . inst('commande') . ' ' . inst('type_produit') . ' ' . inst('parametre') . ' ' . inst('filtre') . ' ' . inst('a_article_commande') . ' ' . inst('a_filtre_produit') . ' ' . inst('a_parametre_utilisateur');
+    return inst('utilisateur') . ' ' . inst('article') . ' ' . inst('commande') . ' ' . inst('categorie_article') . ' ' . inst('parametre') . ' ' . inst('vue_utilisateur') . ' ' . inst('sous_categorie_article') . ' ' . inst('conseil') . ' ' . inst('a_commande_article') . ' ' . inst('a_parametre_utilisateur') . ' ' . inst('a_filtrer');
 }
 
-Hook_mf_systeme::initialisation();
+generer_la_base();
 
-mf_worker_run();
+Hook_mf_systeme::initialisation();

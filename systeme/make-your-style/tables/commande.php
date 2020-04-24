@@ -1,5 +1,5 @@
-<?php
+<?php declare(strict_types=1);
 
-class commande extends commande_monframework
+class table_commande extends table_commande_monframework
 {
 }
