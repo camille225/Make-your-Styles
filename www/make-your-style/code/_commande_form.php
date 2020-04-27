@@ -30,14 +30,16 @@
 
     } else {
 
-        include __DIR__ . '/_commande_list.php';
-
-        $code_html .= recuperer_gabarit('main/section.html', [
-            '{fonction}'  => 'lister',
-            '{nom_table}' => 'commande',
-            '{titre}'     => htmlspecialchars(get_nom_colonne('libelle_liste_commande')),
-            '{contenu}'   => recuperer_gabarit('commande/bloc_lister.html', $trans),
-        ]);
+        /* debut developpement */
+//        include __DIR__ . '/_commande_list.php';
+//
+//        $code_html .= recuperer_gabarit('main/section.html', [
+//            '{fonction}'  => 'lister',
+//            '{nom_table}' => 'commande',
+//            '{titre}'     => htmlspecialchars(get_nom_colonne('libelle_liste_commande')),
+//            '{contenu}'   => recuperer_gabarit('commande/bloc_lister.html', $trans),
+//        ]);
+        /* fin developpement */
 
     }
 

@@ -8,6 +8,8 @@ if (! $cache->start()) {
 
     /* Chargement des actions */
     include __DIR__ . '/code/_categorie_article_actions.php';
+    include __DIR__ . '/code/_sous_categorie_article_actions.php';
+    include __DIR__ . '/code/_article_actions.php';
 
     require __DIR__ . '/scripts/genealogie.php';
 
@@ -21,20 +23,28 @@ if (! $cache->start()) {
 
     /* Chargement des forms */
     include __DIR__ . '/code/_categorie_article_form.php';
+    if (mf_Code_categorie_article()) {
+        include __DIR__ . '/code/_sous_categorie_article_form.php';
+        if (mf_Code_sous_categorie_article()) {
+            include __DIR__ . '/code/_article_form.php';
+        }
+    }
 
     $menu_a_droite->ajouter_bouton_deconnexion();
 
     echo recuperer_gabarit('main/page.html', [
-        '{titre_page}' => 'categorie_article',
+        '{titre_page}' => 'Catégorie d\'article',
         '{css}' => $css,
         '{js}' => $js,
         '{menu_principal}' => $menu,
-        '{fil_ariane}' => $fil_ariane->generer_code(),
+        '{menu_option}' => menu_option_user(),
+        '{fil_ariane}' => $fil_ariane->generer_code_template(),
         '{sections}' => $code_html,
         '{menu_secondaire}' => $menu_a_droite->generer_code(),
         '{script_end}' => generer_script_maj_auto(),
         '{header}' => recuperer_gabarit('main/header.html',[]),
-        '{footer}' => recuperer_gabarit('main/footer.html',[])
+        '{footer}' => recuperer_gabarit('main/footer.html', array()),
+        '{logo}' => '<p class="text-white mb-0" style="width: 230px;"><img src="images/logo.png" style="max-width: 250px; max-height: 50px;"> Make Your Style</p>'
     ], true);
 
     $cache->end();

@@ -27,14 +27,16 @@
 
     } else {
 
-        include __DIR__ . '/_a_parametre_utilisateur_list.php';
-
-        $code_html .= recuperer_gabarit('main/section.html', [
-            '{fonction}'  => 'lister',
-            '{nom_table}' => 'a_parametre_utilisateur',
-            '{titre}'     => htmlspecialchars(get_nom_colonne('libelle_liste_a_parametre_utilisateur')),
-            '{contenu}'   => recuperer_gabarit('a_parametre_utilisateur/bloc_lister.html', $trans),
-        ]);
+        /* debut developpement */
+//        include __DIR__ . '/_a_parametre_utilisateur_list.php';
+//
+//        $code_html .= recuperer_gabarit('main/section.html', [
+//            '{fonction}'  => 'lister',
+//            '{nom_table}' => 'a_parametre_utilisateur',
+//            '{titre}'     => htmlspecialchars(get_nom_colonne('libelle_liste_a_parametre_utilisateur')),
+//            '{contenu}'   => recuperer_gabarit('a_parametre_utilisateur/bloc_lister.html', $trans),
+//        ]);
+        /* fin developpement */
 
     }
 

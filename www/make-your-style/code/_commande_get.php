@@ -89,3 +89,5 @@
             $trans['{Code_utilisateur}'] = get_valeur_html_maj_auto_interface([ 'liste_valeurs_cle_table' => ['Code_commande' => $commande['Code_commande']], 'DB_name' => 'Code_utilisateur' , 'valeur_initiale' => $commande['Code_utilisateur'] , 'nom_table' => 'commande' ]);
         }
 
+/* debut developpement */
+include __DIR__ . '/_a_commande_article_list.php';

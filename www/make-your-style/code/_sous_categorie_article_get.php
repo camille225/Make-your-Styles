@@ -63,3 +63,5 @@
             $trans['{Code_categorie_article}'] = get_valeur_html_maj_auto_interface([ 'liste_valeurs_cle_table' => ['Code_sous_categorie_article' => $sous_categorie_article['Code_sous_categorie_article']], 'DB_name' => 'Code_categorie_article' , 'valeur_initiale' => $sous_categorie_article['Code_categorie_article'] , 'nom_table' => 'sous_categorie_article' ]);
         }
 
+/* debut developpement */
+include __DIR__ . '/_article_list.php';
