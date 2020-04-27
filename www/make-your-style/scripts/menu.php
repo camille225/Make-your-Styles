@@ -13,11 +13,6 @@ $pages_menu['<span class="fa fa-box"></span> Catégories d\'articles'][] = [
 ];
 $categorie_menu = '<span class="fa fa-cogs"></span> Mon menu';
 $pages_menu[$categorie_menu][] = [
-    'nom' => 'article',
-    'icone' => '<span class="fa fa-cogs"></span>',
-    'adresse' => 'article.php'
-];
-$pages_menu[$categorie_menu][] = [
     'nom' => 'commande',
     'icone' => '<span class="fa fa-cogs"></span>',
     'adresse' => 'commande.php'
@@ -31,11 +26,6 @@ $pages_menu[$categorie_menu][] = [
     'nom' => 'vue_utilisateur',
     'icone' => '<span class="fa fa-cogs"></span>',
     'adresse' => 'vue_utilisateur.php'
-];
-$pages_menu[$categorie_menu][] = [
-    'nom' => 'sous_categorie_article',
-    'icone' => '<span class="fa fa-cogs"></span>',
-    'adresse' => 'sous_categorie_article.php'
 ];
 $pages_menu[$categorie_menu][] = [
     'nom' => 'conseil',

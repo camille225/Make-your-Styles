@@ -50,3 +50,5 @@
             $trans['{categorie_article_Libelle}'] = get_valeur_html_maj_auto_interface(['liste_valeurs_cle_table' => ['Code_categorie_article' => $categorie_article['Code_categorie_article']], 'DB_name' => 'categorie_article_Libelle', 'valeur_initiale' => $categorie_article['categorie_article_Libelle']]);
         }
 
+/* debut developpement */
+include __DIR__ . '/_sous_categorie_article_list.php';
