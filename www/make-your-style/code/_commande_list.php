@@ -4,7 +4,11 @@
     Hook_commande::hook_actualiser_les_droits_ajouter(mf_Code_utilisateur());
 
     // liste
-        $liste = $db->commande()->mf_lister_contexte(null, [OPTION_LIMIT => [0, NB_ELEM_MAX_TABLEAU]]);
+        /* debut developpement */
+        $liste = $db->commande()->mf_lister_contexte(null, [OPTION_LIMIT => [0, NB_ELEM_MAX_TABLEAU], OPTION_COND_MYSQL => [
+            MF_COMMANDE_CODE_UTILISATEUR.'='.get_utilisateur_courant(MF_UTILISATEUR__ID)
+        ]]);
+        /* fin developpement */
         $tab = new Tableau($liste, "");
         $tab->desactiver_pagination();
         $tab->ajouter_ref_Colonne_Code("Code_commande");
@@ -12,9 +16,7 @@
         $tab->modifier_code_action("apercu_commande");
         $tab->ajouter_colonne('commande_Prix_total', false, '');
         $tab->ajouter_colonne('commande_Date_livraison', false, 'date');
-        /* debut developpement */
-//        $tab->ajouter_colonne('commande_Date_creation', false, 'date');
-        /* fin developpement */
+        $tab->ajouter_colonne('commande_Date_creation', false, 'date');
         if (! isset($est_charge['utilisateur'])) {
             $tab->ajouter_colonne('Code_utilisateur', true, '');
         }

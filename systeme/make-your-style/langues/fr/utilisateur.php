@@ -48,7 +48,9 @@ $lang_standard['form_edit_utilisateur'] = 'Edition de l\'enregistrement';
 $lang_standard['form_delete_utilisateur'] = 'Confirmation de suppression de l\'enregistrement';
 $lang_standard['formulaire_modpwd_utilisateur'] = 'Modifier le mot de passe';
 
-$mf_titre_ligne_table['utilisateur'] = '{utilisateur_Identifiant}';
+/* debut developpement */
+$mf_titre_ligne_table['utilisateur'] = '{utilisateur_Prenom} {utilisateur_Nom}';
+/* fin developpement */
 
 $mf_tri_defaut_table['utilisateur'] = ['utilisateur_Identifiant' => 'ASC'];
 

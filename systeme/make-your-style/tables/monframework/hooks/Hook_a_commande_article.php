@@ -26,7 +26,11 @@ class Hook_a_commande_article
         // actualisation uniquement pour l'affichage
         $mf_droits_defaut['a_commande_article__CREER'] = false;
         // Mise à jour des droits
-        // ici le code
+        $db = new DB();
+        $commande = $db -> commande() -> mf_get($Code_commande);
+        if ($commande[MF_COMMANDE_CODE_UTILISATEUR] == get_utilisateur_courant(MF_UTILISATEUR__ID)) {
+            $mf_droits_defaut['a_commande_article__AJOUTER'] = true;
+        }
     }
 
     public static function autorisation_ajout(?int $a_commande_article_Quantite, ?float $a_commande_article_Prix_ligne, int $Code_commande, int $Code_article)
@@ -52,7 +56,11 @@ class Hook_a_commande_article
         $mf_droits_defaut['api_modifier__a_commande_article_Quantite'] = false;
         $mf_droits_defaut['api_modifier__a_commande_article_Prix_ligne'] = false;
         // Mise à jour des droits
-        // ici le code
+        $db = new DB();
+        $commande = $db -> commande() -> mf_get($Code_commande);
+        if ($commande[MF_COMMANDE_CODE_UTILISATEUR] == get_utilisateur_courant(MF_UTILISATEUR__ID)) {
+            $mf_droits_defaut['api_modifier__a_commande_article_Quantite'] = true;
+        }
     }
 
     public static function autorisation_modification(int $Code_commande, int $Code_article, ?int $a_commande_article_Quantite__new, ?float $a_commande_article_Prix_ligne__new)
@@ -85,7 +93,11 @@ class Hook_a_commande_article
         // Initialisation des droits
         $mf_droits_defaut['a_commande_article__SUPPRIMER'] = false;
         // Mise à jour des droits
-        // Ici le code
+        $db = new DB();
+        $commande = $db -> commande() -> mf_get($Code_commande);
+        if ($commande[MF_COMMANDE_CODE_UTILISATEUR] == get_utilisateur_courant(MF_UTILISATEUR__ID)) {
+            $mf_droits_defaut['a_commande_article__SUPPRIMER'] = true;
+        }
     }
 
     public static function autorisation_suppression(int $Code_commande, int $Code_article)

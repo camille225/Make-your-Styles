@@ -1,11 +1,25 @@
-{pager_sous_categorie_article}
-
 <div class="row">
 
-  <div class="col-lg-12">
-    <h2>TITRE ICI</h2>
-    {sous_categorie_article_Libelle}
-    {Code_categorie_article}
+  <div class="col-lg-6">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title">Sous-catégorie d'articles</h5>
+      </div>
+      <div class="card-body">
+        {sous_categorie_article_Libelle}
+      </div>
+      <div class="card-footer">{pager_sous_categorie_article}</div>
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="card">
+      <div class="card-header">
+        <div class="float-right">{bouton_ajouter_article}</div>
+        <h5 class="card-title mb-0">Articles</h5>
+      </div>
+      {tableau_article}
+    </div>
   </div>
 
   <div class="col-lg-0">

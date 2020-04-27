@@ -15,7 +15,10 @@ class Hook_commande
 
     public static function pre_controller(?float &$commande_Prix_total, string &$commande_Date_livraison, string &$commande_Date_creation, int &$Code_utilisateur, ?int $Code_commande = null)
     {
-        // ici le code
+        if ($Code_commande == 0) {
+            $Code_utilisateur = get_utilisateur_courant(MF_UTILISATEUR__ID);
+            $commande_Date_creation = get_now();
+        }
     }
 
     public static function hook_actualiser_les_droits_ajouter(?int $Code_utilisateur = null)
@@ -26,7 +29,7 @@ class Hook_commande
         // actualisation uniquement pour l'affichage
         $mf_droits_defaut['commande__CREER'] = false;
         // Mise à jour des droits
-        // ici le code
+        $mf_droits_defaut['commande__AJOUTER'] = true;
     }
 
     public static function autorisation_ajout(?float $commande_Prix_total, string $commande_Date_livraison, string $commande_Date_creation, int $Code_utilisateur)
@@ -109,7 +112,10 @@ class Hook_commande
         // Initialisation des droits
         $mf_droits_defaut['commande__SUPPRIMER'] = false;
         // Mise à jour des droits
-        // Ici le code
+        $db = new DB();
+        if ($db -> a_commande_article() -> mf_compter($Code_commande, 0) == 0) {
+            $mf_droits_defaut['commande__SUPPRIMER'] = true;
+        }
     }
 
     public static function autorisation_suppression(int $Code_commande)
