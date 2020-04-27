@@ -1,0 +1,7 @@
+<?php declare(strict_types=1);
+
+define('API_REST_ACCESS_GET_CATEGORIE_ARTICLE', 'none');
+define('API_REST_ACCESS_POST_CATEGORIE_ARTICLE', 'none');
+define('API_REST_ACCESS_PUT_CATEGORIE_ARTICLE', 'none');
+define('API_REST_ACCESS_DELETE_CATEGORIE_ARTICLE', 'none');
+define('API_REST_ACCESS_OPTIONS_CATEGORIE_ARTICLE', 'all');

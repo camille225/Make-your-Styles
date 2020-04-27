@@ -7,11 +7,13 @@ if ( !$cache->start() )
 
     /* Chargement des tables */
         $table_type_produit = new type_produit();
+        $table_article = new article();
 
     require __DIR__ . '/scripts/lecture_parametres.php';
 
     /* Chargement des actions */
         include __DIR__ . '/code/_type_produit_actions.php';
+        include __DIR__ . '/code/_article_actions.php';
 
     require __DIR__ . '/scripts/genealogie.php';
 
@@ -24,6 +26,7 @@ if ( !$cache->start() )
     $code_html = '';
     /* Chargement des forms */
         include __DIR__ . '/code/_type_produit_form.php';
+        include __DIR__ . '/code/_article_form.php';
 
     $menu_a_droite->ajouter_bouton_deconnexion();
 

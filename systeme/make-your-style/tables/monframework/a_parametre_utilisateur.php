@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
     +------------------------------+
@@ -6,7 +6,7 @@
     +------------------------------+
 */
 
-class a_parametre_utilisateur_monframework extends entite_monframework
+class table_a_parametre_utilisateur_monframework extends entite
 {
 
     private static $initialisation = true;
@@ -26,28 +26,27 @@ class a_parametre_utilisateur_monframework extends entite_monframework
             Hook_a_parametre_utilisateur::initialisation();
             self::$cache_db = new Mf_Cachedb('a_parametre_utilisateur');
         }
-        if (!self::$actualisation_en_cours)
-        {
+        if (! self::$actualisation_en_cours) {
             self::$actualisation_en_cours=true;
             Hook_a_parametre_utilisateur::actualisation();
             self::$actualisation_en_cours=false;
         }
     }
 
-    static function mf_raz_instance()
+    public static function mf_raz_instance()
     {
         self::$initialisation = true;
     }
 
-    static function initialiser_structure()
+    public static function initialiser_structure()
     {
         global $mf_initialisation;
 
         if (! test_si_table_existe(inst('a_parametre_utilisateur'))) {
-            executer_requete_mysql('CREATE TABLE '.inst('a_parametre_utilisateur').' (Code_utilisateur INT NOT NULL, Code_parametre INT NOT NULL, PRIMARY KEY (Code_utilisateur, Code_parametre)) ENGINE=MyISAM;', array_search('a_parametre_utilisateur', LISTE_TABLES_HISTORIQUE_DESACTIVE) === false);
+            executer_requete_mysql('CREATE TABLE '.inst('a_parametre_utilisateur').' (Code_utilisateur BIGINT UNSIGNED NOT NULL, Code_parametre BIGINT UNSIGNED NOT NULL, PRIMARY KEY (Code_utilisateur, Code_parametre)) ENGINE=MyISAM;', array_search('a_parametre_utilisateur', LISTE_TABLES_HISTORIQUE_DESACTIVE) === false);
         }
 
-        $liste_colonnes = lister_les_colonnes(inst('a_parametre_utilisateur'));
+        $liste_colonnes = lister_les_colonnes('a_parametre_utilisateur');
 
         if (isset($liste_colonnes['a_parametre_utilisateur_Valeur'])) {
             if (typeMyql2Sql($liste_colonnes['a_parametre_utilisateur_Valeur']['Type'])!='INT') {
@@ -55,8 +54,8 @@ class a_parametre_utilisateur_monframework extends entite_monframework
             }
             unset($liste_colonnes['a_parametre_utilisateur_Valeur']);
         } else {
-            executer_requete_mysql('ALTER TABLE '.inst('a_parametre_utilisateur').' ADD a_parametre_utilisateur_Valeur INT;', array_search('a_parametre_utilisateur', LISTE_TABLES_HISTORIQUE_DESACTIVE) === false);
-            executer_requete_mysql('UPDATE '.inst('a_parametre_utilisateur').' SET a_parametre_utilisateur_Valeur=' . format_sql('a_parametre_utilisateur_Valeur', $mf_initialisation['a_parametre_utilisateur_Valeur']) . ';', array_search('a_parametre_utilisateur', LISTE_TABLES_HISTORIQUE_DESACTIVE) === false);
+            executer_requete_mysql('ALTER TABLE ' . inst('a_parametre_utilisateur') . ' ADD a_parametre_utilisateur_Valeur INT;', array_search('a_parametre_utilisateur', LISTE_TABLES_HISTORIQUE_DESACTIVE) === false);
+            executer_requete_mysql('UPDATE ' . inst('a_parametre_utilisateur') . ' SET a_parametre_utilisateur_Valeur=' . format_sql('a_parametre_utilisateur_Valeur', $mf_initialisation['a_parametre_utilisateur_Valeur']) . ';', array_search('a_parametre_utilisateur', LISTE_TABLES_HISTORIQUE_DESACTIVE) === false);
         }
 
         if (isset($liste_colonnes['a_parametre_utilisateur_Actif'])) {
@@ -65,23 +64,62 @@ class a_parametre_utilisateur_monframework extends entite_monframework
             }
             unset($liste_colonnes['a_parametre_utilisateur_Actif']);
         } else {
-            executer_requete_mysql('ALTER TABLE '.inst('a_parametre_utilisateur').' ADD a_parametre_utilisateur_Actif INT;', array_search('a_parametre_utilisateur', LISTE_TABLES_HISTORIQUE_DESACTIVE) === false);
-            executer_requete_mysql('UPDATE '.inst('a_parametre_utilisateur').' SET a_parametre_utilisateur_Actif=' . format_sql('a_parametre_utilisateur_Actif', $mf_initialisation['a_parametre_utilisateur_Actif']) . ';', array_search('a_parametre_utilisateur', LISTE_TABLES_HISTORIQUE_DESACTIVE) === false);
+            executer_requete_mysql('ALTER TABLE ' . inst('a_parametre_utilisateur') . ' ADD a_parametre_utilisateur_Actif INT;', array_search('a_parametre_utilisateur', LISTE_TABLES_HISTORIQUE_DESACTIVE) === false);
+            executer_requete_mysql('UPDATE ' . inst('a_parametre_utilisateur') . ' SET a_parametre_utilisateur_Actif=' . format_sql('a_parametre_utilisateur_Actif', $mf_initialisation['a_parametre_utilisateur_Actif']) . ';', array_search('a_parametre_utilisateur', LISTE_TABLES_HISTORIQUE_DESACTIVE) === false);
         }
 
-        unset($liste_colonnes['Code_utilisateur']);
-        unset($liste_colonnes['Code_parametre']);
-
+        $raz_index = false;
+        if (isset($liste_colonnes['Code_utilisateur'])) {
+            unset($liste_colonnes['Code_utilisateur']);
+        } else {
+            $raz_index = true;
+            executer_requete_mysql('ALTER TABLE ' . inst('a_parametre_utilisateur') . ' ADD Code_utilisateur BIGINT UNSIGNED NOT NULL;', array_search('a_parametre_utilisateur', LISTE_TABLES_HISTORIQUE_DESACTIVE) === false);
+        }
+        if (isset($liste_colonnes['Code_parametre'])) {
+            unset($liste_colonnes['Code_parametre']);
+        } else {
+            $raz_index = true;
+            executer_requete_mysql('ALTER TABLE ' . inst('a_parametre_utilisateur') . ' ADD Code_parametre BIGINT UNSIGNED NOT NULL;', array_search('a_parametre_utilisateur', LISTE_TABLES_HISTORIQUE_DESACTIVE) === false);
+        }
+        if ($raz_index) {
+            executer_requete_mysql('ALTER TABLE ' . inst('a_parametre_utilisateur') . ' DROP PRIMARY KEY;', array_search('a_parametre_utilisateur', LISTE_TABLES_HISTORIQUE_DESACTIVE) === false);
+        }
+        $liste_colonnes_primaires = lister_les_colonnes_primaires('a_parametre_utilisateur');
         foreach ($liste_colonnes as $field => $value) {
-            executer_requete_mysql('ALTER TABLE '.inst('a_parametre_utilisateur').' DROP COLUMN '.$field.';', array_search('a_parametre_utilisateur', LISTE_TABLES_HISTORIQUE_DESACTIVE) === false);
+            if (! $raz_index && isset($liste_colonnes_primaires[$field])) {
+                executer_requete_mysql('ALTER TABLE ' . inst('a_parametre_utilisateur') . ' DROP PRIMARY KEY;', array_search('a_parametre_utilisateur', LISTE_TABLES_HISTORIQUE_DESACTIVE) === false);
+                $raz_index = true;
+            }
+            executer_requete_mysql('ALTER TABLE ' . inst('a_parametre_utilisateur') . " DROP COLUMN $field;", array_search('a_parametre_utilisateur', LISTE_TABLES_HISTORIQUE_DESACTIVE) === false);
         }
+        if ($raz_index) {
+            executer_requete_mysql('DELETE FROM ' . inst('a_parametre_utilisateur') . ';', array_search('a_parametre_utilisateur', LISTE_TABLES_HISTORIQUE_DESACTIVE) === false);
+            executer_requete_mysql('ALTER TABLE ' . inst('a_parametre_utilisateur') . ' ADD PRIMARY KEY(Code_utilisateur, Code_parametre);', array_search('a_parametre_utilisateur', LISTE_TABLES_HISTORIQUE_DESACTIVE) === false);
+        }
+    }
 
+    /**
+     * Retourne la tructure de la table « a_parametre_utilisateur » avec les valeurs initialisées par défaut.
+     * @return array
+     */
+    public function mf_get_structure(): array
+    {
+        global $mf_initialisation;
+        $struc = [
+            'Code_utilisateur' => 0, // ID
+            'Code_parametre' => 0, // ID
+            'a_parametre_utilisateur_Valeur' => $mf_initialisation['a_parametre_utilisateur_Valeur'],
+            'a_parametre_utilisateur_Actif' => $mf_initialisation['a_parametre_utilisateur_Actif'],
+        ];
+        mf_formatage_db_type_php($struc);
+        Hook_a_parametre_utilisateur::pre_controller($struc['a_parametre_utilisateur_Valeur'], $struc['a_parametre_utilisateur_Actif'], $struc['Code_utilisateur'], $struc['Code_parametre'], true);
+        return $struc;
     }
 
     public function mfi_ajouter_auto(array $interface)
     {
         if (isset($interface['Code_utilisateur'])) {
-            $liste_Code_utilisateur = array($interface['Code_utilisateur']);
+            $liste_Code_utilisateur = [$interface['Code_utilisateur']];
             $liste_Code_utilisateur = $this->__get_liste_Code_utilisateur([OPTION_COND_MYSQL=>['Code_utilisateur IN ' . Sql_Format_Liste($liste_Code_utilisateur)]]);
         } elseif (isset($interface['liste_Code_utilisateur'])) {
             $liste_Code_utilisateur = $interface['liste_Code_utilisateur'];
@@ -90,7 +128,7 @@ class a_parametre_utilisateur_monframework extends entite_monframework
             $liste_Code_utilisateur = $this->get_liste_Code_utilisateur();
         }
         if (isset($interface['Code_parametre'])) {
-            $liste_Code_parametre = array($interface['Code_parametre']);
+            $liste_Code_parametre = [$interface['Code_parametre']];
             $liste_Code_parametre = $this->__get_liste_Code_parametre([OPTION_COND_MYSQL=>['Code_parametre IN ' . Sql_Format_Liste($liste_Code_parametre)]]);
         } elseif (isset($interface['liste_Code_parametre'])) {
             $liste_Code_parametre = $interface['liste_Code_parametre'];
@@ -104,11 +142,11 @@ class a_parametre_utilisateur_monframework extends entite_monframework
             $mf_index[(int) $row_requete['Code_utilisateur']][(int) $row_requete['Code_parametre']] = 1;
         }
         mysqli_free_result($res_requete);
-        $liste_a_parametre_utilisateur = array();
+        $liste_a_parametre_utilisateur = [];
         foreach ($liste_Code_utilisateur as $Code_utilisateur) {
             foreach ($liste_Code_parametre as $Code_parametre) {
                 if (! isset($mf_index[$Code_utilisateur][$Code_parametre])) {
-                    $liste_a_parametre_utilisateur[] = array('Code_utilisateur'=>$Code_utilisateur,'Code_parametre'=>$Code_parametre);
+                    $liste_a_parametre_utilisateur[] = ['Code_utilisateur'=>$Code_utilisateur,'Code_parametre'=>$Code_parametre];
                 }
             }
         }
@@ -130,14 +168,14 @@ class a_parametre_utilisateur_monframework extends entite_monframework
     public function mfi_supprimer_auto(array $interface)
     {
         if (isset($interface['Code_utilisateur'])) {
-            $liste_Code_utilisateur = array($interface['Code_utilisateur']);
+            $liste_Code_utilisateur = [$interface['Code_utilisateur']];
         } elseif (isset($interface['liste_Code_utilisateur'])) {
             $liste_Code_utilisateur = $interface['liste_Code_utilisateur'];
         } else {
             $liste_Code_utilisateur = $this->get_liste_Code_utilisateur();
         }
         if (isset($interface['Code_parametre'])) {
-            $liste_Code_parametre = array($interface['Code_parametre']);
+            $liste_Code_parametre = [$interface['Code_parametre']];
         } elseif (isset($interface['liste_Code_parametre'])) {
             $liste_Code_parametre = $interface['liste_Code_parametre'];
         } else {
@@ -160,20 +198,19 @@ class a_parametre_utilisateur_monframework extends entite_monframework
         }
     }
 
-    public function mf_ajouter(int $Code_utilisateur, int $Code_parametre, int $a_parametre_utilisateur_Valeur, int $a_parametre_utilisateur_Actif, ?bool $force = null)
+    public function mf_ajouter(int $Code_utilisateur, int $Code_parametre, ?int $a_parametre_utilisateur_Valeur, ?int $a_parametre_utilisateur_Actif, ?bool $force = null)
     {
         if ($force === null) {
             $force = false;
         }
         $code_erreur = 0;
-        $Code_utilisateur = round($Code_utilisateur);
-        $Code_parametre = round($Code_parametre);
-        $a_parametre_utilisateur_Valeur = round($a_parametre_utilisateur_Valeur);
-        $a_parametre_utilisateur_Actif = round($a_parametre_utilisateur_Actif);
+        // Typage
+        $a_parametre_utilisateur_Valeur = is_null($a_parametre_utilisateur_Valeur) || $a_parametre_utilisateur_Valeur === '' ? null : (int) $a_parametre_utilisateur_Valeur;
+        $a_parametre_utilisateur_Actif = is_null($a_parametre_utilisateur_Actif) || $a_parametre_utilisateur_Actif === '' ? null : (int) $a_parametre_utilisateur_Actif;
+        // Fin typage
         Hook_a_parametre_utilisateur::pre_controller($a_parametre_utilisateur_Valeur, $a_parametre_utilisateur_Actif, $Code_utilisateur, $Code_parametre, true);
         if (! $force) {
-            if (!self::$maj_droits_ajouter_en_cours)
-            {
+            if (! self::$maj_droits_ajouter_en_cours) {
                 self::$maj_droits_ajouter_en_cours = true;
                 Hook_a_parametre_utilisateur::hook_actualiser_les_droits_ajouter($Code_utilisateur, $Code_parametre);
                 self::$maj_droits_ajouter_en_cours = false;
@@ -185,12 +222,11 @@ class a_parametre_utilisateur_monframework extends entite_monframework
         elseif ( $this->mf_tester_existance_a_parametre_utilisateur( $Code_utilisateur, $Code_parametre ) ) $code_erreur = ERR_A_PARAMETRE_UTILISATEUR__AJOUTER__DOUBLON;
         elseif (CONTROLE_ACCES_DONNEES_DEFAUT && ! Hook_mf_systeme::controle_acces_donnees('Code_utilisateur', $Code_utilisateur)) $code_erreur = ACCES_CODE_UTILISATEUR_REFUSE;
         elseif (CONTROLE_ACCES_DONNEES_DEFAUT && ! Hook_mf_systeme::controle_acces_donnees('Code_parametre', $Code_parametre)) $code_erreur = ACCES_CODE_PARAMETRE_REFUSE;
-        elseif ( !Hook_a_parametre_utilisateur::autorisation_ajout($a_parametre_utilisateur_Valeur, $a_parametre_utilisateur_Actif, $Code_utilisateur, $Code_parametre) ) $code_erreur = REFUS_A_PARAMETRE_UTILISATEUR__AJOUT_BLOQUEE;
-        else
-        {
+        elseif (! Hook_a_parametre_utilisateur::autorisation_ajout($a_parametre_utilisateur_Valeur, $a_parametre_utilisateur_Actif, $Code_utilisateur, $Code_parametre) ) $code_erreur = REFUS_A_PARAMETRE_UTILISATEUR__AJOUT_BLOQUEE;
+        else {
             Hook_a_parametre_utilisateur::data_controller($a_parametre_utilisateur_Valeur, $a_parametre_utilisateur_Actif, $Code_utilisateur, $Code_parametre, true);
-            $a_parametre_utilisateur_Valeur = round($a_parametre_utilisateur_Valeur);
-            $a_parametre_utilisateur_Actif = round($a_parametre_utilisateur_Actif);
+            $a_parametre_utilisateur_Valeur = is_null($a_parametre_utilisateur_Valeur) ? 'NULL' : (int) $a_parametre_utilisateur_Valeur;
+            $a_parametre_utilisateur_Actif = is_null($a_parametre_utilisateur_Actif) ? 'NULL' : (int) $a_parametre_utilisateur_Actif;
             $requete = 'INSERT INTO '.inst('a_parametre_utilisateur')." ( a_parametre_utilisateur_Valeur, a_parametre_utilisateur_Actif, Code_utilisateur, Code_parametre ) VALUES ( $a_parametre_utilisateur_Valeur, $a_parametre_utilisateur_Actif, $Code_utilisateur, $Code_parametre );";
             executer_requete_mysql($requete, array_search('a_parametre_utilisateur', LISTE_TABLES_HISTORIQUE_DESACTIVE) === false);
             $n = requete_mysqli_affected_rows();
@@ -208,7 +244,7 @@ class a_parametre_utilisateur_monframework extends entite_monframework
                 $mf_message_erreur_personalise = '';
             }
         }
-        return array('code_erreur' => $code_erreur, 'callback' => ( $code_erreur==0 ? Hook_a_parametre_utilisateur::callback_post($Code_utilisateur, $Code_parametre) : null ));
+        return ['code_erreur' => $code_erreur, 'Code_utilisateur' => $Code_utilisateur, 'Code_parametre' => $Code_parametre, 'callback' => ( $code_erreur==0 ? Hook_a_parametre_utilisateur::callback_post($Code_utilisateur, $Code_parametre) : null)];
     }
 
     public function mf_ajouter_2(array $ligne, ?bool $force = null) // array('colonne1' => 'valeur1',  [...] )
@@ -217,10 +253,14 @@ class a_parametre_utilisateur_monframework extends entite_monframework
             $force = false;
         }
         global $mf_initialisation;
-        $Code_utilisateur = (int)(isset($ligne['Code_utilisateur'])?round($ligne['Code_utilisateur']):get_utilisateur_courant('Code_utilisateur'));
-        $Code_parametre = (int)(isset($ligne['Code_parametre'])?round($ligne['Code_parametre']):0);
-        $a_parametre_utilisateur_Valeur = (int)(isset($ligne['a_parametre_utilisateur_Valeur'])?$ligne['a_parametre_utilisateur_Valeur']:$mf_initialisation['a_parametre_utilisateur_Valeur']);
-        $a_parametre_utilisateur_Actif = (int)(isset($ligne['a_parametre_utilisateur_Actif'])?$ligne['a_parametre_utilisateur_Actif']:$mf_initialisation['a_parametre_utilisateur_Actif']);
+        $Code_utilisateur = (isset($ligne['Code_utilisateur']) ? intval($ligne['Code_utilisateur']) : get_utilisateur_courant('Code_utilisateur'));
+        $Code_parametre = (isset($ligne['Code_parametre']) ? intval($ligne['Code_parametre']) : 0);
+        $a_parametre_utilisateur_Valeur = (isset($ligne['a_parametre_utilisateur_Valeur'])?$ligne['a_parametre_utilisateur_Valeur']:$mf_initialisation['a_parametre_utilisateur_Valeur']);
+        $a_parametre_utilisateur_Actif = (isset($ligne['a_parametre_utilisateur_Actif'])?$ligne['a_parametre_utilisateur_Actif']:$mf_initialisation['a_parametre_utilisateur_Actif']);
+        // Typage
+        $a_parametre_utilisateur_Valeur = is_null($a_parametre_utilisateur_Valeur) || $a_parametre_utilisateur_Valeur === '' ? null : (int) $a_parametre_utilisateur_Valeur;
+        $a_parametre_utilisateur_Actif = is_null($a_parametre_utilisateur_Actif) || $a_parametre_utilisateur_Actif === '' ? null : (int) $a_parametre_utilisateur_Actif;
+        // Fin typage
         return $this->mf_ajouter($Code_utilisateur, $Code_parametre, $a_parametre_utilisateur_Valeur, $a_parametre_utilisateur_Actif, $force);
     }
 
@@ -230,10 +270,10 @@ class a_parametre_utilisateur_monframework extends entite_monframework
         $code_erreur = 0;
         $values = '';
         foreach ($lignes as $ligne) {
-            $Code_utilisateur = (isset($ligne['Code_utilisateur'])?round($ligne['Code_utilisateur']):0);
-            $Code_parametre = (isset($ligne['Code_parametre'])?round($ligne['Code_parametre']):0);
-            $a_parametre_utilisateur_Valeur = round(isset($ligne['a_parametre_utilisateur_Valeur'])?$ligne['a_parametre_utilisateur_Valeur']:$mf_initialisation['a_parametre_utilisateur_Valeur']);
-            $a_parametre_utilisateur_Actif = round(isset($ligne['a_parametre_utilisateur_Actif'])?$ligne['a_parametre_utilisateur_Actif']:$mf_initialisation['a_parametre_utilisateur_Actif']);
+            $Code_utilisateur = (isset($ligne['Code_utilisateur']) ? intval($ligne['Code_utilisateur']) : 0);
+            $Code_parametre = (isset($ligne['Code_parametre']) ? intval($ligne['Code_parametre']) : 0);
+            $a_parametre_utilisateur_Valeur = is_null((isset($ligne['a_parametre_utilisateur_Valeur']) ? $ligne['a_parametre_utilisateur_Valeur'] : $mf_initialisation['a_parametre_utilisateur_Valeur'])) ? 'NULL' : (int) (isset($ligne['a_parametre_utilisateur_Valeur']) ? $ligne['a_parametre_utilisateur_Valeur'] : $mf_initialisation['a_parametre_utilisateur_Valeur']);
+            $a_parametre_utilisateur_Actif = is_null((isset($ligne['a_parametre_utilisateur_Actif']) ? $ligne['a_parametre_utilisateur_Actif'] : $mf_initialisation['a_parametre_utilisateur_Actif'])) ? 'NULL' : (int) (isset($ligne['a_parametre_utilisateur_Actif']) ? $ligne['a_parametre_utilisateur_Actif'] : $mf_initialisation['a_parametre_utilisateur_Actif']);
             if ($Code_utilisateur != 0) {
                 if ($Code_parametre != 0) {
                     $values .= ($values!='' ? ',' : '')."($a_parametre_utilisateur_Valeur, $a_parametre_utilisateur_Actif, $Code_utilisateur, $Code_parametre)";
@@ -241,7 +281,7 @@ class a_parametre_utilisateur_monframework extends entite_monframework
             }
         }
         if ($values != '') {
-            $requete = "INSERT INTO ".inst('a_parametre_utilisateur')." ( a_parametre_utilisateur_Valeur, a_parametre_utilisateur_Actif, Code_utilisateur, Code_parametre ) VALUES $values;";
+            $requete = "INSERT INTO " . inst('a_parametre_utilisateur') . " (a_parametre_utilisateur_Valeur, a_parametre_utilisateur_Actif, Code_utilisateur, Code_parametre) VALUES $values;";
             executer_requete_mysql($requete, array_search('a_parametre_utilisateur', LISTE_TABLES_HISTORIQUE_DESACTIVE) === false);
             $n = requete_mysqli_affected_rows();
             if ($n < count($lignes)) {
@@ -258,29 +298,28 @@ class a_parametre_utilisateur_monframework extends entite_monframework
                 $mf_message_erreur_personalise = '';
             }
         }
-        return array('code_erreur' => $code_erreur);
+        return ['code_erreur' => $code_erreur];
     }
 
-    public function mf_modifier(int $Code_utilisateur, int $Code_parametre, int $a_parametre_utilisateur_Valeur, int $a_parametre_utilisateur_Actif, ?bool $force = null)
+    public function mf_modifier(int $Code_utilisateur, int $Code_parametre, ?int $a_parametre_utilisateur_Valeur, ?int $a_parametre_utilisateur_Actif, ?bool $force = null)
     {
         if ($force === null) {
             $force = false;
         }
         $code_erreur = 0;
-        $Code_utilisateur = round($Code_utilisateur);
-        $Code_parametre = round($Code_parametre);
-        $a_parametre_utilisateur_Valeur = round($a_parametre_utilisateur_Valeur);
-        $a_parametre_utilisateur_Actif = round($a_parametre_utilisateur_Actif);
+        // Typage
+        $a_parametre_utilisateur_Valeur = is_null($a_parametre_utilisateur_Valeur) || $a_parametre_utilisateur_Valeur === '' ? null : (int) $a_parametre_utilisateur_Valeur;
+        $a_parametre_utilisateur_Actif = is_null($a_parametre_utilisateur_Actif) || $a_parametre_utilisateur_Actif === '' ? null : (int) $a_parametre_utilisateur_Actif;
+        // Fin typage
         Hook_a_parametre_utilisateur::pre_controller($a_parametre_utilisateur_Valeur, $a_parametre_utilisateur_Actif, $Code_utilisateur, $Code_parametre, false);
-        if (!$force)
-        {
-            if (!self::$maj_droits_modifier_en_cours)
-            {
+        if (! $force) {
+            if (! self::$maj_droits_modifier_en_cours) {
                 self::$maj_droits_modifier_en_cours = true;
                 Hook_a_parametre_utilisateur::hook_actualiser_les_droits_modifier($Code_utilisateur, $Code_parametre);
                 self::$maj_droits_modifier_en_cours = false;
             }
         }
+        $a_parametre_utilisateur = $this->mf_get_2( $Code_utilisateur, $Code_parametre, ['autocompletion' => false]);
         if ( !$force && !mf_matrice_droits(['a_parametre_utilisateur__MODIFIER']) ) $code_erreur = REFUS_A_PARAMETRE_UTILISATEUR__MODIFIER;
         elseif ( !$this->mf_tester_existance_Code_utilisateur($Code_utilisateur) ) $code_erreur = ERR_A_PARAMETRE_UTILISATEUR__MODIFIER__CODE_UTILISATEUR_INEXISTANT;
         elseif ( !$this->mf_tester_existance_Code_parametre($Code_parametre) ) $code_erreur = ERR_A_PARAMETRE_UTILISATEUR__MODIFIER__CODE_PARAMETRE_INEXISTANT;
@@ -288,20 +327,18 @@ class a_parametre_utilisateur_monframework extends entite_monframework
         elseif (CONTROLE_ACCES_DONNEES_DEFAUT && ! Hook_mf_systeme::controle_acces_donnees('Code_utilisateur', $Code_utilisateur)) $code_erreur = ACCES_CODE_UTILISATEUR_REFUSE;
         elseif (CONTROLE_ACCES_DONNEES_DEFAUT && ! Hook_mf_systeme::controle_acces_donnees('Code_parametre', $Code_parametre)) $code_erreur = ACCES_CODE_PARAMETRE_REFUSE;
         elseif ( !Hook_a_parametre_utilisateur::autorisation_modification($Code_utilisateur, $Code_parametre, $a_parametre_utilisateur_Valeur, $a_parametre_utilisateur_Actif) ) $code_erreur = REFUS_A_PARAMETRE_UTILISATEUR__MODIFICATION_BLOQUEE;
-        else
-        {
-            if (! isset(self::$lock[$Code_utilisateur . '-' . $Code_parametre])) {
-                self::$lock[$Code_utilisateur . '-' . $Code_parametre] = 0;
+        else {
+            if (! isset(self::$lock["$Code_utilisateur-$Code_parametre"])) {
+                self::$lock["$Code_utilisateur-$Code_parametre"] = 0;
             }
-            if (self::$lock[$Code_utilisateur . '-' . $Code_parametre] == 0) {
-                self::$cache_db->add_lock($Code_utilisateur . '-' . $Code_parametre);
+            if (self::$lock["$Code_utilisateur-$Code_parametre"] == 0) {
+                self::$cache_db->add_lock("$Code_utilisateur-$Code_parametre");
             }
-            self::$lock[$Code_utilisateur . '-' . $Code_parametre]++;
+            self::$lock["$Code_utilisateur-$Code_parametre"]++;
             Hook_a_parametre_utilisateur::data_controller($a_parametre_utilisateur_Valeur, $a_parametre_utilisateur_Actif, $Code_utilisateur, $Code_parametre, false);
-            $a_parametre_utilisateur = $this->mf_get_2( $Code_utilisateur, $Code_parametre, array('autocompletion' => false) );
             $mf_colonnes_a_modifier=[];
-            $bool__a_parametre_utilisateur_Valeur = false; if ( $a_parametre_utilisateur_Valeur!=$a_parametre_utilisateur['a_parametre_utilisateur_Valeur'] ) { Hook_a_parametre_utilisateur::data_controller__a_parametre_utilisateur_Valeur($a_parametre_utilisateur['a_parametre_utilisateur_Valeur'], $a_parametre_utilisateur_Valeur, $Code_utilisateur, $Code_parametre); if ( $a_parametre_utilisateur_Valeur!=$a_parametre_utilisateur['a_parametre_utilisateur_Valeur'] ) { $mf_colonnes_a_modifier[] = 'a_parametre_utilisateur_Valeur=' . format_sql('a_parametre_utilisateur_Valeur', $a_parametre_utilisateur_Valeur); $bool__a_parametre_utilisateur_Valeur = true; } }
-            $bool__a_parametre_utilisateur_Actif = false; if ( $a_parametre_utilisateur_Actif!=$a_parametre_utilisateur['a_parametre_utilisateur_Actif'] ) { Hook_a_parametre_utilisateur::data_controller__a_parametre_utilisateur_Actif($a_parametre_utilisateur['a_parametre_utilisateur_Actif'], $a_parametre_utilisateur_Actif, $Code_utilisateur, $Code_parametre); if ( $a_parametre_utilisateur_Actif!=$a_parametre_utilisateur['a_parametre_utilisateur_Actif'] ) { $mf_colonnes_a_modifier[] = 'a_parametre_utilisateur_Actif=' . format_sql('a_parametre_utilisateur_Actif', $a_parametre_utilisateur_Actif); $bool__a_parametre_utilisateur_Actif = true; } }
+            $bool__a_parametre_utilisateur_Valeur = false; if ($a_parametre_utilisateur_Valeur !== $a_parametre_utilisateur['a_parametre_utilisateur_Valeur']) {Hook_a_parametre_utilisateur::data_controller__a_parametre_utilisateur_Valeur($a_parametre_utilisateur['a_parametre_utilisateur_Valeur'], $a_parametre_utilisateur_Valeur, $Code_utilisateur, $Code_parametre); if ( $a_parametre_utilisateur_Valeur !== $a_parametre_utilisateur['a_parametre_utilisateur_Valeur'] ) { $mf_colonnes_a_modifier[] = 'a_parametre_utilisateur_Valeur=' . format_sql('a_parametre_utilisateur_Valeur', $a_parametre_utilisateur_Valeur); $bool__a_parametre_utilisateur_Valeur = true;}}
+            $bool__a_parametre_utilisateur_Actif = false; if ($a_parametre_utilisateur_Actif !== $a_parametre_utilisateur['a_parametre_utilisateur_Actif']) {Hook_a_parametre_utilisateur::data_controller__a_parametre_utilisateur_Actif($a_parametre_utilisateur['a_parametre_utilisateur_Actif'], $a_parametre_utilisateur_Actif, $Code_utilisateur, $Code_parametre); if ( $a_parametre_utilisateur_Actif !== $a_parametre_utilisateur['a_parametre_utilisateur_Actif'] ) { $mf_colonnes_a_modifier[] = 'a_parametre_utilisateur_Actif=' . format_sql('a_parametre_utilisateur_Actif', $a_parametre_utilisateur_Actif); $bool__a_parametre_utilisateur_Actif = true;}}
             if (count($mf_colonnes_a_modifier)>0) {
                 $requete = 'UPDATE ' . inst('a_parametre_utilisateur') . ' SET ' . enumeration($mf_colonnes_a_modifier) . " WHERE Code_utilisateur=$Code_utilisateur AND Code_parametre=$Code_parametre;";
                 executer_requete_mysql($requete, array_search('a_parametre_utilisateur', LISTE_TABLES_HISTORIQUE_DESACTIVE) === false);
@@ -314,10 +351,10 @@ class a_parametre_utilisateur_monframework extends entite_monframework
             } else {
                 $code_erreur = ERR_A_PARAMETRE_UTILISATEUR__MODIFIER__AUCUN_CHANGEMENT;
             }
-            self::$lock[$Code_utilisateur . '-' . $Code_parametre]--;
-            if (self::$lock[$Code_utilisateur . '-' . $Code_parametre] == 0) {
-                self::$cache_db->release_lock($Code_utilisateur . '-' . $Code_parametre);
-                unset(self::$lock[$Code_utilisateur . '-' . $Code_parametre]);
+            self::$lock["$Code_utilisateur-$Code_parametre"]--;
+            if (self::$lock["$Code_utilisateur-$Code_parametre"] == 0) {
+                self::$cache_db->release_lock("$Code_utilisateur-$Code_parametre");
+                unset(self::$lock["$Code_utilisateur-$Code_parametre"]);
             }
         }
         if ($code_erreur != 0) {
@@ -327,7 +364,7 @@ class a_parametre_utilisateur_monframework extends entite_monframework
                 $mf_message_erreur_personalise = '';
             }
         }
-        return array('code_erreur' => $code_erreur, 'callback' => ( $code_erreur == 0 ? Hook_a_parametre_utilisateur::callback_put($Code_utilisateur, $Code_parametre) : null ));
+        return ['code_erreur' => $code_erreur, 'callback' => ( $code_erreur == 0 ? Hook_a_parametre_utilisateur::callback_put($Code_utilisateur, $Code_parametre) : null )];
     }
 
     public function mf_modifier_2(array $lignes, ?bool $force = null) // array( array('Code_' => $Code, ..., 'colonne1' => 'valeur1', [...] ), [...] )
@@ -338,13 +375,11 @@ class a_parametre_utilisateur_monframework extends entite_monframework
         $code_erreur = 0;
         foreach ($lignes as $colonnes) {
             if ($code_erreur == 0) {
-                $Code_utilisateur = (int) ( isset($colonnes['Code_utilisateur']) ? $colonnes['Code_utilisateur'] : 0 );
-                $Code_parametre = (int) ( isset($colonnes['Code_parametre']) ? $colonnes['Code_parametre'] : 0 );
-                $a_parametre_utilisateur = $this->mf_get_2($Code_utilisateur, $Code_parametre, array('autocompletion' => false));
-                if (!$force)
-                {
-                    if (!self::$maj_droits_modifier_en_cours)
-                    {
+                $Code_utilisateur = (int) (isset($colonnes['Code_utilisateur']) ? $colonnes['Code_utilisateur'] : 0 );
+                $Code_parametre = (int) (isset($colonnes['Code_parametre']) ? $colonnes['Code_parametre'] : 0 );
+                $a_parametre_utilisateur = $this->mf_get_2($Code_utilisateur, $Code_parametre, ['autocompletion' => false]);
+                if (! $force) {
+                    if (! self::$maj_droits_modifier_en_cours) {
                         self::$maj_droits_modifier_en_cours = true;
                         Hook_a_parametre_utilisateur::hook_actualiser_les_droits_modifier($Code_utilisateur, $Code_parametre);
                         self::$maj_droits_modifier_en_cours = false;
@@ -368,7 +403,7 @@ class a_parametre_utilisateur_monframework extends entite_monframework
                 $mf_message_erreur_personalise = '';
             }
         }
-        return array('code_erreur' => $code_erreur);
+        return ['code_erreur' => $code_erreur];
     }
 
     public function mf_modifier_3(array $lignes) // array( array('Code_' => $Code, ..., 'colonne1' => 'valeur1', [...] ), [...] )
@@ -377,18 +412,15 @@ class a_parametre_utilisateur_monframework extends entite_monframework
         $modifs = false;
 
         // transformation des lignes en colonnes
-        $valeurs_en_colonnes=array();
-        $liste_valeurs_indexees=array();
-        foreach ( $lignes as $colonnes )
-        {
+        $valeurs_en_colonnes = [];
+        $liste_valeurs_indexees = [];
+        foreach ($lignes as $colonnes) {
             foreach ($colonnes as $colonne => $valeur)
             {
-                if ( $colonne=='a_parametre_utilisateur_Valeur' || $colonne=='a_parametre_utilisateur_Actif' )
-                {
-                    if ( isset($colonnes['Code_utilisateur']) && isset($colonnes['Code_parametre']) )
-                    {
+                if ($colonne == 'a_parametre_utilisateur_Valeur' || $colonne == 'a_parametre_utilisateur_Actif') {
+                    if (isset($colonnes['Code_utilisateur']) && isset($colonnes['Code_parametre'])) {
                         $valeurs_en_colonnes[$colonne]['Code_utilisateur='.$colonnes['Code_utilisateur'] . ' AND ' . 'Code_parametre='.$colonnes['Code_parametre']]=$valeur;
-                        $liste_valeurs_indexees[$colonne][''.$valeur][]='Code_utilisateur='.$colonnes['Code_utilisateur'] . ' AND ' . 'Code_parametre='.$colonnes['Code_parametre'];
+                        $liste_valeurs_indexees[$colonne]["$valeur"][]='Code_utilisateur='.$colonnes['Code_utilisateur'] . ' AND ' . 'Code_parametre='.$colonnes['Code_parametre'];
                     }
                 }
             }
@@ -435,7 +467,7 @@ class a_parametre_utilisateur_monframework extends entite_monframework
                 $mf_message_erreur_personalise = '';
             }
         }
-        return array('code_erreur' => $code_erreur);
+        return ['code_erreur' => $code_erreur];
     }
 
     public function mf_modifier_4(int $Code_utilisateur, int $Code_parametre, array $data, ?array $options = null ) // $data = array('colonne1' => 'valeur1', ... ) / $options = [ 'cond_mysql' => [], 'limit' => 0 ]
@@ -444,19 +476,16 @@ class a_parametre_utilisateur_monframework extends entite_monframework
             $options=[];
         }
         $code_erreur = 0;
-        $Code_utilisateur = round($Code_utilisateur);
-        $Code_parametre = round($Code_parametre);
-        $mf_colonnes_a_modifier=[];
+        $Code_utilisateur = intval($Code_utilisateur);
+        $Code_parametre = intval($Code_parametre);
+        $mf_colonnes_a_modifier = [];
         if ( isset($data['a_parametre_utilisateur_Valeur']) ) { $mf_colonnes_a_modifier[] = 'a_parametre_utilisateur_Valeur = ' . format_sql('a_parametre_utilisateur_Valeur', $data['a_parametre_utilisateur_Valeur']); }
         if ( isset($data['a_parametre_utilisateur_Actif']) ) { $mf_colonnes_a_modifier[] = 'a_parametre_utilisateur_Actif = ' . format_sql('a_parametre_utilisateur_Actif', $data['a_parametre_utilisateur_Actif']); }
-        if ( count($mf_colonnes_a_modifier)>0 )
-        {
+        if (count($mf_colonnes_a_modifier) > 0) {
             // cond_mysql
             $argument_cond = '';
-            if (isset($options['cond_mysql']))
-            {
-                foreach ($options['cond_mysql'] as &$condition)
-                {
+            if (isset($options['cond_mysql'])) {
+                foreach ($options['cond_mysql'] as &$condition) {
                     $argument_cond .= ' AND ('.$condition.')';
                 }
                 unset($condition);
@@ -464,9 +493,8 @@ class a_parametre_utilisateur_monframework extends entite_monframework
 
             // limit
             $limit = 0;
-            if (isset($options['limit']))
-            {
-                $limit = round($options['limit']);
+            if (isset($options['limit'])) {
+                $limit = intval($options['limit']);
             }
 
             $requete = 'UPDATE ' . inst('a_parametre_utilisateur') . ' SET ' . enumeration($mf_colonnes_a_modifier) . " WHERE 1".( $Code_utilisateur!=0 ? " AND Code_utilisateur=$Code_utilisateur" : "" )."".( $Code_parametre!=0 ? " AND Code_parametre=$Code_parametre" : "" )."$argument_cond" . ( $limit>0 ? ' LIMIT ' . $limit : '' ) . ";";
@@ -477,7 +505,7 @@ class a_parametre_utilisateur_monframework extends entite_monframework
                 self::$cache_db->clear();
             }
         }
-        return array('code_erreur' => $code_erreur);
+        return ['code_erreur' => $code_erreur];
     }
 
     public function mf_supprimer(?int $Code_utilisateur = null, ?int $Code_parametre = null, ?bool $force = null)
@@ -486,17 +514,16 @@ class a_parametre_utilisateur_monframework extends entite_monframework
             $force = false;
         }
         $code_erreur = 0;
-        $Code_utilisateur = round($Code_utilisateur);
-        $Code_parametre = round($Code_parametre);
-        $copie__liste_a_parametre_utilisateur = $this->mf_lister($Code_utilisateur, $Code_parametre, array('autocompletion' => false));
-        $liste_Code_utilisateur = array();
-        $liste_Code_parametre = array();
+        $Code_utilisateur = intval($Code_utilisateur);
+        $Code_parametre = intval($Code_parametre);
+        $copie__liste_a_parametre_utilisateur = $this->mf_lister($Code_utilisateur, $Code_parametre, ['autocompletion' => false]);
+        $liste_Code_utilisateur = [];
+        $liste_Code_parametre = [];
         foreach ( $copie__liste_a_parametre_utilisateur as $copie__a_parametre_utilisateur )
         {
             $Code_utilisateur = $copie__a_parametre_utilisateur['Code_utilisateur'];
             $Code_parametre = $copie__a_parametre_utilisateur['Code_parametre'];
-            if (!$force)
-            {
+            if (! $force) {
                 if (!self::$maj_droits_supprimer_en_cours)
                 {
                     self::$maj_droits_supprimer_en_cours = true;
@@ -528,15 +555,15 @@ class a_parametre_utilisateur_monframework extends entite_monframework
                 $mf_message_erreur_personalise = '';
             }
         }
-        return array('code_erreur' => $code_erreur);
+        return ['code_erreur' => $code_erreur];
     }
 
     public function mf_supprimer_2(?int $Code_utilisateur = null, ?int $Code_parametre = null)
     {
         $code_erreur = 0;
-        $Code_utilisateur = round($Code_utilisateur);
-        $Code_parametre = round($Code_parametre);
-        $copie__liste_a_parametre_utilisateur = $this->mf_lister_2($Code_utilisateur, $Code_parametre, array('autocompletion' => false));
+        $Code_utilisateur = intval($Code_utilisateur);
+        $Code_parametre = intval($Code_parametre);
+        $copie__liste_a_parametre_utilisateur = $this->mf_lister_2($Code_utilisateur, $Code_parametre, ['autocompletion' => false]);
         $requete = 'DELETE IGNORE FROM ' . inst('a_parametre_utilisateur') . " WHERE 1".( $Code_utilisateur!=0 ? " AND Code_utilisateur=$Code_utilisateur" : "" )."".( $Code_parametre!=0 ? " AND Code_parametre=$Code_parametre" : "" ).";";
         executer_requete_mysql( $requete , array_search('a_parametre_utilisateur', LISTE_TABLES_HISTORIQUE_DESACTIVE) === false);
         if ( requete_mysqli_affected_rows()==0 )
@@ -553,10 +580,10 @@ class a_parametre_utilisateur_monframework extends entite_monframework
                 $mf_message_erreur_personalise = '';
             }
         }
-        return array('code_erreur' => $code_erreur);
+        return ['code_erreur' => $code_erreur];
     }
 
-    public function mf_lister_contexte(?array $options = null /* $options = [ 'cond_mysql' => [], 'tris' => [], 'limit' => [], 'toutes_colonnes' => TOUTES_COLONNES_DEFAUT, 'autocompletion' => AUTOCOMPLETION_DEFAUT, 'autocompletion_recursive' => AUTOCOMPLETION_RECURSIVE_DEFAUT, 'controle_acces_donnees' => CONTROLE_ACCES_DONNEES_DEFAUT, 'maj' => true ] */)
+    public function mf_lister_contexte(?array $options = null /* $options = [ 'cond_mysql' => [], 'tris' => [], 'limit' => [], 'toutes_colonnes' => TOUTES_COLONNES_DEFAUT, 'liste_colonnes_a_selectionner' => [], 'autocompletion' => AUTOCOMPLETION_DEFAUT, 'autocompletion_recursive' => AUTOCOMPLETION_RECURSIVE_DEFAUT, 'controle_acces_donnees' => CONTROLE_ACCES_DONNEES_DEFAUT, 'maj' => true ] */)
     {
         if ($options === null) {
             $options=[];
@@ -565,7 +592,7 @@ class a_parametre_utilisateur_monframework extends entite_monframework
         return $this->mf_lister(isset($est_charge['utilisateur']) ? $mf_contexte['Code_utilisateur'] : 0, isset($est_charge['parametre']) ? $mf_contexte['Code_parametre'] : 0, $options);
     }
 
-    public function mf_lister(?int $Code_utilisateur = null, ?int $Code_parametre = null, ?array $options = null /* $options = [ 'cond_mysql' => [], 'tris' => [], 'limit' => [], 'toutes_colonnes' => TOUTES_COLONNES_DEFAUT, 'autocompletion' => AUTOCOMPLETION_DEFAUT, 'autocompletion_recursive' => AUTOCOMPLETION_RECURSIVE_DEFAUT, 'controle_acces_donnees' => CONTROLE_ACCES_DONNEES_DEFAUT, 'maj' => true ] */)
+    public function mf_lister(?int $Code_utilisateur = null, ?int $Code_parametre = null, ?array $options = null /* $options = [ 'cond_mysql' => [], 'tris' => [], 'limit' => [], 'toutes_colonnes' => TOUTES_COLONNES_DEFAUT, 'liste_colonnes_a_selectionner' => [], 'autocompletion' => AUTOCOMPLETION_DEFAUT, 'autocompletion_recursive' => AUTOCOMPLETION_RECURSIVE_DEFAUT, 'controle_acces_donnees' => CONTROLE_ACCES_DONNEES_DEFAUT, 'maj' => true ] */)
     {
         if ($options === null) {
             $options=[];
@@ -590,43 +617,39 @@ class a_parametre_utilisateur_monframework extends entite_monframework
         return $liste;
     }
 
-    public function mf_lister_2(?int $Code_utilisateur = null, ?int $Code_parametre = null, ?array $options = null /* $options = [ 'cond_mysql' => [], 'tris' => [], 'limit' => [], 'toutes_colonnes' => TOUTES_COLONNES_DEFAUT, 'autocompletion' => AUTOCOMPLETION_DEFAUT, 'autocompletion_recursive' => AUTOCOMPLETION_RECURSIVE_DEFAUT, 'controle_acces_donnees' => CONTROLE_ACCES_DONNEES_DEFAUT, 'maj' => true ] */)
+    public function mf_lister_2(?int $Code_utilisateur = null, ?int $Code_parametre = null, ?array $options = null /* $options = [ 'cond_mysql' => [], 'tris' => [], 'limit' => [], 'toutes_colonnes' => TOUTES_COLONNES_DEFAUT, 'liste_colonnes_a_selectionner' => [], 'autocompletion' => AUTOCOMPLETION_DEFAUT, 'autocompletion_recursive' => AUTOCOMPLETION_RECURSIVE_DEFAUT, 'controle_acces_donnees' => CONTROLE_ACCES_DONNEES_DEFAUT, 'maj' => true ] */)
     {
         if ($options === null) {
             $options=[];
         }
         $cle = 'a_parametre_utilisateur__lister';
-        $Code_utilisateur = round($Code_utilisateur);
+        $Code_utilisateur = intval($Code_utilisateur);
         $cle .= "_{$Code_utilisateur}";
-        $Code_parametre = round($Code_parametre);
+        $Code_parametre = intval($Code_parametre);
         $cle .= "_{$Code_parametre}";
 
         // cond_mysql
         $argument_cond = '';
         if (isset($options['cond_mysql'])) {
             foreach ($options['cond_mysql'] as &$condition) {
-                $argument_cond .= ' AND (' . $condition . ')';
+                $argument_cond .= " AND ($condition)";
             }
             unset($condition);
         }
-        $cle .= '_' . $argument_cond;
+        $cle .= "_$argument_cond";
 
         // tris
         $argument_tris = '';
-        if ( ! isset($options['tris']) )
-        {
-            $options['tris']=array();
+        if (! isset($options['tris'])) {
+            $options['tris']=[];
         }
-        if ( count($options['tris'])==0 )
-        {
+        if (count($options['tris']) == 0) {
             global $mf_tri_defaut_table;
-            if ( isset($mf_tri_defaut_table['a_parametre_utilisateur']) )
-            {
+            if (isset($mf_tri_defaut_table['a_parametre_utilisateur'])) {
                 $options['tris'] = $mf_tri_defaut_table['a_parametre_utilisateur'];
             }
         }
-        foreach ($options['tris'] as $colonne => $tri)
-        {
+        foreach ($options['tris'] as $colonne => $tri) {
             if ( $argument_tris=='' ) { $argument_tris = ' ORDER BY '; } else { $argument_tris .= ', '; }
             if ( $tri!='DESC' ) $tri = 'ASC';
             $argument_tris .= $colonne.' '.$tri;
@@ -652,18 +675,21 @@ class a_parametre_utilisateur_monframework extends entite_monframework
             $autocompletion_recursive = ($options['autocompletion_recursive'] == true);
         }
 
-        // controle_acces_donnees
-        $controle_acces_donnees = CONTROLE_ACCES_DONNEES_DEFAUT;
-        if (isset($options['controle_acces_donnees'])) {
-            $controle_acces_donnees = ($options['controle_acces_donnees'] == true);
+        // liste_colonnes_a_selectionner
+        $liste_colonnes_a_selectionner = [];
+        if (isset($options['liste_colonnes_a_selectionner'])) {
+            $liste_colonnes_a_selectionner = $options['liste_colonnes_a_selectionner'];
         }
+        $cle .= '_' . enumeration($liste_colonnes_a_selectionner);
 
         // afficher toutes les colonnes
         $toutes_colonnes = TOUTES_COLONNES_DEFAUT;
-        if (isset($options['toutes_colonnes'])) {
-            $toutes_colonnes = ( $options['toutes_colonnes']==true );
+        if (count($liste_colonnes_a_selectionner) == 0) {
+            if (isset($options['toutes_colonnes'])) {
+                $toutes_colonnes = ($options['toutes_colonnes'] == true);
+            }
+            $cle .= '_' . ($toutes_colonnes ? '1' : '0');
         }
-        $cle .= '_'.( $toutes_colonnes ? '1' : '0' );
 
         // maj
         $maj = true;
@@ -687,7 +713,7 @@ class a_parametre_utilisateur_monframework extends entite_monframework
             if (count($liste_colonnes_a_indexer) > 0) {
                 if (false === $mf_liste_requete_index = self::$cache_db->read('a_parametre_utilisateur__index')) {
                     $res_requete_index = executer_requete_mysql('SHOW INDEX FROM `'.inst('a_parametre_utilisateur').'`;', false);
-                    $mf_liste_requete_index = array();
+                    $mf_liste_requete_index = [];
                     while ($row_requete_index = mysqli_fetch_array($res_requete_index, MYSQLI_ASSOC)) {
                         $mf_liste_requete_index[$row_requete_index['Column_name']] = $row_requete_index['Column_name'];
                     }
@@ -705,25 +731,29 @@ class a_parametre_utilisateur_monframework extends entite_monframework
                 }
             }
 
-            $liste = array();
-            if ($toutes_colonnes) {
-                $colonnes='a_parametre_utilisateur_Valeur, a_parametre_utilisateur_Actif, Code_utilisateur, Code_parametre';
+            $liste = [];
+            if (count($liste_colonnes_a_selectionner) == 0) {
+                if ($toutes_colonnes) {
+                    $colonnes = 'a_parametre_utilisateur_Valeur, a_parametre_utilisateur_Actif, Code_utilisateur, Code_parametre';
+                } else {
+                    $colonnes = 'a_parametre_utilisateur_Valeur, a_parametre_utilisateur_Actif, Code_utilisateur, Code_parametre';
+                }
             } else {
-                $colonnes='a_parametre_utilisateur_Valeur, a_parametre_utilisateur_Actif, Code_utilisateur, Code_parametre';
+                $liste_colonnes_a_selectionner[] = 'Code_utilisateur';
+                $liste_colonnes_a_selectionner[] = 'Code_parametre';
+                $colonnes = enumeration($liste_colonnes_a_selectionner);
             }
+
             $res_requete = executer_requete_mysql('SELECT ' . $colonnes . ' FROM '.inst('a_parametre_utilisateur')." WHERE 1{$argument_cond}".( $Code_utilisateur!=0 ? " AND Code_utilisateur=$Code_utilisateur" : "" )."".( $Code_parametre!=0 ? " AND Code_parametre=$Code_parametre" : "" )."{$argument_tris}{$argument_limit};", false);
             while ($row_requete = mysqli_fetch_array($res_requete, MYSQLI_ASSOC)) {
                 mf_formatage_db_type_php($row_requete);
                 $liste[$row_requete['Code_utilisateur'].'-'.$row_requete['Code_parametre']] = $row_requete;
             }
             mysqli_free_result($res_requete);
-            if (count($options['tris'])==1)
-            {
-                foreach ($options['tris'] as $colonne => $tri)
-                {
+            if (count($options['tris']) == 1) {
+                foreach ($options['tris'] as $colonne => $tri) {
                     global $lang_standard;
-                    if (isset($lang_standard[$colonne.'_']))
-                    {
+                    if (isset($lang_standard[$colonne.'_'])) {
                         effectuer_tri_suivant_langue($liste, $colonne, $tri);
                     }
                 }
@@ -742,7 +772,7 @@ class a_parametre_utilisateur_monframework extends entite_monframework
         return $liste;
     }
 
-    public function mf_lister_3(?array $options = null /* $options = [ 'cond_mysql' => [], 'tris' => [], 'limit' => [], 'toutes_colonnes' => TOUTES_COLONNES_DEFAUT, 'autocompletion' => AUTOCOMPLETION_DEFAUT, 'autocompletion_recursive' => AUTOCOMPLETION_RECURSIVE_DEFAUT, 'controle_acces_donnees' => CONTROLE_ACCES_DONNEES_DEFAUT, 'maj' => true ] */)
+    public function mf_lister_3(?array $options = null /* $options = [ 'cond_mysql' => [], 'tris' => [], 'limit' => [], 'toutes_colonnes' => TOUTES_COLONNES_DEFAUT, 'liste_colonnes_a_selectionner' => [], 'autocompletion' => AUTOCOMPLETION_DEFAUT, 'autocompletion_recursive' => AUTOCOMPLETION_RECURSIVE_DEFAUT, 'controle_acces_donnees' => CONTROLE_ACCES_DONNEES_DEFAUT, 'maj' => true ] */)
     {
         return $this->mf_lister(null, null, $options);
     }
@@ -753,11 +783,11 @@ class a_parametre_utilisateur_monframework extends entite_monframework
             $options=[];
         }
         $cle = "a_parametre_utilisateur__get";
-        $Code_utilisateur = round($Code_utilisateur);
+        $Code_utilisateur = intval($Code_utilisateur);
         $cle .= "_{$Code_utilisateur}";
-        $Code_parametre = round($Code_parametre);
+        $Code_parametre = intval($Code_parametre);
         $cle .= "_{$Code_parametre}";
-        $retour = array();
+        $retour = [];
         if (! CONTROLE_ACCES_DONNEES_DEFAUT || Hook_mf_systeme::controle_acces_donnees('Code_utilisateur', $Code_utilisateur) && Hook_mf_systeme::controle_acces_donnees('Code_parametre', $Code_parametre)) {
 
             // autocompletion
@@ -797,7 +827,7 @@ class a_parametre_utilisateur_monframework extends entite_monframework
                     mf_formatage_db_type_php($row_requete);
                     $retour = $row_requete;
                 } else {
-                    $retour = array();
+                    $retour = [];
                 }
                 mysqli_free_result($res_requete);
                 self::$cache_db->write($cle, $retour);
@@ -819,9 +849,9 @@ class a_parametre_utilisateur_monframework extends entite_monframework
             $options=[];
         }
         $cle = "a_parametre_utilisateur__get";
-        $Code_utilisateur = round($Code_utilisateur);
+        $Code_utilisateur = intval($Code_utilisateur);
         $cle .= "_{$Code_utilisateur}";
-        $Code_parametre = round($Code_parametre);
+        $Code_parametre = intval($Code_parametre);
         $cle .= "_{$Code_parametre}";
 
         // autocompletion
@@ -856,12 +886,12 @@ class a_parametre_utilisateur_monframework extends entite_monframework
             } else {
                 $colonnes='a_parametre_utilisateur_Valeur, a_parametre_utilisateur_Actif, Code_utilisateur, Code_parametre';
             }
-            $res_requete = executer_requete_mysql('SELECT ' . $colonnes . ' FROM ' . inst('a_parametre_utilisateur')." WHERE Code_utilisateur=$Code_utilisateur AND Code_parametre=$Code_parametre;", false);
+            $res_requete = executer_requete_mysql("SELECT $colonnes FROM " . inst('a_parametre_utilisateur')." WHERE Code_utilisateur=$Code_utilisateur AND Code_parametre=$Code_parametre;", false);
             if ($row_requete = mysqli_fetch_array($res_requete, MYSQLI_ASSOC)) {
                 mf_formatage_db_type_php($row_requete);
                 $retour = $row_requete;
             } else {
-                $retour = array();
+                $retour = [];
             }
             mysqli_free_result($res_requete);
             self::$cache_db->write($cle, $retour);
@@ -876,26 +906,26 @@ class a_parametre_utilisateur_monframework extends entite_monframework
         return $retour;
     }
 
-    public function mf_compter(?int $Code_utilisateur = null, ?int $Code_parametre = null, ?array $options = null /* $options = [ 'cond_mysql' => array() ] */)
+    public function mf_compter(?int $Code_utilisateur = null, ?int $Code_parametre = null, ?array $options = null /* $options = [ 'cond_mysql' => [] ] */)
     {
         if ($options === null) {
             $options=[];
         }
         $cle = 'a_parametre_utilisateur__compter';
-        $Code_utilisateur = round($Code_utilisateur);
+        $Code_utilisateur = intval($Code_utilisateur);
         $cle .= '_{'.$Code_utilisateur.'}';
-        $Code_parametre = round($Code_parametre);
+        $Code_parametre = intval($Code_parametre);
         $cle .= '_{'.$Code_parametre.'}';
 
         // cond_mysql
         $argument_cond = '';
         if (isset($options['cond_mysql'])) {
             foreach ($options['cond_mysql'] as &$condition) {
-                $argument_cond .= ' AND (' . $condition . ')';
+                $argument_cond .= " AND ($condition)";
             }
             unset($condition);
         }
-        $cle .= '_' . $argument_cond;
+        $cle .= "_$argument_cond";
 
         if (false === $nb = self::$cache_db->read($cle)) {
 
@@ -908,7 +938,7 @@ class a_parametre_utilisateur_monframework extends entite_monframework
             if (count($liste_colonnes_a_indexer) > 0) {
                 if (false === $mf_liste_requete_index = self::$cache_db->read('a_parametre_utilisateur__index')) {
                     $res_requete_index = executer_requete_mysql('SHOW INDEX FROM `'.inst('a_parametre_utilisateur').'`;', false);
-                    $mf_liste_requete_index = array();
+                    $mf_liste_requete_index = [];
                     while ($row_requete_index = mysqli_fetch_array($res_requete_index, MYSQLI_ASSOC)) {
                         $mf_liste_requete_index[$row_requete_index['Column_name']] = $row_requete_index['Column_name'];
                     }
@@ -926,7 +956,7 @@ class a_parametre_utilisateur_monframework extends entite_monframework
                 }
             }
 
-            $res_requete = executer_requete_mysql("SELECT COUNT(CONCAT(Code_utilisateur,'|',Code_parametre)) as nb FROM ".inst('a_parametre_utilisateur')." WHERE 1{$argument_cond}".( $Code_utilisateur!=0 ? " AND Code_utilisateur=$Code_utilisateur" : "" )."".( $Code_parametre!=0 ? " AND Code_parametre=$Code_parametre" : "" ).";", false);
+            $res_requete = executer_requete_mysql("SELECT COUNT(CONCAT(Code_utilisateur,'|',Code_parametre)) as nb FROM " . inst('a_parametre_utilisateur') . " WHERE 1{$argument_cond}".( $Code_utilisateur!=0 ? " AND Code_utilisateur=$Code_utilisateur" : "" )."".( $Code_parametre!=0 ? " AND Code_parametre=$Code_parametre" : "" ).";", false);
             $row_requete = mysqli_fetch_array($res_requete, MYSQLI_ASSOC);
             mysqli_free_result($res_requete);
             $nb = (int) $row_requete['nb'];
@@ -935,7 +965,7 @@ class a_parametre_utilisateur_monframework extends entite_monframework
         return $nb;
     }
 
-    public function mf_liste_Code_utilisateur_vers_liste_Code_parametre( array $liste_Code_utilisateur, ?array $options = null /* $options = [ 'cond_mysql' => array() ] */)
+    public function mf_liste_Code_utilisateur_vers_liste_Code_parametre( array $liste_Code_utilisateur, ?array $options = null /* $options = [ 'cond_mysql' => [] ] */)
     {
         if ($options === null) {
             $options=[];
@@ -943,11 +973,17 @@ class a_parametre_utilisateur_monframework extends entite_monframework
         return $this->a_parametre_utilisateur_liste_Code_utilisateur_vers_liste_Code_parametre( $liste_Code_utilisateur , $options );
     }
 
-    public function mf_liste_Code_parametre_vers_liste_Code_utilisateur( array $liste_Code_parametre, ?array $options = null /* $options = [ 'cond_mysql' => array() ] */)
+    public function mf_liste_Code_parametre_vers_liste_Code_utilisateur( array $liste_Code_parametre, ?array $options = null /* $options = [ 'cond_mysql' => [] ] */)
     {
         if ($options === null) {
             $options=[];
         }
         return $this->a_parametre_utilisateur_liste_Code_parametre_vers_liste_Code_utilisateur( $liste_Code_parametre , $options );
     }
+
+    public function mf_get_liste_tables_parents()
+    {
+        return ['utilisateur','parametre'];
+    }
+
 }

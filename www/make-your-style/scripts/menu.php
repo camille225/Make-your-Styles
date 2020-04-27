@@ -1,18 +1,48 @@
-<?php
+<?php declare(strict_types=1);
+$pages_menu = [];
 
-$pages_menu=array();
-
-$rubrique_param = '<i class="align-middle mr-2 fas fa-fw fa-cogs"></i> Paramétrage';
-$pages_menu['Mon menu'][]=array( 'adresse' => 'utilisateur.php', 'nom' => 'utilisateur' , 'icone' => 'fa fa-users fa-fw' );
-$pages_menu['Mon menu'][]=array( 'adresse' => 'article.php', 'nom' => 'article' , 'icone' => 'fa fa-users fa-fw' );
-$pages_menu['Mon menu'][]=array( 'adresse' => 'commande.php', 'nom' => 'commande' , 'icone' => 'fa fa-users fa-fw' );
-$pages_menu['Mon menu'][]=array( 'adresse' => 'type_produit.php', 'nom' => 'type_produit' , 'icone' => 'fa fa-users fa-fw' );
-$pages_menu['Mon menu'][]=array( 'adresse' => 'parametre.php', 'nom' => 'parametre' , 'icone' => 'fa fa-cogs fa-fw' );
-$pages_menu['Mon menu'][]=array( 'adresse' => 'filtre.php', 'nom' => 'filtre' , 'icone' => 'fa fa-users fa-fw' );
-$pages_menu['Mon menu'][]=array( 'adresse' => 'a_article_commande.php', 'nom' => 'a_article_commande' , 'icone' => 'fa fa-users fa-fw' );
-$pages_menu['Mon menu'][]=array( 'adresse' => 'a_filtre_produit.php', 'nom' => 'a_filtre_produit' , 'icone' => 'fa fa-users fa-fw' );
-$pages_menu['Mon menu'][]=array( 'adresse' => 'a_parametre_utilisateur.php', 'nom' => 'a_parametre_utilisateur' , 'icone' => 'fa fa-users fa-fw' );
-$pages_menu['Mon menu'][]=array( 'adresse' => 'compte_utilisateur.php', 'nom' => 'compte_utilisateur' , 'icone' => 'fa fa-users fa-fw' );
+if (est_connecte()) {
+    /* pages B1 */
+    $pages_menu['<span class="fa fa-user"></span> Compte utilisateur'][] = [
+        'nom' => 'Compte utilisateur',
+        'icone' => 'fa fa-user',
+        'adresse' => 'page_compte_utilisateur.php'
+    ];
+}
+if (est_administrateur() || $db->utilisateur()->mf_compter() == 0) {
+    $categorie_administrateur = '<span class="fa fa-cogs"></span> Paramétrage administrateur';
+    $pages_menu[$categorie_administrateur][] = [
+        'nom' => 'Utilisateurs',
+        'icone' => 'fa fa-users',
+        'adresse' => 'utilisateur.php'
+    ];
+    $pages_menu[$categorie_administrateur][] = [
+        'nom' => 'Catégories d\'articles',
+        'icone' => 'fa fa-box',
+        'adresse' => 'categorie_article.php'
+    ];
+    $pages_menu[$categorie_administrateur][] = [
+        'nom' => 'Conseils',
+        'icone' => 'fa fa-comment',
+        'adresse' => 'conseil.php'
+    ];
+    $pages_menu[$categorie_administrateur][] = [
+        'nom' => 'Paramètres',
+        'icone' => 'fa fa-cogs',
+        'adresse' => 'parametre.php'
+    ];
+    $categorie_menu = '<span class="fa fa-cogs"></span> A paramétrer puis supprimer';
+    $pages_menu[$categorie_menu][] = [
+        'nom' => 'vue_utilisateur',
+        'icone' => 'fa fa-cogs',
+        'adresse' => 'vue_utilisateur.php'
+    ];
+    $pages_menu[$categorie_menu][] = [
+        'nom' => 'a_filtrer',
+        'icone' => 'fa fa-cogs',
+        'adresse' => 'a_filtrer.php'
+    ];
+}
 
 // menu  spécial pour SB Admin 2
 function generer_menu_principal_bootstrap()
