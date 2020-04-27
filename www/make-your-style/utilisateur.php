@@ -8,6 +8,9 @@ if (! $cache->start()) {
 
     /* Chargement des actions */
     include __DIR__ . '/code/_utilisateur_actions.php';
+    include __DIR__ . '/code/_a_parametre_utilisateur_actions.php';
+    include __DIR__ . '/code/_commande_actions.php';
+    include __DIR__ . '/code/_a_commande_article_actions.php';
 
     require __DIR__ . '/scripts/genealogie.php';
 
@@ -21,6 +24,13 @@ if (! $cache->start()) {
 
     /* Chargement des forms */
     include __DIR__ . '/code/_utilisateur_form.php';
+    if (mf_Code_utilisateur()) {
+        include __DIR__ . '/code/_a_parametre_utilisateur_form.php';
+        include __DIR__ . '/code/_commande_form.php';
+        if (mf_Code_commande()) {
+            include __DIR__ . '/code/_a_commande_article_form.php';
+        }
+    }
 
     $menu_a_droite->ajouter_bouton_deconnexion();
 
