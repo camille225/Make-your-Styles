@@ -1,14 +1,20 @@
 <?php declare(strict_types=1);
 $pages_menu = [];
 
+/* début pages B1 */
+$pages_menu['<span class="fa fa-phone"></span> Contact'][] = [
+    'nom' => 'Contact',
+    'icone' => 'fa fa-phone',
+    'adresse' => 'contactutilisateur.php'
+];
 if (est_connecte()) {
-    /* pages B1 */
     $pages_menu['<span class="fa fa-user"></span> Compte utilisateur'][] = [
         'nom' => 'Compte utilisateur',
         'icone' => 'fa fa-user',
         'adresse' => 'page_compte_utilisateur.php'
     ];
 }
+/* fin pages B1 */
 if (est_administrateur() || $db->utilisateur()->mf_compter() == 0) {
     $categorie_administrateur = '<span class="fa fa-cogs"></span> Paramétrage administrateur';
     $pages_menu[$categorie_administrateur][] = [
