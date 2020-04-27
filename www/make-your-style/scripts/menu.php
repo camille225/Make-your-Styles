@@ -1,13 +1,17 @@
 <?php declare(strict_types=1);
 $pages_menu = [];
 
-$categorie_menu = '<span class="fa fa-cogs"></span> Mon menu';
-
-$pages_menu[$categorie_menu][] = [
-    'nom' => 'utilisateur',
-    'icone' => '<span class="fa fa-cogs"></span>',
+$pages_menu['<span class="fa fa-users"></span> Utilisateurs'][] = [
+    'nom' => 'Utilisateurs',
+    'icone' => 'fa fa-users',
     'adresse' => 'utilisateur.php'
 ];
+$pages_menu['<span class="fa fa-box"></span> Catégories d\'articles'][] = [
+    'nom' => 'Catégories d\'articles',
+    'icone' => 'fa fa-box',
+    'adresse' => 'categorie_article.php'
+];
+$categorie_menu = '<span class="fa fa-cogs"></span> Mon menu';
 $pages_menu[$categorie_menu][] = [
     'nom' => 'article',
     'icone' => '<span class="fa fa-cogs"></span>',
@@ -17,11 +21,6 @@ $pages_menu[$categorie_menu][] = [
     'nom' => 'commande',
     'icone' => '<span class="fa fa-cogs"></span>',
     'adresse' => 'commande.php'
-];
-$pages_menu[$categorie_menu][] = [
-    'nom' => 'categorie_article',
-    'icone' => '<span class="fa fa-cogs"></span>',
-    'adresse' => 'categorie_article.php'
 ];
 $pages_menu[$categorie_menu][] = [
     'nom' => 'parametre',
