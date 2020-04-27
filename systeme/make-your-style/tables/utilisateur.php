@@ -1,5 +1,5 @@
-<?php
+<?php declare(strict_types=1);
 
-class utilisateur extends utilisateur_monframework
+class table_utilisateur extends table_utilisateur_monframework
 {
 }

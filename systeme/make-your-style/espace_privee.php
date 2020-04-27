@@ -1,16 +1,9 @@
-<?php
+<?php declare(strict_types=1);
+
 include __DIR__ . '/dblayer.php';
 
-$mf_connexion = new Mf_Connexion();
-$menu_a_droite = new Menu_a_droite();
-$fil_ariane = new Fil_Ariane('Accueil', '');
-$trans = array();
+/** @var string $mf_action */
 
-if (isset($_GET['act'])) {
-    $mf_action = $_GET['act'];
-} else {
-    $mf_action = '';
-}
 $mdp_oublie = isset($_GET['mdp_oublie']) ? $_GET['mdp_oublie'] : 0;
 
 /*
@@ -28,7 +21,7 @@ if ($mf_action == 'connexion' && isset($_POST['validation_formulaire']) && $mdp_
     }
     $mf_connexion_mdp = $_POST['mf_connexion_mdp'];
     if ($token = $mf_connexion->connexion($mf_connexion_login_email, $mf_connexion_mdp)) {
-        $_SESSION[PREFIXE_SESSION]['token'] = $token;
+        $_SESSION[NOM_PROJET]['token'] = $token;
     } else {
         $mess_2 = 'Erreur dans vos informations d\'identification';
     }
@@ -75,7 +68,7 @@ if (ACTIVER_FORMULAIRE_INSCRIPTION && $mf_action == 'inscription' && isset($_POS
     $mf_inscription_mdp = $_POST['mf_inscription_mdp'];
     $mf_inscription_mdp_conf = $_POST['mf_inscription_mdp_conf'];
     $mf_inscription_email = $_POST['mf_inscription_email'];
-    $mf_inscription_email_conf = $_POST['mf_inscription_email_conf'];
+    $mf_inscription_email_conf = (isset($_POST['mf_inscription_email_conf']) ? $_POST['mf_inscription_email_conf'] : $_POST['mf_inscription_email']);
     if (TABLE_INSTANCE != '') { // si une instance est paramétrée, alors, la création correspond à la création d'une nouvelle instance.
         new_instance();
         $mf_connexion = new Mf_Connexion(); // La nouvelle instance doit être chargée
@@ -86,7 +79,7 @@ if (ACTIVER_FORMULAIRE_INSCRIPTION && $mf_action == 'inscription' && isset($_POS
         $mdp_oublie = 0;
         // tentative de connexion
         if ($token = $mf_connexion->connexion($mf_inscription_login, $mf_inscription_mdp)) {
-            $_SESSION[PREFIXE_SESSION]['token'] = $token;
+            $_SESSION[NOM_PROJET]['token'] = $token;
         }
     } else {
         $mess_3 = ((isset($mf_libelle_erreur[$code_erreur]) ? $mf_libelle_erreur[$code_erreur] : 'ERREUR N_' . $code_erreur));
@@ -102,8 +95,8 @@ if (ACTIVER_FORMULAIRE_INSCRIPTION && $mf_action == 'inscription' && isset($_POS
  */
 
 if ($mf_action == 'deconnexion') {
-    if (isset($_SESSION[PREFIXE_SESSION]['token'])) {
-        $token = $_SESSION[PREFIXE_SESSION]['token'];
+    if (isset($_SESSION[NOM_PROJET]['token'])) {
+        $token = $_SESSION[NOM_PROJET]['token'];
         $mf_connexion->deconnexion($token);
     }
 }
@@ -114,16 +107,15 @@ if ($mf_action == 'deconnexion') {
  * +-----------------+
  */
 
-if (isset($_SESSION[PREFIXE_SESSION]['token'])) {
-
-    if (! $mf_connexion->est_connecte($_SESSION[PREFIXE_SESSION]['token'])) {
-        unset($_SESSION[PREFIXE_SESSION]['token']);
+if (isset($_SESSION[NOM_PROJET]['token'])) {
+    if (! $mf_connexion->est_connecte((string) $_SESSION[NOM_PROJET]['token'])) {
+        unset($_SESSION[NOM_PROJET]['token']);
     }
 }
 
 session_write_close();
 
-if (! isset($_SESSION[PREFIXE_SESSION]['token'])) {
+if (! isset($_SESSION[NOM_PROJET]['token'])) {
 
     $cache = new Cachehtml();
 
@@ -145,6 +137,8 @@ if (! isset($_SESSION[PREFIXE_SESSION]['token'])) {
         }
 
         $code_html = '';
+        $lien_ins_conn = '';
+        $code_html_inscription = '';
 
         $fil_ariane = new Fil_Ariane('ESPACE PRIVE', '');
 
@@ -167,15 +161,14 @@ if (! isset($_SESSION[PREFIXE_SESSION]['token'])) {
             $form->set_libelle_bouton(get_nom_colonne('mv_validation_form_nouveau_mdp'));
             $form->activer_picto_forget_password();
             $form->desactiver_le_mode_inline();
-            /* début développement */
-            $code_html .= $form->generer_avec_gabarit('main/formulaire_mot_de_passe.html');
-            /* fin développement */
-        } elseif ($mf_action != 'inscription') {
+            $code_html .= $form->generer_BS4_Forms() . '<p style="text-align: center; margin-top: 40px; font-style: italic;"><a style="text-decoration: none; color: gray;" href="?mdp_oublie=0">' . get_nom_colonne('mv_lien_vers_connexion') . '</a></p>';
+        } else {
             $form = new Formulaire('', $mess);
+            $mf_login_get = (isset($_GET['login']) ? $_GET['login'] : '');
             if (ACTIVER_CONNEXION_EMAIL) {
-                $form->ajouter_input('mf_connexion_login_email', '', true, 'text');
+                $form->ajouter_input('mf_connexion_login_email', $mf_login_get, true, 'text');
             } else {
-                $form->ajouter_input('mf_connexion_login', '', true, 'text');
+                $form->ajouter_input('mf_connexion_login', $mf_login_get, true, 'text');
             }
             $form->ajouter_input('mf_connexion_mdp', '', true, 'password');
             if (TABLE_INSTANCE != '') {
@@ -189,9 +182,7 @@ if (! isset($_SESSION[PREFIXE_SESSION]['token'])) {
             $form->set_libelle_bouton(get_nom_colonne('mv_validation_form_connexion'));
             $form->activer_picto_connexion();
             $form->desactiver_le_mode_inline();
-            /* début développement */
-            $code_html .= $form->generer_avec_gabarit('main/formulaire_connexion.html');
-            /* fin développement */
+            $code_html_connexion = $form->generer_BS4_Forms() . '<p style="text-align: center; margin-top: 40px; font-style: italic;"><a style="text-decoration: none; color: gray;" href="?mdp_oublie=1">' . get_nom_colonne('mv_lien_vers_nouveau_mdp') . '</a></p>';
 
             if (GOOGLE_CLIENT_ID != '') {
                 $href = 'https://accounts.google.com/o/oauth2/v2/auth?scope=email&';
@@ -199,7 +190,7 @@ if (! isset($_SESSION[PREFIXE_SESSION]['token'])) {
                 $href .= 'redirect_uri=' . urldecode(ADRESSE_SITE . "mf_auth_google.php") . '&';
                 $href .= 'response_type=code&';
                 $href .= 'client_id=' . GOOGLE_CLIENT_ID;
-                $code_html .= "<br><div style='text-align:center;'><a href='$href' class='btn btn-outline-light' role='button' aria-pressed='true'><img src='images/icones/Google__G__Logo.svg' style='height: 20px; margin-top: -3.5px; margin-bottom: 0;'>&nbsp;&nbsp;Me connecter via Google</a></div>";
+                $code_html_connexion .= "<br><div style='text-align:center;'><a href='$href' class='btn btn-outline-light' role='button' aria-pressed='true'><img alt='Google' src='images/icones/Google__G__Logo.svg' style='height: 20px; margin-top: -3.5px; margin-bottom: 0;'>&nbsp;&nbsp;Me connecter via Google</a></div>";
             }
 
             if (FACEBOOK_CLIENT_ID != '') {
@@ -208,20 +199,33 @@ if (! isset($_SESSION[PREFIXE_SESSION]['token'])) {
                 $href .= 'redirect_uri=' . urldecode(ADRESSE_SITE . "mf_auth_facebook.php") . '&';
                 $href .= 'state=' . salt(10) . '&';
                 $href .= 'scope=email&auth_type=rerequest';
-                $code_html .= "<br><div style='text-align:center;'><a href='$href' class='btn btn-outline-light' role='button' aria-pressed='true'><img src='images/icones/Facebook_f_logo_(2019).svg' style='height: 20px; margin-top: -3.5px; margin-bottom: 0;'>&nbsp;&nbsp;Me connecter via Facebook</a></div>";
+                $code_html_connexion .= "<br><div style='text-align:center;'><a href='$href' class='btn btn-outline-light' role='button' aria-pressed='true'><img alt='Facebook' src='images/icones/Facebook_f_logo_(2019).svg' style='height: 20px; margin-top: -3.5px; margin-bottom: 0;'>&nbsp;&nbsp;Me connecter via Facebook</a></div>";
             }
-        } elseif (ACTIVER_FORMULAIRE_INSCRIPTION) {
-            $form = new Formulaire('', $mess_3);
-            $form->ajouter_input('mf_inscription_login', (isset($_POST['mf_inscription_login']) ? $_POST['mf_inscription_login'] : ''), true, 'text');
-            $form->ajouter_input('mf_inscription_mdp', (isset($_POST['mf_inscription_mdp']) ? $_POST['mf_inscription_mdp'] : ''), true, 'password');
-            $form->ajouter_input('mf_inscription_mdp_conf', (isset($_POST['mf_inscription_mdp_conf']) ? $_POST['mf_inscription_mdp_conf'] : ''), true, 'password');
-            $form->ajouter_input('mf_inscription_email', (isset($_POST['mf_inscription_email']) ? $_POST['mf_inscription_email'] : ''), true, 'email');
-            $form->ajouter_input('mf_inscription_email_conf', (isset($_POST['mf_inscription_email_conf']) ? $_POST['mf_inscription_email_conf'] : ''), true, 'email');
-            $form->set_action('?act=inscription');
-            $form->set_libelle_bouton(get_nom_colonne('mv_validation_form_inscription'));
-            $form->activer_picto_connexion();
-            $form->desactiver_le_mode_inline();
-            $code_html .= $form->generer_BS4_Forms();
+
+            if (ACTIVER_FORMULAIRE_INSCRIPTION) {
+
+                $form = new Formulaire('', $mess_3);
+                $form->ajouter_input('mf_inscription_login', (isset($_POST['mf_inscription_login']) ? $_POST['mf_inscription_login'] : ''), true, 'text');
+                $form->ajouter_input('mf_inscription_mdp', (isset($_POST['mf_inscription_mdp']) ? $_POST['mf_inscription_mdp'] : ''), true, 'password');
+                $form->ajouter_input('mf_inscription_mdp_conf', (isset($_POST['mf_inscription_mdp_conf']) ? $_POST['mf_inscription_mdp_conf'] : ''), true, 'password');
+                $form->ajouter_input('mf_inscription_email', (isset($_POST['mf_inscription_email']) ? $_POST['mf_inscription_email'] : ''), true, 'email');
+                // $form->ajouter_input('mf_inscription_email_conf', (isset($_POST['mf_inscription_email_conf']) ? $_POST['mf_inscription_email_conf'] : ''), true, 'email');
+                $form->set_action('?act=inscription');
+                $form->set_libelle_bouton(get_nom_colonne('mv_validation_form_inscription'));
+                $form->activer_picto_connexion();
+                $form->desactiver_le_mode_inline();
+                $code_html_inscription .= $form->generer_BS4_Forms();
+
+                if ($mf_action == 'inscription') {
+                    $lien_ins_conn = '<a href="' . ADRESSE_SITE . '?act=inscription">Créer un compte</a>';
+                    $code_html .= $code_html_inscription;
+                } else {
+                    $lien_ins_conn = '<a href="' . ADRESSE_SITE . '">Accéder au formulaire de connexion</a>';
+                }
+            }
+            if ($code_html == '') {
+                $code_html .= $code_html_connexion;
+            }
         }
 
         echo recuperer_gabarit('main/page_connexion.html', array(
@@ -231,6 +235,8 @@ if (! isset($_SESSION[PREFIXE_SESSION]['token'])) {
             '{menu_principal}' => $menu,
             '{fil_ariane}' => $fil_ariane->generer_code(),
             '{sections}' => $code_html,
+            '{lien_ins_conn}' => $lien_ins_conn,
+            '{code_html_inscription}' => $code_html_inscription,
             '{menu_secondaire}' => $menu_a_droite->generer_code(),
             '{script_end}' => generer_script_maj_auto(),
             '{header}' => recuperer_gabarit('main/header.html', array()),
@@ -245,31 +251,12 @@ if (! isset($_SESSION[PREFIXE_SESSION]['token'])) {
     exit();
 }
 
-if ($mf_action == 'vider_cache') {
-    // cache
-    if (is_dir(__DIR__ . '/cache/')) {
-        rrmdir(__DIR__ . '/cache/');
-    }
-    // cache_systeme
-    if (is_dir(__DIR__ . '/cache_systeme/')) {
-        rrmdir(__DIR__ . '/cache_systeme/');
-    }
-    // tables/monframework/cache
-    if (is_dir(__DIR__ . '/tables/monframework/cache/')) {
-        rrmdir(__DIR__ . '/tables/monframework/cache/');
-    }
-    // tables/monframework/mf_connexion.sessions
-    if (is_dir(__DIR__ . '/tables/monframework/mf_connexion.sessions/')) {
-        rrmdir(__DIR__ . '/tables/monframework/mf_connexion.sessions/');
-    }
-    // tables/monframework/mf_connexion.sessions_api
-    if (is_dir(__DIR__ . '/tables/monframework/mf_connexion.sessions_api/')) {
-        rrmdir(__DIR__ . '/tables/monframework/mf_connexion.sessions_api/');
-    }
-    // tables/monframework/mf_connexion.new_pwd
-    if (is_dir(__DIR__ . '/tables/monframework/mf_connexion.new_pwd/')) {
-        rrmdir(__DIR__ . '/tables/monframework/mf_connexion.new_pwd/');
-    }
+if (! Hook_mf_systeme::controle_acces_controller(get_nom_page_courante())) {
+    http_response_code(403);
+    echo recuperer_gabarit('main/page_Forbidden.html', [
+        '{footer}' => recuperer_gabarit('main/footer.html', [])
+    ], true);
+    fermeture_connexion_db();
     exit();
 }
 

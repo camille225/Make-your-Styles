@@ -1,14 +1,14 @@
-<?php
+<?php declare(strict_types=1);
 
 class Api_make_your_style {
 
     private $url_api;
-    private $mf_token='';
-    private $mf_id='';
-    private $mf_num_error=0;
-    private $mf_errot_lib='';
-    private $mf_connector_token='';
-    private $mf_instance=0;
+    private $mf_token = '';
+    private $mf_id = '';
+    private $mf_num_error = 0;
+    private $mf_label_error = '';
+    private $mf_connector_token = '';
+    private $mf_instance = 0;
 
     public function __construct($url_api, $mf_connector_token='', $mf_instance=0)
     {
@@ -23,7 +23,8 @@ class Api_make_your_style {
         curl_setopt( $ch, CURLOPT_COOKIESESSION, true );
         curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
         $r = json_decode(curl_exec($ch), true);
-        $this->mf_num_error = $r['error']['number'];
+        $this->mf_num_error = (isset($r['error']['number']) ? $r['error']['number'] : 0);
+        $this->mf_label_error = (isset($r['error']['number']) ? $r['error']['label'] : '');
         curl_close( $ch );
         return $r['data'];
     }
@@ -35,6 +36,7 @@ class Api_make_your_style {
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         $r = json_decode(curl_exec($ch), true);
         $this->mf_num_error = $r['error']['number'];
+        $this->mf_label_error = $r['error']['label'];
         curl_close($ch);
         return $r['data'];
     }
@@ -46,6 +48,7 @@ class Api_make_your_style {
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         $r = json_decode(curl_exec($ch), true);
         $this->mf_num_error = $r['error']['number'];
+        $this->mf_label_error = $r['error']['label'];
         curl_close($ch);
         return $r['data'];
     }
@@ -57,6 +60,7 @@ class Api_make_your_style {
         $r = json_decode(curl_exec($ch), true );
         curl_close($ch);
         $this->mf_num_error = $r['error']['number'];
+        $this->mf_label_error = $r['error']['label'];
         return $r['data'];
     }
 
@@ -82,6 +86,10 @@ class Api_make_your_style {
         return $this->mf_num_error;
     }
 
+    public function get_label_error() {
+        return $this->mf_label_error;
+    }
+
     // +-------------+
     // | utilisateur |
     // +-------------+
@@ -95,24 +103,42 @@ class Api_make_your_style {
         return $this->get($requete . 'utilisateur?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance);
     }
 
-    public function utilisateur__add($utilisateur_Identifiant, $utilisateur_Password, $utilisateur_Email, $utilisateur_Administrateur, $utilisateur_Developpeur) {
+    public function utilisateur__add($utilisateur_Identifiant, $utilisateur_Password, $utilisateur_Email, $utilisateur_Civilite_Type, $utilisateur_Prenom, $utilisateur_Nom, $utilisateur_Adresse_1, $utilisateur_Adresse_2, $utilisateur_Ville, $utilisateur_Code_postal, $utilisateur_Date_naissance, $utilisateur_Accepte_mail_publicitaire, $utilisateur_Administrateur, $utilisateur_Fournisseur) {
         $data = [
             'utilisateur_Identifiant' => $utilisateur_Identifiant,
             'utilisateur_Password' => $utilisateur_Password,
             'utilisateur_Email' => $utilisateur_Email,
+            'utilisateur_Civilite_Type' => $utilisateur_Civilite_Type,
+            'utilisateur_Prenom' => $utilisateur_Prenom,
+            'utilisateur_Nom' => $utilisateur_Nom,
+            'utilisateur_Adresse_1' => $utilisateur_Adresse_1,
+            'utilisateur_Adresse_2' => $utilisateur_Adresse_2,
+            'utilisateur_Ville' => $utilisateur_Ville,
+            'utilisateur_Code_postal' => $utilisateur_Code_postal,
+            'utilisateur_Date_naissance' => $utilisateur_Date_naissance,
+            'utilisateur_Accepte_mail_publicitaire' => $utilisateur_Accepte_mail_publicitaire,
             'utilisateur_Administrateur' => $utilisateur_Administrateur,
-            'utilisateur_Developpeur' => $utilisateur_Developpeur,
+            'utilisateur_Fournisseur' => $utilisateur_Fournisseur,
         ];
         return $this->post('utilisateur?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance, $data);
     }
 
-    public function utilisateur__edit($Code_utilisateur, $utilisateur_Identifiant, $utilisateur_Password, $utilisateur_Email, $utilisateur_Administrateur, $utilisateur_Developpeur) {
+    public function utilisateur__edit($Code_utilisateur, $utilisateur_Identifiant, $utilisateur_Password, $utilisateur_Email, $utilisateur_Civilite_Type, $utilisateur_Prenom, $utilisateur_Nom, $utilisateur_Adresse_1, $utilisateur_Adresse_2, $utilisateur_Ville, $utilisateur_Code_postal, $utilisateur_Date_naissance, $utilisateur_Accepte_mail_publicitaire, $utilisateur_Administrateur, $utilisateur_Fournisseur) {
         $data = [
             'utilisateur_Identifiant' => $utilisateur_Identifiant,
             'utilisateur_Password' => $utilisateur_Password,
             'utilisateur_Email' => $utilisateur_Email,
+            'utilisateur_Civilite_Type' => $utilisateur_Civilite_Type,
+            'utilisateur_Prenom' => $utilisateur_Prenom,
+            'utilisateur_Nom' => $utilisateur_Nom,
+            'utilisateur_Adresse_1' => $utilisateur_Adresse_1,
+            'utilisateur_Adresse_2' => $utilisateur_Adresse_2,
+            'utilisateur_Ville' => $utilisateur_Ville,
+            'utilisateur_Code_postal' => $utilisateur_Code_postal,
+            'utilisateur_Date_naissance' => $utilisateur_Date_naissance,
+            'utilisateur_Accepte_mail_publicitaire' => $utilisateur_Accepte_mail_publicitaire,
             'utilisateur_Administrateur' => $utilisateur_Administrateur,
-            'utilisateur_Developpeur' => $utilisateur_Developpeur,
+            'utilisateur_Fournisseur' => $utilisateur_Fournisseur,
         ];
         return $this->put('utilisateur/'.$Code_utilisateur.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance, $data);
     }
@@ -132,13 +158,58 @@ class Api_make_your_style {
         return $this->put('utilisateur/'.$Code_utilisateur.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance, $data);
     }
 
+    public function utilisateur__edit__utilisateur_Civilite_Type($Code_utilisateur, $utilisateur_Civilite_Type) {
+        $data = ['utilisateur_Civilite_Type' => $utilisateur_Civilite_Type ];
+        return $this->put('utilisateur/'.$Code_utilisateur.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance, $data);
+    }
+
+    public function utilisateur__edit__utilisateur_Prenom($Code_utilisateur, $utilisateur_Prenom) {
+        $data = ['utilisateur_Prenom' => $utilisateur_Prenom ];
+        return $this->put('utilisateur/'.$Code_utilisateur.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance, $data);
+    }
+
+    public function utilisateur__edit__utilisateur_Nom($Code_utilisateur, $utilisateur_Nom) {
+        $data = ['utilisateur_Nom' => $utilisateur_Nom ];
+        return $this->put('utilisateur/'.$Code_utilisateur.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance, $data);
+    }
+
+    public function utilisateur__edit__utilisateur_Adresse_1($Code_utilisateur, $utilisateur_Adresse_1) {
+        $data = ['utilisateur_Adresse_1' => $utilisateur_Adresse_1 ];
+        return $this->put('utilisateur/'.$Code_utilisateur.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance, $data);
+    }
+
+    public function utilisateur__edit__utilisateur_Adresse_2($Code_utilisateur, $utilisateur_Adresse_2) {
+        $data = ['utilisateur_Adresse_2' => $utilisateur_Adresse_2 ];
+        return $this->put('utilisateur/'.$Code_utilisateur.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance, $data);
+    }
+
+    public function utilisateur__edit__utilisateur_Ville($Code_utilisateur, $utilisateur_Ville) {
+        $data = ['utilisateur_Ville' => $utilisateur_Ville ];
+        return $this->put('utilisateur/'.$Code_utilisateur.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance, $data);
+    }
+
+    public function utilisateur__edit__utilisateur_Code_postal($Code_utilisateur, $utilisateur_Code_postal) {
+        $data = ['utilisateur_Code_postal' => $utilisateur_Code_postal ];
+        return $this->put('utilisateur/'.$Code_utilisateur.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance, $data);
+    }
+
+    public function utilisateur__edit__utilisateur_Date_naissance($Code_utilisateur, $utilisateur_Date_naissance) {
+        $data = ['utilisateur_Date_naissance' => $utilisateur_Date_naissance ];
+        return $this->put('utilisateur/'.$Code_utilisateur.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance, $data);
+    }
+
+    public function utilisateur__edit__utilisateur_Accepte_mail_publicitaire($Code_utilisateur, $utilisateur_Accepte_mail_publicitaire) {
+        $data = ['utilisateur_Accepte_mail_publicitaire' => $utilisateur_Accepte_mail_publicitaire ];
+        return $this->put('utilisateur/'.$Code_utilisateur.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance, $data);
+    }
+
     public function utilisateur__edit__utilisateur_Administrateur($Code_utilisateur, $utilisateur_Administrateur) {
         $data = ['utilisateur_Administrateur' => $utilisateur_Administrateur ];
         return $this->put('utilisateur/'.$Code_utilisateur.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance, $data);
     }
 
-    public function utilisateur__edit__utilisateur_Developpeur($Code_utilisateur, $utilisateur_Developpeur) {
-        $data = ['utilisateur_Developpeur' => $utilisateur_Developpeur ];
+    public function utilisateur__edit__utilisateur_Fournisseur($Code_utilisateur, $utilisateur_Fournisseur) {
+        $data = ['utilisateur_Fournisseur' => $utilisateur_Fournisseur ];
         return $this->put('utilisateur/'.$Code_utilisateur.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance, $data);
     }
 
@@ -154,37 +225,107 @@ class Api_make_your_style {
         return $this->get('article/'.$Code_article.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance);
     }
 
-    public function article__get_all(?int $Code_type_produit = null) {
+    public function article__get_all(?int $Code_sous_categorie_article = null) {
         $requete = '';
-        $Code_type_produit = (int) $Code_type_produit;
-        if ($Code_type_produit != 0) { $requete .= 'type_produit/' . $Code_type_produit . '/'; }
+        $Code_sous_categorie_article = (int) $Code_sous_categorie_article;
+        if ($Code_sous_categorie_article != 0) { $requete .= 'sous_categorie_article/' . $Code_sous_categorie_article . '/'; }
         return $this->get($requete . 'article?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance);
     }
 
-    public function article__add($Code_type_produit, $article_Libelle, $article_Photo_Fichier, $article_Prix, $article_Actif) {
+    public function article__add($Code_sous_categorie_article, $article_Libelle, $article_Description, $article_Saison_Type, $article_Nom_fournisseur, $article_Url, $article_Reference, $article_Couleur, $article_Code_couleur_svg, $article_Taille_Pays_Type, $article_Taille, $article_Matiere, $article_Photo_Fichier, $article_Prix, $article_Actif) {
         $data = [
             'article_Libelle' => $article_Libelle,
+            'article_Description' => $article_Description,
+            'article_Saison_Type' => $article_Saison_Type,
+            'article_Nom_fournisseur' => $article_Nom_fournisseur,
+            'article_Url' => $article_Url,
+            'article_Reference' => $article_Reference,
+            'article_Couleur' => $article_Couleur,
+            'article_Code_couleur_svg' => $article_Code_couleur_svg,
+            'article_Taille_Pays_Type' => $article_Taille_Pays_Type,
+            'article_Taille' => $article_Taille,
+            'article_Matiere' => $article_Matiere,
             'article_Photo_Fichier' => $article_Photo_Fichier,
             'article_Prix' => $article_Prix,
             'article_Actif' => $article_Actif,
-            'Code_type_produit' => $Code_type_produit,
+            'Code_sous_categorie_article' => $Code_sous_categorie_article,
         ];
         return $this->post('article?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance, $data);
     }
 
-    public function article__edit($Code_article, $Code_type_produit, $article_Libelle, $article_Photo_Fichier, $article_Prix, $article_Actif) {
+    public function article__edit($Code_article, $Code_sous_categorie_article, $article_Libelle, $article_Description, $article_Saison_Type, $article_Nom_fournisseur, $article_Url, $article_Reference, $article_Couleur, $article_Code_couleur_svg, $article_Taille_Pays_Type, $article_Taille, $article_Matiere, $article_Photo_Fichier, $article_Prix, $article_Actif) {
         $data = [
             'article_Libelle' => $article_Libelle,
+            'article_Description' => $article_Description,
+            'article_Saison_Type' => $article_Saison_Type,
+            'article_Nom_fournisseur' => $article_Nom_fournisseur,
+            'article_Url' => $article_Url,
+            'article_Reference' => $article_Reference,
+            'article_Couleur' => $article_Couleur,
+            'article_Code_couleur_svg' => $article_Code_couleur_svg,
+            'article_Taille_Pays_Type' => $article_Taille_Pays_Type,
+            'article_Taille' => $article_Taille,
+            'article_Matiere' => $article_Matiere,
             'article_Photo_Fichier' => $article_Photo_Fichier,
             'article_Prix' => $article_Prix,
             'article_Actif' => $article_Actif,
-            'Code_type_produit' => $Code_type_produit,
+            'Code_sous_categorie_article' => $Code_sous_categorie_article,
         ];
         return $this->put('article/'.$Code_article.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance, $data);
     }
 
     public function article__edit__article_Libelle($Code_article, $article_Libelle) {
         $data = ['article_Libelle' => $article_Libelle ];
+        return $this->put('article/'.$Code_article.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance, $data);
+    }
+
+    public function article__edit__article_Description($Code_article, $article_Description) {
+        $data = ['article_Description' => $article_Description ];
+        return $this->put('article/'.$Code_article.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance, $data);
+    }
+
+    public function article__edit__article_Saison_Type($Code_article, $article_Saison_Type) {
+        $data = ['article_Saison_Type' => $article_Saison_Type ];
+        return $this->put('article/'.$Code_article.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance, $data);
+    }
+
+    public function article__edit__article_Nom_fournisseur($Code_article, $article_Nom_fournisseur) {
+        $data = ['article_Nom_fournisseur' => $article_Nom_fournisseur ];
+        return $this->put('article/'.$Code_article.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance, $data);
+    }
+
+    public function article__edit__article_Url($Code_article, $article_Url) {
+        $data = ['article_Url' => $article_Url ];
+        return $this->put('article/'.$Code_article.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance, $data);
+    }
+
+    public function article__edit__article_Reference($Code_article, $article_Reference) {
+        $data = ['article_Reference' => $article_Reference ];
+        return $this->put('article/'.$Code_article.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance, $data);
+    }
+
+    public function article__edit__article_Couleur($Code_article, $article_Couleur) {
+        $data = ['article_Couleur' => $article_Couleur ];
+        return $this->put('article/'.$Code_article.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance, $data);
+    }
+
+    public function article__edit__article_Code_couleur_svg($Code_article, $article_Code_couleur_svg) {
+        $data = ['article_Code_couleur_svg' => $article_Code_couleur_svg ];
+        return $this->put('article/'.$Code_article.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance, $data);
+    }
+
+    public function article__edit__article_Taille_Pays_Type($Code_article, $article_Taille_Pays_Type) {
+        $data = ['article_Taille_Pays_Type' => $article_Taille_Pays_Type ];
+        return $this->put('article/'.$Code_article.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance, $data);
+    }
+
+    public function article__edit__article_Taille($Code_article, $article_Taille) {
+        $data = ['article_Taille' => $article_Taille ];
+        return $this->put('article/'.$Code_article.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance, $data);
+    }
+
+    public function article__edit__article_Matiere($Code_article, $article_Matiere) {
+        $data = ['article_Matiere' => $article_Matiere ];
         return $this->put('article/'.$Code_article.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance, $data);
     }
 
@@ -203,8 +344,8 @@ class Api_make_your_style {
         return $this->put('article/'.$Code_article.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance, $data);
     }
 
-    public function article__edit__type_produit($Code_article, $type_produit) {
-        $data = ['type_produit' => $type_produit ];
+    public function article__edit__sous_categorie_article($Code_article, $sous_categorie_article) {
+        $data = ['sous_categorie_article' => $sous_categorie_article ];
         return $this->put('article/'.$Code_article.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance, $data);
     }
 
@@ -271,40 +412,40 @@ class Api_make_your_style {
         return $this->delete('commande/'.$Code_commande.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance);
     }
 
-    // +--------------+
-    // | type_produit |
-    // +--------------+
+    // +-------------------+
+    // | categorie_article |
+    // +-------------------+
 
-    public function type_produit__get($Code_type_produit) {
-        return $this->get('type_produit/'.$Code_type_produit.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance);
+    public function categorie_article__get($Code_categorie_article) {
+        return $this->get('categorie_article/'.$Code_categorie_article.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance);
     }
 
-    public function type_produit__get_all() {
+    public function categorie_article__get_all() {
         $requete = '';
-        return $this->get($requete . 'type_produit?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance);
+        return $this->get($requete . 'categorie_article?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance);
     }
 
-    public function type_produit__add($type_produit_Libelle) {
+    public function categorie_article__add($categorie_article_Libelle) {
         $data = [
-            'type_produit_Libelle' => $type_produit_Libelle,
+            'categorie_article_Libelle' => $categorie_article_Libelle,
         ];
-        return $this->post('type_produit?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance, $data);
+        return $this->post('categorie_article?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance, $data);
     }
 
-    public function type_produit__edit($Code_type_produit, $type_produit_Libelle) {
+    public function categorie_article__edit($Code_categorie_article, $categorie_article_Libelle) {
         $data = [
-            'type_produit_Libelle' => $type_produit_Libelle,
+            'categorie_article_Libelle' => $categorie_article_Libelle,
         ];
-        return $this->put('type_produit/'.$Code_type_produit.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance, $data);
+        return $this->put('categorie_article/'.$Code_categorie_article.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance, $data);
     }
 
-    public function type_produit__edit__type_produit_Libelle($Code_type_produit, $type_produit_Libelle) {
-        $data = ['type_produit_Libelle' => $type_produit_Libelle ];
-        return $this->put('type_produit/'.$Code_type_produit.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance, $data);
+    public function categorie_article__edit__categorie_article_Libelle($Code_categorie_article, $categorie_article_Libelle) {
+        $data = ['categorie_article_Libelle' => $categorie_article_Libelle ];
+        return $this->put('categorie_article/'.$Code_categorie_article.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance, $data);
     }
 
-    public function type_produit__delete($Code_type_produit) {
-        return $this->delete('type_produit/'.$Code_type_produit.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance);
+    public function categorie_article__delete($Code_categorie_article) {
+        return $this->delete('categorie_article/'.$Code_categorie_article.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance);
     }
 
     // +-----------+
@@ -343,117 +484,219 @@ class Api_make_your_style {
         return $this->delete('parametre/'.$Code_parametre.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance);
     }
 
-    // +--------+
-    // | filtre |
-    // +--------+
+    // +-----------------+
+    // | vue_utilisateur |
+    // +-----------------+
 
-    public function filtre__get($Code_filtre) {
-        return $this->get('filtre/'.$Code_filtre.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance);
+    public function vue_utilisateur__get($Code_vue_utilisateur) {
+        return $this->get('vue_utilisateur/'.$Code_vue_utilisateur.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance);
     }
 
-    public function filtre__get_all() {
+    public function vue_utilisateur__get_all() {
         $requete = '';
-        return $this->get($requete . 'filtre?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance);
+        return $this->get($requete . 'vue_utilisateur?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance);
     }
 
-    public function filtre__add($filtre_Libelle) {
+    public function vue_utilisateur__add($vue_utilisateur_Recherche, $vue_utilisateur_Filtre_Saison_Type, $vue_utilisateur_Filtre_Couleur, $vue_utilisateur_Filtre_Taille_Pays_Type, $vue_utilisateur_Filtre_Taille_Max, $vue_utilisateur_Filtre_Taille_Min) {
         $data = [
-            'filtre_Libelle' => $filtre_Libelle,
+            'vue_utilisateur_Recherche' => $vue_utilisateur_Recherche,
+            'vue_utilisateur_Filtre_Saison_Type' => $vue_utilisateur_Filtre_Saison_Type,
+            'vue_utilisateur_Filtre_Couleur' => $vue_utilisateur_Filtre_Couleur,
+            'vue_utilisateur_Filtre_Taille_Pays_Type' => $vue_utilisateur_Filtre_Taille_Pays_Type,
+            'vue_utilisateur_Filtre_Taille_Max' => $vue_utilisateur_Filtre_Taille_Max,
+            'vue_utilisateur_Filtre_Taille_Min' => $vue_utilisateur_Filtre_Taille_Min,
         ];
-        return $this->post('filtre?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance, $data);
+        return $this->post('vue_utilisateur?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance, $data);
     }
 
-    public function filtre__edit($Code_filtre, $filtre_Libelle) {
+    public function vue_utilisateur__edit($Code_vue_utilisateur, $vue_utilisateur_Recherche, $vue_utilisateur_Filtre_Saison_Type, $vue_utilisateur_Filtre_Couleur, $vue_utilisateur_Filtre_Taille_Pays_Type, $vue_utilisateur_Filtre_Taille_Max, $vue_utilisateur_Filtre_Taille_Min) {
         $data = [
-            'filtre_Libelle' => $filtre_Libelle,
+            'vue_utilisateur_Recherche' => $vue_utilisateur_Recherche,
+            'vue_utilisateur_Filtre_Saison_Type' => $vue_utilisateur_Filtre_Saison_Type,
+            'vue_utilisateur_Filtre_Couleur' => $vue_utilisateur_Filtre_Couleur,
+            'vue_utilisateur_Filtre_Taille_Pays_Type' => $vue_utilisateur_Filtre_Taille_Pays_Type,
+            'vue_utilisateur_Filtre_Taille_Max' => $vue_utilisateur_Filtre_Taille_Max,
+            'vue_utilisateur_Filtre_Taille_Min' => $vue_utilisateur_Filtre_Taille_Min,
         ];
-        return $this->put('filtre/'.$Code_filtre.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance, $data);
+        return $this->put('vue_utilisateur/'.$Code_vue_utilisateur.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance, $data);
     }
 
-    public function filtre__edit__filtre_Libelle($Code_filtre, $filtre_Libelle) {
-        $data = ['filtre_Libelle' => $filtre_Libelle ];
-        return $this->put('filtre/'.$Code_filtre.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance, $data);
+    public function vue_utilisateur__edit__vue_utilisateur_Recherche($Code_vue_utilisateur, $vue_utilisateur_Recherche) {
+        $data = ['vue_utilisateur_Recherche' => $vue_utilisateur_Recherche ];
+        return $this->put('vue_utilisateur/'.$Code_vue_utilisateur.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance, $data);
     }
 
-    public function filtre__delete($Code_filtre) {
-        return $this->delete('filtre/'.$Code_filtre.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance);
+    public function vue_utilisateur__edit__vue_utilisateur_Filtre_Saison_Type($Code_vue_utilisateur, $vue_utilisateur_Filtre_Saison_Type) {
+        $data = ['vue_utilisateur_Filtre_Saison_Type' => $vue_utilisateur_Filtre_Saison_Type ];
+        return $this->put('vue_utilisateur/'.$Code_vue_utilisateur.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance, $data);
+    }
+
+    public function vue_utilisateur__edit__vue_utilisateur_Filtre_Couleur($Code_vue_utilisateur, $vue_utilisateur_Filtre_Couleur) {
+        $data = ['vue_utilisateur_Filtre_Couleur' => $vue_utilisateur_Filtre_Couleur ];
+        return $this->put('vue_utilisateur/'.$Code_vue_utilisateur.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance, $data);
+    }
+
+    public function vue_utilisateur__edit__vue_utilisateur_Filtre_Taille_Pays_Type($Code_vue_utilisateur, $vue_utilisateur_Filtre_Taille_Pays_Type) {
+        $data = ['vue_utilisateur_Filtre_Taille_Pays_Type' => $vue_utilisateur_Filtre_Taille_Pays_Type ];
+        return $this->put('vue_utilisateur/'.$Code_vue_utilisateur.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance, $data);
+    }
+
+    public function vue_utilisateur__edit__vue_utilisateur_Filtre_Taille_Max($Code_vue_utilisateur, $vue_utilisateur_Filtre_Taille_Max) {
+        $data = ['vue_utilisateur_Filtre_Taille_Max' => $vue_utilisateur_Filtre_Taille_Max ];
+        return $this->put('vue_utilisateur/'.$Code_vue_utilisateur.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance, $data);
+    }
+
+    public function vue_utilisateur__edit__vue_utilisateur_Filtre_Taille_Min($Code_vue_utilisateur, $vue_utilisateur_Filtre_Taille_Min) {
+        $data = ['vue_utilisateur_Filtre_Taille_Min' => $vue_utilisateur_Filtre_Taille_Min ];
+        return $this->put('vue_utilisateur/'.$Code_vue_utilisateur.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance, $data);
+    }
+
+    public function vue_utilisateur__delete($Code_vue_utilisateur) {
+        return $this->delete('vue_utilisateur/'.$Code_vue_utilisateur.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance);
+    }
+
+    // +------------------------+
+    // | sous_categorie_article |
+    // +------------------------+
+
+    public function sous_categorie_article__get($Code_sous_categorie_article) {
+        return $this->get('sous_categorie_article/'.$Code_sous_categorie_article.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance);
+    }
+
+    public function sous_categorie_article__get_all(?int $Code_categorie_article = null) {
+        $requete = '';
+        $Code_categorie_article = (int) $Code_categorie_article;
+        if ($Code_categorie_article != 0) { $requete .= 'categorie_article/' . $Code_categorie_article . '/'; }
+        return $this->get($requete . 'sous_categorie_article?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance);
+    }
+
+    public function sous_categorie_article__add($Code_categorie_article, $sous_categorie_article_Libelle) {
+        $data = [
+            'sous_categorie_article_Libelle' => $sous_categorie_article_Libelle,
+            'Code_categorie_article' => $Code_categorie_article,
+        ];
+        return $this->post('sous_categorie_article?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance, $data);
+    }
+
+    public function sous_categorie_article__edit($Code_sous_categorie_article, $Code_categorie_article, $sous_categorie_article_Libelle) {
+        $data = [
+            'sous_categorie_article_Libelle' => $sous_categorie_article_Libelle,
+            'Code_categorie_article' => $Code_categorie_article,
+        ];
+        return $this->put('sous_categorie_article/'.$Code_sous_categorie_article.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance, $data);
+    }
+
+    public function sous_categorie_article__edit__sous_categorie_article_Libelle($Code_sous_categorie_article, $sous_categorie_article_Libelle) {
+        $data = ['sous_categorie_article_Libelle' => $sous_categorie_article_Libelle ];
+        return $this->put('sous_categorie_article/'.$Code_sous_categorie_article.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance, $data);
+    }
+
+    public function sous_categorie_article__edit__categorie_article($Code_sous_categorie_article, $categorie_article) {
+        $data = ['categorie_article' => $categorie_article ];
+        return $this->put('sous_categorie_article/'.$Code_sous_categorie_article.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance, $data);
+    }
+
+    public function sous_categorie_article__delete($Code_sous_categorie_article) {
+        return $this->delete('sous_categorie_article/'.$Code_sous_categorie_article.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance);
+    }
+
+    // +---------+
+    // | conseil |
+    // +---------+
+
+    public function conseil__get($Code_conseil) {
+        return $this->get('conseil/'.$Code_conseil.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance);
+    }
+
+    public function conseil__get_all() {
+        $requete = '';
+        return $this->get($requete . 'conseil?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance);
+    }
+
+    public function conseil__add($conseil_Libelle, $conseil_Description, $conseil_Actif) {
+        $data = [
+            'conseil_Libelle' => $conseil_Libelle,
+            'conseil_Description' => $conseil_Description,
+            'conseil_Actif' => $conseil_Actif,
+        ];
+        return $this->post('conseil?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance, $data);
+    }
+
+    public function conseil__edit($Code_conseil, $conseil_Libelle, $conseil_Description, $conseil_Actif) {
+        $data = [
+            'conseil_Libelle' => $conseil_Libelle,
+            'conseil_Description' => $conseil_Description,
+            'conseil_Actif' => $conseil_Actif,
+        ];
+        return $this->put('conseil/'.$Code_conseil.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance, $data);
+    }
+
+    public function conseil__edit__conseil_Libelle($Code_conseil, $conseil_Libelle) {
+        $data = ['conseil_Libelle' => $conseil_Libelle ];
+        return $this->put('conseil/'.$Code_conseil.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance, $data);
+    }
+
+    public function conseil__edit__conseil_Description($Code_conseil, $conseil_Description) {
+        $data = ['conseil_Description' => $conseil_Description ];
+        return $this->put('conseil/'.$Code_conseil.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance, $data);
+    }
+
+    public function conseil__edit__conseil_Actif($Code_conseil, $conseil_Actif) {
+        $data = ['conseil_Actif' => $conseil_Actif ];
+        return $this->put('conseil/'.$Code_conseil.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance, $data);
+    }
+
+    public function conseil__delete($Code_conseil) {
+        return $this->delete('conseil/'.$Code_conseil.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance);
     }
 
     // +--------------------+
-    // | a_article_commande |
+    // | a_commande_article |
     // +--------------------+
 
-    public function a_article_commande__get($Code_commande, $Code_article) {
-        return $this->get('a_article_commande/'.$Code_commande.'-'.$Code_article.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance);
+    public function a_commande_article__get($Code_commande, $Code_article) {
+        return $this->get('a_commande_article/'.$Code_commande.'-'.$Code_article.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance);
     }
 
-    public function a_article_commande__get_all(?int $Code_commande = null, ?int $Code_article = null) {
+    public function a_commande_article__get_all(?int $Code_commande = null, ?int $Code_article = null) {
         $requete = '';
         $Code_commande = (int) $Code_commande;
         if ($Code_commande != 0) { $requete .= 'commande/' . $Code_commande . '/'; }
         $Code_article = (int) $Code_article;
         if ($Code_article != 0) { $requete .= 'article/' . $Code_article . '/'; }
-        return $this->get($requete . 'a_article_commande?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance);
+        return $this->get($requete . 'a_commande_article?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance);
     }
 
-    public function a_article_commande__add($Code_commande, $Code_article) {
+    public function a_commande_article__add($Code_commande, $Code_article, $a_commande_article_Quantite, $a_commande_article_Prix_ligne) {
         $data = [
+            'a_commande_article_Quantite' => $a_commande_article_Quantite,
+            'a_commande_article_Prix_ligne' => $a_commande_article_Prix_ligne,
             'Code_commande' => $Code_commande,
             'Code_article' => $Code_article,
         ];
-        return $this->post('a_article_commande?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance, $data);
+        return $this->post('a_commande_article?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance, $data);
     }
 
-    public function a_article_commande__edit($Code_commande, $Code_article) {
+    public function a_commande_article__edit($Code_commande, $Code_article, $a_commande_article_Quantite, $a_commande_article_Prix_ligne) {
         $data = [
+            'a_commande_article_Quantite' => $a_commande_article_Quantite,
+            'a_commande_article_Prix_ligne' => $a_commande_article_Prix_ligne,
         ];
-        return $this->put('a_article_commande/'.$Code_commande.'-'.$Code_article.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance, $data);
+        return $this->put('a_commande_article/'.$Code_commande.'-'.$Code_article.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance, $data);
     }
 
-    public function a_article_commande__delete($Code_commande, $Code_article) {
-        return $this->delete('a_article_commande/'.$Code_commande.'-'.$Code_article.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance);
+    public function a_commande_article__edit__a_commande_article_Quantite($Code_commande, $Code_article, $a_commande_article_Quantite) {
+        $data = ['a_commande_article_Quantite' => $a_commande_article_Quantite ];
+        return $this->put('a_commande_article/'.$Code_commande.'-'.$Code_article.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance, $data);
     }
 
-    // +------------------+
-    // | a_filtre_produit |
-    // +------------------+
-
-    public function a_filtre_produit__get($Code_filtre, $Code_article) {
-        return $this->get('a_filtre_produit/'.$Code_filtre.'-'.$Code_article.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance);
+    public function a_commande_article__edit__a_commande_article_Prix_ligne($Code_commande, $Code_article, $a_commande_article_Prix_ligne) {
+        $data = ['a_commande_article_Prix_ligne' => $a_commande_article_Prix_ligne ];
+        return $this->put('a_commande_article/'.$Code_commande.'-'.$Code_article.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance, $data);
     }
 
-    public function a_filtre_produit__get_all(?int $Code_filtre = null, ?int $Code_article = null) {
-        $requete = '';
-        $Code_filtre = (int) $Code_filtre;
-        if ($Code_filtre != 0) { $requete .= 'filtre/' . $Code_filtre . '/'; }
-        $Code_article = (int) $Code_article;
-        if ($Code_article != 0) { $requete .= 'article/' . $Code_article . '/'; }
-        return $this->get($requete . 'a_filtre_produit?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance);
-    }
-
-    public function a_filtre_produit__add($Code_filtre, $Code_article, $a_filtre_produit_Actif) {
-        $data = [
-            'a_filtre_produit_Actif' => $a_filtre_produit_Actif,
-            'Code_filtre' => $Code_filtre,
-            'Code_article' => $Code_article,
-        ];
-        return $this->post('a_filtre_produit?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance, $data);
-    }
-
-    public function a_filtre_produit__edit($Code_filtre, $Code_article, $a_filtre_produit_Actif) {
-        $data = [
-            'a_filtre_produit_Actif' => $a_filtre_produit_Actif,
-        ];
-        return $this->put('a_filtre_produit/'.$Code_filtre.'-'.$Code_article.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance, $data);
-    }
-
-    public function a_filtre_produit__edit__a_filtre_produit_Actif($Code_filtre, $Code_article, $a_filtre_produit_Actif) {
-        $data = ['a_filtre_produit_Actif' => $a_filtre_produit_Actif ];
-        return $this->put('a_filtre_produit/'.$Code_filtre.'-'.$Code_article.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance, $data);
-    }
-
-    public function a_filtre_produit__delete($Code_filtre, $Code_article) {
-        return $this->delete('a_filtre_produit/'.$Code_filtre.'-'.$Code_article.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance);
+    public function a_commande_article__delete($Code_commande, $Code_article) {
+        return $this->delete('a_commande_article/'.$Code_commande.'-'.$Code_article.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance);
     }
 
     // +-------------------------+
@@ -503,6 +746,41 @@ class Api_make_your_style {
 
     public function a_parametre_utilisateur__delete($Code_utilisateur, $Code_parametre) {
         return $this->delete('a_parametre_utilisateur/'.$Code_utilisateur.'-'.$Code_parametre.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance);
+    }
+
+    // +-----------+
+    // | a_filtrer |
+    // +-----------+
+
+    public function a_filtrer__get($Code_utilisateur, $Code_vue_utilisateur) {
+        return $this->get('a_filtrer/'.$Code_utilisateur.'-'.$Code_vue_utilisateur.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance);
+    }
+
+    public function a_filtrer__get_all(?int $Code_utilisateur = null, ?int $Code_vue_utilisateur = null) {
+        $requete = '';
+        $Code_utilisateur = (int) $Code_utilisateur;
+        if ($Code_utilisateur != 0) { $requete .= 'utilisateur/' . $Code_utilisateur . '/'; }
+        $Code_vue_utilisateur = (int) $Code_vue_utilisateur;
+        if ($Code_vue_utilisateur != 0) { $requete .= 'vue_utilisateur/' . $Code_vue_utilisateur . '/'; }
+        return $this->get($requete . 'a_filtrer?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance);
+    }
+
+    public function a_filtrer__add($Code_utilisateur, $Code_vue_utilisateur) {
+        $data = [
+            'Code_utilisateur' => $Code_utilisateur,
+            'Code_vue_utilisateur' => $Code_vue_utilisateur,
+        ];
+        return $this->post('a_filtrer?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance, $data);
+    }
+
+    public function a_filtrer__edit($Code_utilisateur, $Code_vue_utilisateur) {
+        $data = [
+        ];
+        return $this->put('a_filtrer/'.$Code_utilisateur.'-'.$Code_vue_utilisateur.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance, $data);
+    }
+
+    public function a_filtrer__delete($Code_utilisateur, $Code_vue_utilisateur) {
+        return $this->delete('a_filtrer/'.$Code_utilisateur.'-'.$Code_vue_utilisateur.'?mf_token='.$this->mf_token.'&mf_connector_token='.$this->mf_connector_token.'&mf_instance='.$this->mf_instance);
     }
 
 }

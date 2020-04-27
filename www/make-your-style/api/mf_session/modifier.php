@@ -1,27 +1,24 @@
-<?php
-
-    $time_start = microtime(true);
+<?php declare(strict_types=1);
 
     include __DIR__ . '/../../../../systeme/make-your-style/api_espace_publique.php';
+
+    fermeture_connexion_db();
 
 /*
     +------------+
     |  Modifier  |
     +------------+
 */
-    $name = lecture_parametre_api('name', '');
+    $name = (string) lecture_parametre_api('name', '');
     $value = lecture_parametre_api($name);
     if ($value !== null) {
         Hook_mf_systeme::controle_parametres_session($name, $value);
     }
     if ($value !== null) {
-        $_SESSION[PREFIXE_SESSION]['parametres'][$name] = $value;
+        mf_set_value_session($name, $value);
     }
-    session_write_close();
-    fermeture_connexion_db();
     $retour_json = [];
     $retour_json['code_erreur'] = 0;
     $retour_json['message_erreur'] = 0;
-    $time_end = microtime(true);
-    $retour_json['duree'] = round($time_end-$time_start, 4);
+    $retour_json['duree'] = get_execution_time(4);
     vue_api_echo($retour_json);

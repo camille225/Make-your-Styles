@@ -1,0 +1,7 @@
+<?php declare(strict_types=1);
+
+define('API_REST_ACCESS_GET_VUE_UTILISATEUR', 'none');
+define('API_REST_ACCESS_POST_VUE_UTILISATEUR', 'none');
+define('API_REST_ACCESS_PUT_VUE_UTILISATEUR', 'none');
+define('API_REST_ACCESS_DELETE_VUE_UTILISATEUR', 'none');
+define('API_REST_ACCESS_OPTIONS_VUE_UTILISATEUR', 'all');

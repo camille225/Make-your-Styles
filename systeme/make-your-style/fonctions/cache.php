@@ -1,41 +1,26 @@
-<?php
+<?php declare(strict_types=1);
 
 class Cache
 {
 
     private $dossier_cache;
-
-    private $dossier_cache_volatil;
+    private $sous_dossier;
 
     private $microtime_1;
-
     private $microtime_2;
 
     private static $nb_lectures_disque;
 
     private $execution_time = [];
 
-    function __construct($dossier_cache = '100', $sous_dossier = 'all') // Possibilité de catégoriser les pages ...
+    function __construct(string $dossier_cache = 'default', $sous_dossier = 'default') // Possibilité de catégoriser les pages ...
     {
-        // Emplacement du cache
-        $this->dossier_cache = __DIR__ . '/../cache/';
-        if (! file_exists($this->dossier_cache)) {
-            @mkdir($this->dossier_cache);
-        }
-        if (TABLE_INSTANCE != '') {
-            $instance = 'inst_' . get_instance();
-            $this->dossier_cache .= $instance . '/';
-            if (! file_exists($this->dossier_cache)) {
-                @mkdir($this->dossier_cache);
-            }
-        }
         // Premier niveau de cache
-        $this->dossier_cache .= $dossier_cache . '/';
+        $this->dossier_cache = get_dossier_data('cache', 'cache') . "$dossier_cache/";
         if (! file_exists($this->dossier_cache)) {
             @mkdir($this->dossier_cache);
         }
         $this->microtime_1 = $this->dossier_cache . 'microtime';
-        $this->dossier_cache_volatil = 'mf_cache_' . md5($this->dossier_cache);
         $this->sous_dossier = $sous_dossier;
         // Deuxième niveau de cache
         $this->dossier_cache .= $sous_dossier . '/';
@@ -55,7 +40,7 @@ class Cache
         }
     }
 
-    function read($cle, $duree = DUREE_CACHE_MINUTES)
+    function read(string $cle, $undifundefined_value = false)
     {
         $cle = md5($cle);
         $this->initialisation_cache();
@@ -83,12 +68,49 @@ class Cache
             }
         }
         $this->execution_time[$cle] = microtime(true);
-        return false;
+        return $undifundefined_value;
     }
 
-    function write(string $cle, $variable)
+    /**
+     * Retourne la liste des variables locales à jours
+     * [name1 => valeur1, ...]
+     * @return array
+     */
+    function read_all(): array
     {
-        $cle = md5($cle);
+        $liste = [];
+        $this->initialisation_cache();
+        $r = @file_get_contents($this->microtime_1);
+        if ($r !== false) {
+            $microtime_1 = unserialize($r);
+            $r = @file_get_contents($this->microtime_2);
+            if ($r !== false) {
+                $microtime_2 = unserialize($r);
+                $microtime = max([
+                    $microtime_1,
+                    $microtime_2
+                ]);
+                $files = glob("{$this->dossier_cache}*");
+                foreach ($files as $filename) {
+                    if (file_exists($filename)) {
+                        $r = @file_get_contents($filename);
+                        if ($r !== false) {
+                            $r = unserialize($r);
+                            if ($r['u'] > $microtime) {
+                                self::$nb_lectures_disque ++;
+                                $liste[$r['n']] = $r['v'];
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return $liste;
+    }
+
+    function write(string $name, $variable)
+    {
+        $cle = md5($name);
         if (isset($this->execution_time[$cle])) {
             $start = $this->execution_time[$cle];
             $stop = microtime(true);
@@ -97,11 +119,12 @@ class Cache
             $execution_time = 0;
         }
         microtime(true);
-        $filename = $this->dossier_cache . $cle;
+        $filename = "$this->dossier_cache$cle";
         file_put_contents($filename, serialize([
             'u' => microtime(true),
             'v' => $variable,
-            't' => $execution_time
+            't' => $execution_time,
+            'n' => $name
         ]));
     }
 
@@ -115,9 +138,8 @@ class Cache
         file_put_contents($this->microtime_2, serialize(microtime(true) + 0.001));
     }
 
-    function get_adress($cle)
+    function get_adress(string $cle): string
     {
-        $filename = $this->dossier_cache . md5($cle);
-        return $filename;
+        return $this->dossier_cache . md5($cle);
     }
 }

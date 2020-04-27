@@ -286,14 +286,12 @@ class Calendrier
 
     function generer_code_1($date_start, $date_end, $adresse_specifique = '', $date_a_afficher = '', $jours = array(1, 2, 3, 4, 5, 6, 7), $clique_date_jour = false)
     {
-        global $now;
-
         $code = '';
         $code_js = '';
 
         $date_a_afficher = format_date($date_a_afficher);
         if ($date_a_afficher == '') {
-            $date_a_afficher = format_date($now);
+            $date_a_afficher = format_date(get_now());
         }
         $mois_a_afficher = substr($date_a_afficher, 0, 7);
 
@@ -332,7 +330,7 @@ class Calendrier
         $first = true;
         $compteur_calendrier = 0;
 
-        $date_aujourdhui = format_date($now);
+        $date_aujourdhui = format_date(get_now());
 
         $selection_jours = array();
         $dernier_jour = 1;
@@ -602,7 +600,7 @@ class Calendrier
 
     function generer_code_3($date_start, $date_end, $heure_start = '08:00:00', $heure_end = '20:00:00', $jours = array(1, 2, 3, 4, 5, 6, 7), $nb_pixels_hauteur = 512, $date_a_afficher = '', $grille_cliquable_action = '', $api_mvt = '', $clique_date_jour = false, $precision_mn = 10)
     {
-        global $now, $cle_aleatoire;
+        global $cle_aleatoire;
 
         $code = '';
         $code_js = '';
@@ -677,11 +675,11 @@ class Calendrier
 
         $date_a_afficher = format_date($date_a_afficher);
         if ($date_a_afficher == '') {
-            $date_a_afficher = format_date($now);
+            $date_a_afficher = format_date(get_now());
         }
         $date_a_afficher_lundi = date_debut_semaine($date_a_afficher);
 
-        $date_aujourdhui = format_date($now);
+        $date_aujourdhui = format_date(get_now());
 
         while ($date_end_local <= $date_end) {
 
