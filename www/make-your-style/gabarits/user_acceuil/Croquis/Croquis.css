@@ -1,0 +1,75 @@
+ *{
+    box-sizing: border-box;
+    margin: auto;
+}
+#croquis{
+    display: flex;
+     justify-content: center;
+    flex-direction: column;
+    height: 100%;
+    width : auto;
+    
+ 
+} 
+
+#couvre_chef{
+        display: flex;
+       justify-content: center;
+        height: 8%;
+        width : auto;
+}
+
+#tete{
+        display: flex;
+       justify-content: center;
+        height: 8%;
+        width : auto;
+}
+
+            
+
+#cou{
+        display: flex;
+       justify-content: center;
+        height: 3%;
+        width : auto;
+}
+
+#tronc{
+        display: flex;
+       justify-content: center;
+        height: 35%;
+        width : auto;
+}
+
+#ceinture{
+        display: flex;
+       justify-content: center;
+        height: 3%;
+        width : auto;
+}
+
+#pantallon{
+        display: flex;
+       justify-content: center;
+        height: 35%;
+        width : auto;
+}
+
+#pieds{
+        display: flex;
+       justify-content: center;
+       flex-direction: row;
+        height: 8%;
+        width : auto;
+}
+
+.chaussure{
+        flex-direction: row;
+        justify-content: space-between;
+        height: 28%;
+        width: auto;
+        
+}
+
+
