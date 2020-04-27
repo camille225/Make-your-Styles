@@ -1,5 +1,5 @@
-<?php
+<?php declare(strict_types=1);
 
-class a_parametre_utilisateur extends a_parametre_utilisateur_monframework
+class table_a_parametre_utilisateur extends table_a_parametre_utilisateur_monframework
 {
 }

@@ -1,5 +1,5 @@
-<?php
+<?php declare(strict_types=1);
 
-class article extends article_monframework
+class table_article extends table_article_monframework
 {
 }

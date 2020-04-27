@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
@@ -12,8 +11,9 @@
     <link href="css/compte_utilisateur.css" rel="stylesheet">
     </head>
     <body>
+    {header}
         <div id="page">
-            <div id="containeur">
+            <div id="content_align">
                 <section id="section1">
                     <h1>Informations</h1>
                     <form>
@@ -21,9 +21,8 @@
                         <label for="Prenom"><input type="text" class="infos" name="prenom" placeholder="Prénom" /></label>
                         <label for="Taille"><input type="text" class="infos" name="taille" placeholder="Taille" /></label>
                         <label for="Date"><input type="date" class="infos" name="date" placeholder="Date de naissance" /></label>
-                        <label for="email"><input type="email" class="infos" name="email" placeholder="Email" /></label>
-                        <label for="pass"><input type="password" class="infos" name="password" minlength="8" placeholder="Mot de passe" required></label>
-                        <input type="button" value="Modifier" id="bouton"/>
+                        {utilisateur_Email}
+                        {utilisateur_Password}
                     </form>
                 </section>
                 <div id="separateur"></div>
@@ -38,5 +37,7 @@
                 </section>
             </div>
         </div>
+    {footer}
+    {code_html}
     </body>
 </html>

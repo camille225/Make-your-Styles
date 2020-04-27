@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 $lang_standard['Code_commande'] = 'commande';
 
@@ -7,7 +7,7 @@ $lang_standard['commande_Date_livraison'] = 'commande_Date_livraison';
 $lang_standard['commande_Date_creation'] = 'commande_Date_creation';
 
 $lang_standard['bouton_ajouter_commande'] = 'Ajouter';
-$lang_standard['bouton_creer_commande'] = 'Creer';
+$lang_standard['bouton_creer_commande'] = 'Créer';
 $lang_standard['bouton_modifier_commande'] = 'Modifier';
 $lang_standard['bouton_supprimer_commande'] = 'Supprimer';
 $lang_standard['bouton_modifier_commande_Prix_total'] = 'Modifier';
@@ -15,17 +15,17 @@ $lang_standard['bouton_modifier_commande_Date_livraison'] = 'Modifier';
 $lang_standard['bouton_modifier_commande_Date_creation'] = 'Modifier';
 $lang_standard['bouton_modifier_commande__Code_utilisateur'] = 'Modifier';
 
-$lang_standard['form_add_commande'] = 'form_add_commande';
-$lang_standard['form_edit_commande'] = 'form_edit_commande';
-$lang_standard['form_delete_commande'] = 'form_delete_commande';
+$lang_standard['form_add_commande'] = 'Ajout d\'un nouvel enregistrement';
+$lang_standard['form_edit_commande'] = 'Edition de l\'enregistrement';
+$lang_standard['form_delete_commande'] = 'Confirmation de suppression de l\'enregistrement';
 
 $mf_titre_ligne_table['commande'] = '{commande_Prix_total}';
 
-$mf_tri_defaut_table['commande'] = array( 'commande_Prix_total' => 'ASC' );
+$mf_tri_defaut_table['commande'] = ['commande_Prix_total' => 'ASC'];
 
-$lang_standard['libelle_liste_commande'] = 'libelle_liste_commande';
+$lang_standard['libelle_liste_commande'] = 'Enregistrement(s)';
 
-$mf_initialisation['commande_Prix_total'] = 0;
+$mf_initialisation['commande_Prix_total'] = null;
 $mf_initialisation['commande_Date_livraison'] = '';
 $mf_initialisation['commande_Date_creation'] = '';
 

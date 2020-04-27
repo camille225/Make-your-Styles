@@ -1,18 +1,63 @@
-<?php
+<?php declare(strict_types=1);
+$pages_menu = [];
 
-$pages_menu=array();
+$categorie_menu = '<span class="fa fa-cogs"></span> Mon menu';
 
-$rubrique_param = '<i class="align-middle mr-2 fas fa-fw fa-cogs"></i> Paramétrage';
-$pages_menu['Mon menu'][]=array( 'adresse' => 'utilisateur.php', 'nom' => 'utilisateur' , 'icone' => 'fa fa-users fa-fw' );
-$pages_menu['Mon menu'][]=array( 'adresse' => 'article.php', 'nom' => 'article' , 'icone' => 'fa fa-users fa-fw' );
-$pages_menu['Mon menu'][]=array( 'adresse' => 'commande.php', 'nom' => 'commande' , 'icone' => 'fa fa-users fa-fw' );
-$pages_menu['Mon menu'][]=array( 'adresse' => 'type_produit.php', 'nom' => 'type_produit' , 'icone' => 'fa fa-users fa-fw' );
-$pages_menu['Mon menu'][]=array( 'adresse' => 'parametre.php', 'nom' => 'parametre' , 'icone' => 'fa fa-cogs fa-fw' );
-$pages_menu['Mon menu'][]=array( 'adresse' => 'filtre.php', 'nom' => 'filtre' , 'icone' => 'fa fa-users fa-fw' );
-$pages_menu['Mon menu'][]=array( 'adresse' => 'a_article_commande.php', 'nom' => 'a_article_commande' , 'icone' => 'fa fa-users fa-fw' );
-$pages_menu['Mon menu'][]=array( 'adresse' => 'a_filtre_produit.php', 'nom' => 'a_filtre_produit' , 'icone' => 'fa fa-users fa-fw' );
-$pages_menu['Mon menu'][]=array( 'adresse' => 'a_parametre_utilisateur.php', 'nom' => 'a_parametre_utilisateur' , 'icone' => 'fa fa-users fa-fw' );
-$pages_menu['Mon menu'][]=array( 'adresse' => 'compte_utilisateur.php', 'nom' => 'compte_utilisateur' , 'icone' => 'fa fa-users fa-fw' );
+$pages_menu[$categorie_menu][] = [
+    'nom' => 'utilisateur',
+    'icone' => '<span class="fa fa-cogs"></span>',
+    'adresse' => 'utilisateur.php'
+];
+$pages_menu[$categorie_menu][] = [
+    'nom' => 'article',
+    'icone' => '<span class="fa fa-cogs"></span>',
+    'adresse' => 'article.php'
+];
+$pages_menu[$categorie_menu][] = [
+    'nom' => 'commande',
+    'icone' => '<span class="fa fa-cogs"></span>',
+    'adresse' => 'commande.php'
+];
+$pages_menu[$categorie_menu][] = [
+    'nom' => 'categorie_article',
+    'icone' => '<span class="fa fa-cogs"></span>',
+    'adresse' => 'categorie_article.php'
+];
+$pages_menu[$categorie_menu][] = [
+    'nom' => 'parametre',
+    'icone' => '<span class="fa fa-cogs"></span>',
+    'adresse' => 'parametre.php'
+];
+$pages_menu[$categorie_menu][] = [
+    'nom' => 'vue_utilisateur',
+    'icone' => '<span class="fa fa-cogs"></span>',
+    'adresse' => 'vue_utilisateur.php'
+];
+$pages_menu[$categorie_menu][] = [
+    'nom' => 'sous_categorie_article',
+    'icone' => '<span class="fa fa-cogs"></span>',
+    'adresse' => 'sous_categorie_article.php'
+];
+$pages_menu[$categorie_menu][] = [
+    'nom' => 'conseil',
+    'icone' => '<span class="fa fa-cogs"></span>',
+    'adresse' => 'conseil.php'
+];
+$pages_menu[$categorie_menu][] = [
+    'nom' => 'a_commande_article',
+    'icone' => '<span class="fa fa-cogs"></span>',
+    'adresse' => 'a_commande_article.php'
+];
+$pages_menu[$categorie_menu][] = [
+    'nom' => 'a_parametre_utilisateur',
+    'icone' => '<span class="fa fa-cogs"></span>',
+    'adresse' => 'a_parametre_utilisateur.php'
+];
+$pages_menu[$categorie_menu][] = [
+    'nom' => 'a_filtrer',
+    'icone' => '<span class="fa fa-cogs"></span>',
+    'adresse' => 'a_filtrer.php'
+];
 
 // menu  spécial pour SB Admin 2
 function generer_menu_principal_bootstrap()

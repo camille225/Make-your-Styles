@@ -1,5 +1,5 @@
-<?php
+<?php declare(strict_types=1);
 
-class parametre extends parametre_monframework
+class table_parametre extends table_parametre_monframework
 {
 }

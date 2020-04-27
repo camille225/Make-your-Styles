@@ -1,127 +1,40 @@
-<?php
+<?php declare(strict_types=1);
 include __DIR__ . '/../../../systeme/make-your-style/acces_api_rest/utilisateur.php';
 
 function get($id, $options)
 {
-    if ( isset($options['mf_connector_token']) && $options['mf_connector_token']!='' )
-    {
-        $db = new DB();
-        $code = $db -> mf_table(CONNECTEUR_API_TABLE) -> mf_search__colonne(CONNECTEUR_API_COLONNE_TOKEN, $options['mf_connector_token']);
-        $r = $db -> mf_table(CONNECTEUR_API_TABLE) -> mf_get($code);
-        $totay = substr(get_now(), 0, 10);
-        if (! ($code != 0 && $r[CONNECTEUR_API_COLONNE_DATE_START] <= $totay && $totay <= $r[CONNECTEUR_API_COLONNE_DATE_STOP])) {
-            return array('code_erreur' => 1); // erreur de connexion
-        }
-        if (isset($r['Code_utilisateur'])) {
-            global $utilisateur_courant;
-            $utilisateur_courant = $db -> utilisateur() -> mf_get_2($r['Code_utilisateur']);
-        }
-    }
-    else
-    {
-        if (API_REST_ACCESS_GET_UTILISATEUR == 'none') {
-            return array('code_erreur' => 1); // erreur de connexion
-        }
-        elseif (API_REST_ACCESS_GET_UTILISATEUR == 'user') {
-            $auth = isset($_GET['auth']) ? $_GET['auth'] : 'api';
-            if ($auth == 'api') {
-                $mf_connexion = new Mf_Connexion(true);
-                $mf_token = isset($options['mf_token']) ? $options['mf_token'] : '';
-                if (! $mf_connexion->est_connecte($mf_token)) {
-                    return array('code_erreur' => 1); // erreur de connexion
-                }
-                if (! isset($options['code_utilisateur'])) {
-                    $options['code_utilisateur'] = get_utilisateur_courant('Code_utilisateur');
-                }
-            } elseif ($auth == 'main') {
-                $mf_connexion = new Mf_Connexion();
-                if (isset($_SESSION[PREFIXE_SESSION]['token'])) {
-                    if (! $mf_connexion->est_connecte($_SESSION[PREFIXE_SESSION]['token'])) {
-                        unset($_SESSION[PREFIXE_SESSION]['token']);
-                    }
-                }
-                if (! isset($_SESSION[PREFIXE_SESSION]['token'])) {
-                    return array('code_erreur' => 1); // erreur de connexion
-                }
-            }
-        }
-        elseif ( API_REST_ACCESS_GET_UTILISATEUR!='all' )
-        {
-            return array('code_erreur' => 1); // erreur de connexion
-        }
-    }
+    // Contrôle d'accès
+    $r = mf_api_droits($options, API_REST_ACCESS_GET_UTILISATEUR);
+    if ($r['code_erreur'] != 0) return $r;
 
-    session_write_close();
-
-    $id = round($id);
-    $table_utilisateur = new utilisateur();
+    $id = (int) $id;
+    $db = new DB();
     if ($id == 0) {
-        return array_merge( array_values($table_utilisateur->mf_lister(array('autocompletion' => true))), ['code_erreur' => 0] );
+        $l = array_values($db->utilisateur()->mf_lister(['autocompletion' => true, 'limit' => [0, NB_RESULT_MAX_API], 'toutes_colonnes' => true]));
+        return array_merge($l, ['code_erreur' => (count($l) == NB_RESULT_MAX_API ? 8 : 0 )]);
     } else {
-        $r = $table_utilisateur->mf_get($id, array( 'autocompletion' => true ));
-        if ( $r===false ) { return array(); } else { return array_merge( array($r), ['code_erreur' => 0] ); }
+        $r = $db->utilisateur()->mf_get($id, ['autocompletion' => true]);
+        if ($r === []) {
+            return ['http_response_code' => 404, 'code_erreur' => 0];
+        } else {
+            return array_merge( [$r], ['code_erreur' => 0] );
+        }
     }
 }
 
 function post($data, $options)
 {
-    if ( isset($options['mf_connector_token']) && $options['mf_connector_token']!='' )
-    {
-        $db = new DB();
-        $code = $db -> mf_table(CONNECTEUR_API_TABLE) -> mf_search__colonne(CONNECTEUR_API_COLONNE_TOKEN, $options['mf_connector_token']);
-        $r = $db -> mf_table(CONNECTEUR_API_TABLE) -> mf_get($code);
-        $totay = substr(get_now(), 0, 10);
-        if (! ($code != 0 && $r[CONNECTEUR_API_COLONNE_DATE_START] <= $totay && $totay <= $r[CONNECTEUR_API_COLONNE_DATE_STOP])) {
-            return array('code_erreur' => 1); // erreur de connexion
-        }
-        if (isset($r['Code_utilisateur'])) {
-            global $utilisateur_courant;
-            $utilisateur_courant = $db -> utilisateur() -> mf_get_2($r['Code_utilisateur']);
-        }
-    }
-    else
-    {
-        if (API_REST_ACCESS_POST_UTILISATEUR == 'none') {
-            return array('code_erreur' => 1); // erreur de connexion
-        }
-        elseif (API_REST_ACCESS_POST_UTILISATEUR == 'user') {
-            $auth = isset($_GET['auth']) ? $_GET['auth'] : 'api';
-            if ($auth == 'api') {
-                $mf_connexion = new Mf_Connexion(true);
-                $mf_token = isset($options['mf_token']) ? $options['mf_token'] : '';
-                if (! $mf_connexion->est_connecte($mf_token)) {
-                    return array('code_erreur' => 1); // erreur de connexion
-                }
-                if (! isset($options['code_utilisateur']) && ! isset($data['Code_utilisateur'])) {
-                    $options['code_utilisateur'] = get_utilisateur_courant('Code_utilisateur');
-                }
-            } elseif ($auth == 'main') {
-                $mf_connexion = new Mf_Connexion();
-                if (isset($_SESSION[PREFIXE_SESSION]['token'])) {
-                    if (! $mf_connexion->est_connecte($_SESSION[PREFIXE_SESSION]['token'])) {
-                        unset($_SESSION[PREFIXE_SESSION]['token']);
-                    }
-                }
-                if (! isset($_SESSION[PREFIXE_SESSION]['token'])) {
-                    return array('code_erreur' => 1); // erreur de connexion
-                }
-            }
-        }
-        elseif ( API_REST_ACCESS_POST_UTILISATEUR!='all' )
-        {
-            return array('code_erreur' => 1); // erreur de connexion
-        }
-    }
+    // Contrôle d'accès
+    $r = mf_api_droits($options, API_REST_ACCESS_POST_UTILISATEUR);
+    if ($r['code_erreur'] != 0) return $r;
 
-    session_write_close();
-
-    $table_utilisateur = new utilisateur();
+    $db = new DB();
     if (is_array(current($data))) {
-        $liste_Code_utilisateur = $table_utilisateur->mf_liste_Code_utilisateur(  );
-        $retour = $table_utilisateur -> mf_supprimer_2($liste_Code_utilisateur);
+        $liste_Code_utilisateur = $db->utilisateur()->mf_liste_Code_utilisateur(  );
+        $retour = $db->utilisateur()->mf_supprimer_2($liste_Code_utilisateur);
         if ($retour['code_erreur'] == 0) {
             foreach ($data as $value) {
-                $retour = $table_utilisateur->mf_ajouter_2($value);
+                $retour = $db->utilisateur()->mf_ajouter_2($value);
                 unset($retour['Code_utilisateur']);
                 if ($retour['code_erreur'] != 0) {
                     return $retour;
@@ -129,12 +42,12 @@ function post($data, $options)
             }
         }
     } else {
-        if ($retour['Code_utilisateur'] = $table_utilisateur->mf_search($data)) {
+        if ($retour['Code_utilisateur'] = $db->utilisateur()->mf_search($data)) {
             $retour['code_erreur'] = 0;
-            $table_utilisateur->mf_modifier_2([$retour['Code_utilisateur']=>$data]);
+            $db->utilisateur()->mf_modifier_2([$retour['Code_utilisateur']=>$data]);
             $retour['callback'] = Hook_utilisateur::callback_post($retour['Code_utilisateur']);
         } else {
-            $retour = $table_utilisateur->mf_ajouter_2($data);
+            $retour = $db->utilisateur()->mf_ajouter_2($data);
         }
         $retour['id'] = ( $retour['Code_utilisateur']!=0 ? $retour['Code_utilisateur'] : '' );
         unset($retour['Code_utilisateur']);
@@ -144,191 +57,58 @@ function post($data, $options)
 
 function put($id, $data, $options)
 {
-    if ( isset($options['mf_connector_token']) && $options['mf_connector_token']!='' )
-    {
-        $db = new DB();
-        $code = $db -> mf_table(CONNECTEUR_API_TABLE) -> mf_search__colonne(CONNECTEUR_API_COLONNE_TOKEN, $options['mf_connector_token']);
-        $r = $db -> mf_table(CONNECTEUR_API_TABLE) -> mf_get($code);
-        $totay = substr(get_now(), 0, 10);
-        if (! ($code != 0 && $r[CONNECTEUR_API_COLONNE_DATE_START] <= $totay && $totay <= $r[CONNECTEUR_API_COLONNE_DATE_STOP])) {
-            return array('code_erreur' => 1); // erreur de connexion
-        }
-        if (isset($r['Code_utilisateur'])) {
-            global $utilisateur_courant;
-            $utilisateur_courant = $db -> utilisateur() -> mf_get_2($r['Code_utilisateur']);
-        }
-    }
-    else
-    {
-        if (API_REST_ACCESS_PUT_UTILISATEUR == 'none') {
-            return array('code_erreur' => 1); // erreur de connexion
-        }
-        elseif (API_REST_ACCESS_PUT_UTILISATEUR == 'user') {
-            $auth = isset($_GET['auth']) ? $_GET['auth'] : 'api';
-            if ($auth == 'api') {
-                $mf_connexion = new Mf_Connexion(true);
-                $mf_token = isset($options['mf_token']) ? $options['mf_token'] : '';
-                if (! $mf_connexion->est_connecte($mf_token)) {
-                    return array('code_erreur' => 1); // erreur de connexion
-                }
-                if (! isset($options['code_utilisateur']) && ! isset($data['Code_utilisateur'])) {
-                    $options['code_utilisateur'] = get_utilisateur_courant('Code_utilisateur');
-                }
-            } elseif ($auth == 'main') {
-                $mf_connexion = new Mf_Connexion();
-                if (isset($_SESSION[PREFIXE_SESSION]['token'])) {
-                    if (! $mf_connexion->est_connecte($_SESSION[PREFIXE_SESSION]['token'])) {
-                        unset($_SESSION[PREFIXE_SESSION]['token']);
-                    }
-                }
-                if (! isset($_SESSION[PREFIXE_SESSION]['token'])) {
-                    return array('code_erreur' => 1); // erreur de connexion
-                }
-            }
-        }
-        elseif ( API_REST_ACCESS_PUT_UTILISATEUR!='all' )
-        {
-            return array('code_erreur' => 1); // erreur de connexion
-        }
-    }
+    // Contrôle d'accès
+    $r = mf_api_droits($options, API_REST_ACCESS_PUT_UTILISATEUR);
+    if ($r['code_erreur'] != 0) return $r;
 
-    session_write_close();
-
-    $table_utilisateur = new utilisateur();
-    return $table_utilisateur->mf_modifier_2([$id=>$data]);
+    $db = new DB();
+    return $db->utilisateur()->mf_modifier_2([$id=>$data]);
 }
 
 function delete($id, $options)
 {
-    if ( isset($options['mf_connector_token']) && $options['mf_connector_token']!='' )
-    {
+    // Contrôle d'accès
+    $r = mf_api_droits($options, API_REST_ACCESS_DELETE_UTILISATEUR);
+    if ($r['code_erreur'] != 0) return $r;
+
+    if ($id != '') {
         $db = new DB();
-        $code = $db -> mf_table(CONNECTEUR_API_TABLE) -> mf_search__colonne(CONNECTEUR_API_COLONNE_TOKEN, $options['mf_connector_token']);
-        $r = $db -> mf_table(CONNECTEUR_API_TABLE) -> mf_get($code);
-        $totay = substr(get_now(), 0, 10);
-        if (! ($code != 0 && $r[CONNECTEUR_API_COLONNE_DATE_START] <= $totay && $totay <= $r[CONNECTEUR_API_COLONNE_DATE_STOP])) {
-            return array('code_erreur' => 1); // erreur de connexion
-        }
-        if (isset($r['Code_utilisateur'])) {
-            global $utilisateur_courant;
-            $utilisateur_courant = $db -> utilisateur() -> mf_get_2($r['Code_utilisateur']);
-        }
-    }
-    else
-    {
-        if (API_REST_ACCESS_DELETE_UTILISATEUR == 'none') {
-            return array('code_erreur' => 1); // erreur de connexion
-        }
-        elseif (API_REST_ACCESS_DELETE_UTILISATEUR == 'user') {
-            $auth = isset($_GET['auth']) ? $_GET['auth'] : 'api';
-            if ($auth == 'api') {
-                $mf_connexion = new Mf_Connexion(true);
-                $mf_token = isset($options['mf_token']) ? $options['mf_token'] : '';
-                if (! $mf_connexion->est_connecte($mf_token)) {
-                    return array('code_erreur' => 1); // erreur de connexion
-                }
-                if (! isset($options['code_utilisateur'])) {
-                    $options['code_utilisateur'] = get_utilisateur_courant('Code_utilisateur');
-                }
-            } elseif ($auth == 'main') {
-                $mf_connexion = new Mf_Connexion();
-                if (isset($_SESSION[PREFIXE_SESSION]['token'])) {
-                    if (! $mf_connexion->est_connecte($_SESSION[PREFIXE_SESSION]['token'])) {
-                        unset($_SESSION[PREFIXE_SESSION]['token']);
-                    }
-                }
-                if (! isset($_SESSION[PREFIXE_SESSION]['token'])) {
-                    return array('code_erreur' => 1); // erreur de connexion
-                }
-            }
-        }
-        elseif ( API_REST_ACCESS_DELETE_UTILISATEUR!='all' )
-        {
-            return array('code_erreur' => 1); // erreur de connexion
-        }
-    }
-
-    session_write_close();
-
-    if ( $id!='' )
-    {
-        $table_utilisateur = new utilisateur();
-        return $table_utilisateur->mf_supprimer($id);
-    }
-    else
-    {
-        $table_utilisateur = new utilisateur();
-        $liste_utilisateur = $table_utilisateur->mf_lister();
-        return $table_utilisateur->mf_supprimer_2(lister_cles($liste_utilisateur));
+        return $db->utilisateur()->mf_supprimer($id);
+    } else {
+        $db = new DB();
+        $liste_Code_utilisateur = $db->utilisateur()->mf_liste_Code_utilisateur();
+        return $db->utilisateur()->mf_supprimer_2($liste_Code_utilisateur);
     }
 }
 
 function options($id, $options)
 {
-    if ( isset($options['mf_connector_token']) && $options['mf_connector_token']!='' )
-    {
-        $db = new DB();
-        $code = $db -> mf_table(CONNECTEUR_API_TABLE) -> mf_search__colonne(CONNECTEUR_API_COLONNE_TOKEN, $options['mf_connector_token']);
-        $r = $db -> mf_table(CONNECTEUR_API_TABLE) -> mf_get($code);
-        $totay = substr(get_now(), 0, 10);
-        if (! ($code != 0 && $r[CONNECTEUR_API_COLONNE_DATE_START] <= $totay && $totay <= $r[CONNECTEUR_API_COLONNE_DATE_STOP])) {
-            return array('code_erreur' => 1); // erreur de connexion
-        }
-        if (isset($r['Code_utilisateur'])) {
-            global $utilisateur_courant;
-            $utilisateur_courant = $db -> utilisateur() -> mf_get_2($r['Code_utilisateur']);
-        }
-    }
-    else
-    {
-        if (API_REST_ACCESS_OPTIONS_UTILISATEUR == 'none') {
-            return array('code_erreur' => 1); // erreur de connexion
-        }
-        elseif (API_REST_ACCESS_OPTIONS_UTILISATEUR == 'user') {
-            $auth = isset($_GET['auth']) ? $_GET['auth'] : 'api';
-            if ($auth == 'api') {
-                $mf_connexion = new Mf_Connexion(true);
-                $mf_token = isset($options['mf_token']) ? $options['mf_token'] : '';
-                if (! $mf_connexion->est_connecte($mf_token)) {
-                    return array('code_erreur' => 1); // erreur de connexion
-                }
-                if (! isset($options['code_utilisateur'])) {
-                    $options['code_utilisateur'] = get_utilisateur_courant('Code_utilisateur');
-                }
-            } elseif ($auth == 'main') {
-                $mf_connexion = new Mf_Connexion();
-                if (isset($_SESSION[PREFIXE_SESSION]['token'])) {
-                    if (! $mf_connexion->est_connecte($_SESSION[PREFIXE_SESSION]['token'])) {
-                        unset($_SESSION[PREFIXE_SESSION]['token']);
-                    }
-                }
-                if (! isset($_SESSION[PREFIXE_SESSION]['token'])) {
-                    return array('code_erreur' => 1); // erreur de connexion
-                }
-            }
-        }
-        elseif ( API_REST_ACCESS_OPTIONS_UTILISATEUR!='all' )
-        {
-            return array('code_erreur' => 1); // erreur de connexion
-        }
-    }
+    // Contrôle d'accès
+    $r = mf_api_droits($options, API_REST_ACCESS_OPTIONS_UTILISATEUR);
+    if ($r['code_erreur'] != 0) return $r;
 
-    session_write_close();
-
-    $id = round($id);
-    $table_utilisateur = new utilisateur();
+    $id = (int) $id;
     Hook_utilisateur::hook_actualiser_les_droits_ajouter();
     Hook_utilisateur::hook_actualiser_les_droits_modifier($id);
     Hook_utilisateur::hook_actualiser_les_droits_supprimer($id);
-    $authorization = array();
+    $authorization = [];
     global $mf_droits_defaut;
     $authorization['POST'] = $mf_droits_defaut['utilisateur__AJOUTER'];
     $authorization['PUT'] = $mf_droits_defaut['utilisateur__MODIFIER'];
     $authorization['PUT:utilisateur_Identifiant'] = $mf_droits_defaut['api_modifier__utilisateur_Identifiant'];
     $authorization['PUT:utilisateur_Password'] = $mf_droits_defaut['api_modifier__utilisateur_Password'];
     $authorization['PUT:utilisateur_Email'] = $mf_droits_defaut['api_modifier__utilisateur_Email'];
+    $authorization['PUT:utilisateur_Civilite_Type'] = $mf_droits_defaut['api_modifier__utilisateur_Civilite_Type'];
+    $authorization['PUT:utilisateur_Prenom'] = $mf_droits_defaut['api_modifier__utilisateur_Prenom'];
+    $authorization['PUT:utilisateur_Nom'] = $mf_droits_defaut['api_modifier__utilisateur_Nom'];
+    $authorization['PUT:utilisateur_Adresse_1'] = $mf_droits_defaut['api_modifier__utilisateur_Adresse_1'];
+    $authorization['PUT:utilisateur_Adresse_2'] = $mf_droits_defaut['api_modifier__utilisateur_Adresse_2'];
+    $authorization['PUT:utilisateur_Ville'] = $mf_droits_defaut['api_modifier__utilisateur_Ville'];
+    $authorization['PUT:utilisateur_Code_postal'] = $mf_droits_defaut['api_modifier__utilisateur_Code_postal'];
+    $authorization['PUT:utilisateur_Date_naissance'] = $mf_droits_defaut['api_modifier__utilisateur_Date_naissance'];
+    $authorization['PUT:utilisateur_Accepte_mail_publicitaire'] = $mf_droits_defaut['api_modifier__utilisateur_Accepte_mail_publicitaire'];
     $authorization['PUT:utilisateur_Administrateur'] = $mf_droits_defaut['api_modifier__utilisateur_Administrateur'];
-    $authorization['PUT:utilisateur_Developpeur'] = $mf_droits_defaut['api_modifier__utilisateur_Developpeur'];
+    $authorization['PUT:utilisateur_Fournisseur'] = $mf_droits_defaut['api_modifier__utilisateur_Fournisseur'];
     $authorization['DELETE'] = $mf_droits_defaut['utilisateur__SUPPRIMER'];
-    return array('code_erreur' => 0, 'authorization' => $authorization);
+    return ['code_erreur' => 0, 'authorization' => $authorization];
 }

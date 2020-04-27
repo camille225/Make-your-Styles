@@ -5,33 +5,18 @@ class Formulaire
 
     // partie privee
     private $titre;
-
     private $liste_champs;
-
     private $message;
-
     private $action;
-
     private $libelle_bouton;
-
     private $activer_fichier;
-
     private $pleine_largeur;
-
     private $largeur_p;
-
     private static $num_id = 0;
-
     private $type_validation;
-
     private $inline;
-
     private $button_class;
-
     private $button_glyphicon;
-
-    private $button_label;
-
     private $bouton_fermer_page;
 
     // partie publique
@@ -366,11 +351,14 @@ class Formulaire
         $code .= '<form id="my_form_auto_' . self::$num_id . '" method="post"' . ($this->activer_fichier ? ' enctype="multipart/form-data"' : '') . ($this->action != '' ? ' action="' . $this->action . '"' : '') . '>';
 
         if ($this->type_validation == 'delete') {
-            $required_html = '<span class="glyphicon glyphicon-hand-right text-danger"></span>&nbsp;';
+            $required_html = '<i class="fa fa-hand-o-right text-danger" aria-hidden="true"></i>&nbsp;';
+            $no_required_html = '<i class="fa fa-hand-o-right text-secondary" aria-hidden="true"></i>&nbsp;';
         } elseif ($this->type_validation == 'validate') {
-            $required_html = '<span class="glyphicon glyphicon-hand-right text-primary"></span>&nbsp;';
+            $required_html = '<i class="fa fa-hand-o-right text-primary" aria-hidden="true"></i>&nbsp;';
+            $no_required_html = '<i class="fa fa-hand-o-right text-secondary" aria-hidden="true"></i>&nbsp;';
         } else {
             $required_html = '';
+            $no_required_html = '';
         }
 
         foreach ($this->liste_champs as $value) {
@@ -400,7 +388,7 @@ class Formulaire
                 }
                 if ($type != 'hidden') {
                     $code .= '<div class="form-group ' . ($this->inline ? ' row' : '') . '">';
-                    $code .= '<label class="' . ($this->inline ? 'col-sm-3 col-form-label' : '') . '" for="' . $nom_colonne . '">' . ($required ? $required_html : '') . (get_nom_colonne($nom_colonne) != '' ? htmlspecialchars(get_nom_colonne($nom_colonne)) . '&nbsp;:' : '') . '</label>';
+                    $code .= '<label class="' . ($this->inline ? 'col-sm-3 col-form-label' : '') . '" for="' . $nom_colonne . '">' . ($required ? $required_html : $no_required_html) . (get_nom_colonne($nom_colonne) != '' ? htmlspecialchars(get_nom_colonne($nom_colonne)) . '&nbsp;:' : '') . '</label>';
                     $code .= '<div class="' . ($this->inline ? 'col-sm-9' : '') . '">';
                 }
                 $code .= '<input type="' . $type . '" class="form-control" id="' . $nom_colonne . '" name="' . $nom_colonne . ($mode_multiple ? '[]' : '') . '" placeholder="' . htmlspecialchars(get_nom_colonne($nom_colonne)) . '" value="' . $valeur . '" ' . ($required ? ' required="required"' : '') . ' ' . ($this->action != '' ? ' action="' . $this->action . '"' : '') . ' ' . $attributs_str . '>';
@@ -414,7 +402,7 @@ class Formulaire
                 $required = $value[4];
                 $onchange = $value[5];
                 $code .= '<div class="form-group' . ($this->inline ? ' row' : '') . '">';
-                $code .= '<label class="' . ($this->inline ? 'col-sm-3 col-form-label' : '') . '" for="' . $nom_colonne . '">' . ($required ? $required_html : '') . (get_nom_colonne($nom_colonne) != '' ? htmlspecialchars(get_nom_colonne($nom_colonne)) . '&nbsp;:' : '') . '</label>';
+                $code .= '<label class="' . ($this->inline ? 'col-sm-3 col-form-label' : '') . '" for="' . $nom_colonne . '">' . ($required ? $required_html : $no_required_html) . (get_nom_colonne($nom_colonne) != '' ? htmlspecialchars(get_nom_colonne($nom_colonne)) . '&nbsp;:' : '') . '</label>';
                 $code .= '<div class="' . ($this->inline ? 'col-sm-9' : '') . '">';
                 $code .= '<select class="form-control" id="' . $nom_colonne . '" name="' . $nom_colonne . '" value="' . $valeur . '" ' . ($required ? ' required="required"' : '') . ($onchange != '' ? ' onchange="' . $onchange . '"' : '') . '>';
                 $code .= '<option></option>';
@@ -430,7 +418,7 @@ class Formulaire
                 $required = $value[4];
                 $onchange = $value[5];
                 $code .= '<div class="form-group' . ($this->inline ? ' row' : '') . '">';
-                $code .= '<label class="' . ($this->inline ? 'col-sm-3 col-form-label' : '') . '" for="' . $nom_colonne . '">' . ($required ? $required_html : '') . (get_nom_colonne($nom_colonne) != '' ? htmlspecialchars(get_nom_colonne($nom_colonne)) . '&nbsp;:' : '') . '</label>';
+                $code .= '<label class="' . ($this->inline ? 'col-sm-3 col-form-label' : '') . '" for="' . $nom_colonne . '">' . ($required ? $required_html : $no_required_html) . (get_nom_colonne($nom_colonne) != '' ? htmlspecialchars(get_nom_colonne($nom_colonne)) . '&nbsp;:' : '') . '</label>';
                 $code .= '<div class="' . ($this->inline ? 'col-sm-9' : '') . '">';
                 $code .= '<select multiple size="9" class="form-control" id="' . $nom_colonne . '" name="' . $nom_colonne . '[]" ' . ($required ? ' required="required"' : '') . ($onchange != '' ? ' onchange="' . $onchange . '"' : '') . '>';
                 foreach ($value[1] as $val) {
@@ -451,7 +439,7 @@ class Formulaire
                 $required = $value[4];
                 $class = $value[6];
                 $code .= '<div class="form-group' . ($this->inline ? ' row' : '') . '">';
-                $code .= '<label class="' . ($this->inline ? 'col-sm-3 col-form-label' : '') . '" for="' . $nom_colonne . '">' . ($required ? $required_html : '') . (get_nom_colonne($nom_colonne) != '' ? htmlspecialchars(get_nom_colonne($nom_colonne)) . '&nbsp;:' : '') . '</label>';
+                $code .= '<label class="' . ($this->inline ? 'col-sm-3 col-form-label' : '') . '" for="' . $nom_colonne . '">' . ($required ? $required_html : $no_required_html) . (get_nom_colonne($nom_colonne) != '' ? htmlspecialchars(get_nom_colonne($nom_colonne)) . '&nbsp;:' : '') . '</label>';
                 $code .= '<div class="' . ($this->inline ? 'col-sm-9' : '') . '">';
                 $code .= '<textarea class="form-control ' . $class . '" id="' . $nom_colonne . '" name="' . $nom_colonne . '" placeholder="' . htmlspecialchars(get_nom_colonne($nom_colonne)) . '" ' . ($required ? ' required="required"' : '') . ' rows="5">' . $valeur . '</textarea>';
                 $code .= '</div>';
@@ -547,10 +535,13 @@ class Formulaire
 
         if ($this->type_validation == 'delete') {
             $required_html = '<span class="glyphicon glyphicon-hand-right text-danger"></span>&nbsp;';
+            $no_required_html = '<span class="glyphicon glyphicon-hand-right text-secondary"></span>&nbsp;';
         } elseif ($this->type_validation == 'validate') {
             $required_html = '<span class="glyphicon glyphicon-hand-right text-primary"></span>&nbsp;';
+            $no_required_html = '<span class="glyphicon glyphicon-hand-right text-secondary"></span>&nbsp;';
         } else {
             $required_html = '';
+            $no_required_html = '';
         }
 
         $i = 0;
@@ -581,7 +572,7 @@ class Formulaire
                 }
                 if ($type != 'hidden') {
                     $code .= '<div class="form-group">';
-                    $code .= '<label class="control-label' . ($this->inline ? ' col-sm-3' : '') . '" for="' . $nom_colonne . '">' . ($required ? $required_html : '') . (get_nom_colonne($nom_colonne) != '' ? htmlspecialchars(get_nom_colonne($nom_colonne)) . '&nbsp;:' : '') . '</label>';
+                    $code .= '<label class="control-label' . ($this->inline ? ' col-sm-3' : '') . '" for="' . $nom_colonne . '">' . ($required ? $required_html : $no_required_html) . (get_nom_colonne($nom_colonne) != '' ? htmlspecialchars(get_nom_colonne($nom_colonne)) . '&nbsp;:' : '') . '</label>';
                     $code .= '<div class="' . ($this->inline ? 'col-sm-9' : '') . '">';
                 }
                 $code .= '<input type="' . $type . '" class="form-control" id="' . $nom_colonne . '" name="' . $nom_colonne . ($mode_multiple ? '[]' : '') . '" placeholder="' . htmlspecialchars(get_nom_colonne($nom_colonne)) . '" value="' . $valeur . '" ' . ($required ? ' required="required"' : '') . ' ' . ($this->action != '' ? ' action="' . $this->action . '"' : '') . ' ' . $attributs_str . '>';
@@ -595,7 +586,7 @@ class Formulaire
                 $required = $value[4];
                 $onchange = $value[5];
                 $code .= '<div class="form-group">';
-                $code .= '<label class="control-label' . ($this->inline ? ' col-sm-3' : '') . '" for="' . $nom_colonne . '">' . ($required ? $required_html : '') . (get_nom_colonne($nom_colonne) != '' ? htmlspecialchars(get_nom_colonne($nom_colonne)) . '&nbsp;:' : '') . '</label>';
+                $code .= '<label class="control-label' . ($this->inline ? ' col-sm-3' : '') . '" for="' . $nom_colonne . '">' . ($required ? $required_html : $no_required_html) . (get_nom_colonne($nom_colonne) != '' ? htmlspecialchars(get_nom_colonne($nom_colonne)) . '&nbsp;:' : '') . '</label>';
                 $code .= '<div class="' . ($this->inline ? 'col-sm-9' : '') . '">';
                 $code .= '<select class="form-control" id="' . $nom_colonne . '" name="' . $nom_colonne . '" value="' . $valeur . '" ' . ($required ? ' required="required"' : '') . ($onchange != '' ? ' onchange="' . $onchange . '"' : '') . '>';
                 $code .= '<option></option>';
@@ -611,7 +602,7 @@ class Formulaire
                 $required = $value[4];
                 $class = $value[6];
                 $code .= '<div class="form-group">';
-                $code .= '<label class="control-label' . ($this->inline ? ' col-sm-3' : '') . '" for="' . $nom_colonne . '">' . ($required ? $required_html : '') . (get_nom_colonne($nom_colonne) != '' ? htmlspecialchars(get_nom_colonne($nom_colonne)) . '&nbsp;:' : '') . '</label>';
+                $code .= '<label class="control-label' . ($this->inline ? ' col-sm-3' : '') . '" for="' . $nom_colonne . '">' . ($required ? $required_html : $no_required_html) . (get_nom_colonne($nom_colonne) != '' ? htmlspecialchars(get_nom_colonne($nom_colonne)) . '&nbsp;:' : '') . '</label>';
                 $code .= '<div class="' . ($this->inline ? 'col-sm-9' : '') . '">';
                 $code .= '<textarea class="form-control ' . $class . '" id="' . $nom_colonne . '" name="' . $nom_colonne . '" placeholder="' . htmlspecialchars(get_nom_colonne($nom_colonne)) . '" ' . ($required ? ' required="required"' : '') . ' rows="5">' . $valeur . '</textarea>';
                 $code .= '</div>';
