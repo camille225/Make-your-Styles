@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 class Cachehtml
 {
@@ -10,68 +10,83 @@ class Cachehtml
     private $cat;
 
     private $compression_html;
+    private $microtime;
+
+    private $time_start;
 
     private function set_cache_cle($cle)
     {
-        $this->cache_cle = $this->dossier_cache . md5((isset($_SERVER['HTTPS']) ? 1 : 0) . '_' . $_SERVER['SERVER_NAME'] . '_' . $_SERVER['REQUEST_URI'] . '_' . $this->cat . '_' . $cle);
+        $this->cache_cle = $this->dossier_cache . md5((isset($_SERVER['HTTPS']) ? 1 : 0) . "_{$_SERVER['SERVER_NAME']}_{$_SERVER['REQUEST_URI']}_{$this->cat}_$cle");
         if (get_nom_page_courante() != 'mf_fichier.php') {
             $adresse_fichier_log = get_dossier_data('log_seo') . 'log_seo_' . substr(get_now(), 0, 10) . '.txt';
             $sep = "\t";
             $ln = PHP_EOL;
             $parametres = '';
-            if (isset($_SESSION[PREFIXE_SESSION]['parametres'])) {
-                foreach ($_SESSION[PREFIXE_SESSION]['parametres'] as $name => &$value) {
-                    $parametres .= $sep . $name . '=' . $value;
-                }
+            $l = mf_get_list_session_values();
+            foreach ($l as $name => &$value) {
+                $parametres .= "$sep$name=$value";
             }
             mf_file_append($adresse_fichier_log, get_now() . $sep . get_ip() . $sep . substr(get_nom_page_courante(), 0, strlen(get_nom_page_courante()) - 4) . $sep . $_SERVER['REQUEST_URI'] . $sep . identification_log() . $sep . (isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) ? substr($_SERVER['HTTP_ACCEPT_LANGUAGE'], 0, 2) : '-') . $sep . $_SERVER['HTTP_USER_AGENT'] . $parametres . $ln);
         }
     }
 
-    function __construct($cat = '', $dossier_cache = '1') // Possibilité de catégoriser les pages ...
+    /**
+     * Cache (notamment pour les pages html, les images, ...)
+     * Chaque dossier cache est indépendant des autres.
+     * Cachehtml constructor.
+     * @param string $cat
+     * @param string $dossier_cache
+     */
+    public function __construct(string $cat = '', string $dossier_cache = 'main')
     {
-        $this->dossier_cache = __DIR__ . '/../cache/';
-        if (! file_exists($this->dossier_cache)) {
-            mkdir($this->dossier_cache);
-        }
-        if (TABLE_INSTANCE != '') {
-            $instance = 'inst_' . get_instance();
-            $this->dossier_cache .= $instance . '/';
-            if (! file_exists($this->dossier_cache)) {
-                @mkdir($this->dossier_cache);
-            }
-        }
-        $this->dossier_cache .= $dossier_cache . '/';
+        $this->dossier_cache = get_dossier_data('html', 'cache') . "$dossier_cache/";
         if (! file_exists($this->dossier_cache)) {
             mkdir($this->dossier_cache);
         }
         $this->cat = $cat;
         $this->compression_html = false;
+        $this->microtime = "{$this->dossier_cache}microtime";
+        if (! file_exists($this->microtime)) {
+            $this->clear();
+        }
     }
 
-    function activer_compression_html()
+    /**
+     * Activation de la compression des fichiers HTML.
+     * Cela réduit l'enregistrement ainsi que le flux html
+     */
+    public function activer_compression_html(): void
     {
         if (MODE_PROD) {
             $this->compression_html = true;
         }
     }
 
-    function start($cle = '', $duree = DUREE_CACHE_MINUTES)
+    public function start($cle = '', $duree = DUREE_CACHE_MINUTES)
     {
         $this->set_cache_cle($cle);
-        if (file_exists($this->cache_cle)) {
-            if (time() - filemtime($this->cache_cle) < $duree * 60) {
-                $r = readfile($this->cache_cle);
-                if ($r !== false) {
-                    return true;
+        if (MODE_PROD) {
+            $r = @file_get_contents($this->microtime);
+            if ($r !== false) {
+                $microtime = unserialize($r); // Lectue microtime
+                if (file_exists($this->cache_cle)) {
+                    $r = @file_get_contents($this->cache_cle); // Lectue microtime
+                    if ($r !== false) {
+                        $r = unserialize($r);
+                        if ($r['u'] > $microtime) {
+                            echo $r['v'];
+                            return true;
+                        }
+                    }
                 }
             }
         }
+        $this->time_start = microtime(true);
         ob_start();
         return false;
     }
 
-    function end()
+    public function end()
     {
         $content = ob_get_clean();
         if ($this->compression_html) {
@@ -97,11 +112,16 @@ class Cachehtml
             }
             $content = str_replace("\n", PHP_EOL, $content);
         }
-        if (MODE_PROD) {
-            if (! test_action_formulaire()) {
-                file_put_contents($this->cache_cle, $content);
-            }
-        } else {
+        if (! test_action_formulaire()) {
+            $stop = microtime(true);
+            $execution_time = $stop - $this->time_start;
+            file_put_contents($this->cache_cle, serialize([
+                'u' => microtime(true),
+                'v' => $content,
+                't' => $execution_time
+            ]));
+        }
+        if (! MODE_PROD) {
             global $desactivation_actualisation_outils_developpeur;
             if (! isset($desactivation_actualisation_outils_developpeur) || ! $desactivation_actualisation_outils_developpeur) {
                 mise_a_jour_fichier_developpeur();
@@ -110,29 +130,19 @@ class Cachehtml
         echo $content;
     }
 
-    function clear() // sppression differée
+    public function clear()
     {
-        $files = glob($this->dossier_cache . '*');
-        $fichier_a_suppression = true;
-        while ($fichier_a_suppression) {
-            $fichier_a_suppression = false;
-            foreach ($files as $file) {
-                $r = unlink($file);
-                if ($r === false) {
-                    $fichier_a_suppression = true;
-                }
-            }
-        }
-        clearstatcache();
+        file_put_contents($this->microtime, serialize(microtime(true) + 0.001));
     }
 
-    function clear_current_page($cle = '')
+    public function clear_current_page($cle = '')
     {
         $this->set_cache_cle($cle);
-        if (file_exists($this->cache_cle)) {
-            @unlink($this->cache_cle);
-        }
-        clearstatcache();
+        file_put_contents($this->cache_cle, serialize([
+            'u' => 0,
+            'v' => '',
+            't' => 0
+        ]));
     }
 
     private function mef_logs(&$donnees)
@@ -150,18 +160,18 @@ class Cachehtml
         $tableau .= '</tr>';
         $i = 1;
         foreach ($donnees as $ligne) {
-            $tableau .= '<tr><th scope="row">' . $i . '</th>';
+            $tableau .= "<tr><th scope='row'>$i</th>";
             foreach ($ligne as $value) {
                 $tableau .= '<td>' . htmlspecialchars($value) . '</td>';
             }
             $tableau .= '</tr>';
-            $i ++;
+            $i++;
         }
         $tableau .= '</table>';
         return $tableau;
     }
 
-    function get_log()
+    public function get_log()
     {
         $donnees = [];
         $files = glob(get_dossier_data('log_seo') . '*');
@@ -176,7 +186,7 @@ class Cachehtml
         return $this->mef_logs($donnees);
     }
 
-    function get_statistiques()
+    public function get_statistiques()
     {
         $mf_robot = mf_get_value_session('mf_robot', true);
         $mf_utilisateurs_enregistres = mf_get_value_session('mf_utilisateurs_enregistres', true);
@@ -207,7 +217,7 @@ class Cachehtml
                 }
             }
         }
-        if (! $mf_utilisateurs_enregistres) {
+        if (!$mf_utilisateurs_enregistres) {
             foreach ($est_connecte as $key => $value) {
                 if ($value) {
                     unset($donnees_utilisateurs[$key]);
@@ -217,9 +227,9 @@ class Cachehtml
         $i = 1;
         foreach ($donnees_utilisateurs as $donnees_utilisateur) {
             $ip = $donnees_utilisateur[0][1];
-            $retour .= '<h2>IP ' . $ip . ' : ' . count($donnees_utilisateur) . ' requête(s)</h2>';
+            $retour .= "<h2>IP $ip : " . count($donnees_utilisateur) . ' requête(s)</h2>';
             $retour .= $this->mef_logs($donnees_utilisateur);
-            $i ++;
+            $i++;
         }
         return $retour;
     }

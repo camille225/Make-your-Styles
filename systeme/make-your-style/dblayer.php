@@ -1,8 +1,6 @@
 <?php
 include __DIR__ . '/dblayer_light.php';
 
-include __DIR__ . '/habillage.php';
-
 $db = new DB();
 
 if (! MODE_PROD) {
@@ -14,8 +12,8 @@ function formulaire_valide($cle_formulaire)
 {
     $secur = (isset($_GET['secur']) ? '' . $_GET['secur'] : '');
     if ($secur != '') {
-        if (isset($_SESSION[PREFIXE_SESSION]['valid_form'][$secur])) {
-            if ($_SESSION[PREFIXE_SESSION]['valid_form'][$secur] == $cle_formulaire) {
+        if (isset($_SESSION[NOM_PROJET]['valid_form'][$secur])) {
+            if ($_SESSION[NOM_PROJET]['valid_form'][$secur] == $cle_formulaire) {
                 return true;
             }
         }
@@ -28,11 +26,11 @@ function formulaire_valide($cle_formulaire)
 function cookies(&$var, $nom)
 {
     if ($var == '') {
-        if (isset($_SESSION[PREFIXE_SESSION][$nom])) {
-            $var = $_SESSION[PREFIXE_SESSION][$nom];
+        if (isset($_SESSION[NOM_PROJET][$nom])) {
+            $var = $_SESSION[NOM_PROJET][$nom];
         }
     } else {
-        $_SESSION[PREFIXE_SESSION][$nom] = $var;
+        $_SESSION[NOM_PROJET][$nom] = $var;
     }
 }
 
@@ -90,12 +88,12 @@ function get_photo($valeur)
     }
 }
 
-function get_fichier($valeur)
+function get_fichier(string $valeur)
 {
     if ($valeur != '') {
-        return '<iframe width="100%" height="600" frameborder="0" scrolling="auto" marginheight="0" marginwidth="0" src="mf_fichier.php?n=' . $valeur . '"></iframe>';
+        return '<iframe style="border: none; overflow: auto; margin: 0; height: 600px; width: 100%" src="mf_fichier.php?n=' . $valeur . '"></iframe>';
     } else {
-        return '<div class="alert alert-info">Aucun fichier.</div>';
+        return '<div class="alert alert-info"><i style="opacity: 0.5;">Aucun fichier.</i></div>';
     }
 }
 
@@ -129,6 +127,8 @@ function recuperer_gabarit($filename, $trans, $forcer_mode_prod = false, $mode_m
         $txt = file_get_contents('gabarits/' . $filename);
         $liste_cles = '';
         $trans['{ADRESSE_SITE}'] = ADRESSE_SITE;
+        $trans['{ADRESSE_API}'] = ADRESSE_API;
+        $trans['{NUMERO_INSTANCE}'] = get_instance();
         foreach ($trans as $key => $value) {
             if (stripos($txt, $key) === false) {
                 $liste_cles = $key . '<br>' . $liste_cles;
@@ -171,22 +171,22 @@ function recuperer_gabarit($filename, $trans, $forcer_mode_prod = false, $mode_m
             $retour .= "</div>";
             $retour .= "<div id=\"affichage_rendu_gabarit_$mf_cpt_gabarit\">" . strtr(file_get_contents("gabarits/" . $filename), $trans) . "</div>";
             $retour .= "<script type=\"text/javascript\">";
-            $retour .= "var xhr_id_edition_gabarit_$mf_cpt_gabarit;";
+            $retour .= "let xhr_id_edition_gabarit_$mf_cpt_gabarit;";
             $retour .= "function maj_id_edition_gabarit_$mf_cpt_gabarit() {";
-            $retour .= "var modif = document.getElementById(\"id_edition_gabarit_$mf_cpt_gabarit\").value;";
+            $retour .= "let modif = document.getElementById(\"id_edition_gabarit_$mf_cpt_gabarit\").value;";
             $retour .= "xhr_id_edition_gabarit_$mf_cpt_gabarit = getXMLHttpRequest();";
             $retour .= "xhr_id_edition_gabarit_$mf_cpt_gabarit.open(\"POST\", \"api/mf_gabarits/maj.php\", true);";
             $retour .= "xhr_id_edition_gabarit_$mf_cpt_gabarit.setRequestHeader(\"Content-Type\", \"application/x-www-form-urlencoded\");";
             $retour .= "xhr_id_edition_gabarit_$mf_cpt_gabarit.send(\"filename=\"+encodeURIComponent('$filename')+\"&contenu=\"+encodeURIComponent(modif));";
             $retour .= "xhr_id_edition_gabarit_$mf_cpt_gabarit.onreadystatechange = function() {";
             $retour .= "if ( xhr_id_edition_gabarit_$mf_cpt_gabarit.readyState == 4 && (xhr_id_edition_gabarit_$mf_cpt_gabarit.status == 200 || xhr_id_edition_gabarit_$mf_cpt_gabarit.status == 0) ) {";
-            $retour .= "var retour = xhr_id_edition_gabarit_$mf_cpt_gabarit.responseText;";
+            $retour .= "let retour = xhr_id_edition_gabarit_$mf_cpt_gabarit.responseText;";
             $retour .= "}";
             $retour .= "};";
             $retour .= "}";
             $retour .= "function affichage_edition_gabarit_$mf_cpt_gabarit() {";
-            $retour .= "var div = document.getElementById('affichage_edition_gabarit_$mf_cpt_gabarit');";
-            $retour .= "var div_2 = document.getElementById('affichage_rendu_gabarit_$mf_cpt_gabarit');";
+            $retour .= "let div = document.getElementById('affichage_edition_gabarit_$mf_cpt_gabarit');";
+            $retour .= "let div_2 = document.getElementById('affichage_rendu_gabarit_$mf_cpt_gabarit');";
             $retour .= "if ( div.style.display == 'none' )";
             $retour .= "{";
             $retour .= "div.style.display = 'block';";
@@ -202,38 +202,35 @@ function recuperer_gabarit($filename, $trans, $forcer_mode_prod = false, $mode_m
             $retour .= "</script>";
         } else {
             $retour = '<div style="height: 29px;"><div style="text-align: right; color: #aaa; margin-bottom: 5px; font-style: italic; font-weight: bold; font-family: Consolas,monaco,monospace; z-index: 999999999; position: absolute; right: 10px;">' . htmlspecialchars($filename) . " <button onclick=\"affichage_edition_gabarit_$mf_cpt_gabarit();\" style=\"padding: 2px 4px;\"> &lt; &gt; </button></div></div>";
-            $retour = '<div id="affichage_edition_gabarit_' . $mf_cpt_gabarit . '" style="display: none; position: relative; height: 800px;">';
-            $retour = '<div style="position: absolute; width: 100%; height: 810px; overflow: auto;"><table style="width: 100%;"><tr><td style="vertical-align: top;">';
-            $retour = "<textarea class=\"edition_gabarit\" id=\"id_edition_gabarit_$mf_cpt_gabarit\">" . htmlspecialchars($txt) . "</textarea>";
-            $retour = "</td><td style=\"width: 260px; vertical-align: top;\">";
-            $retour = "$liste_cles";
-            $retour = "</td></tr></table></div>";
-            $retour = "</div>";
+            $retour .= '<div id="affichage_edition_gabarit_' . $mf_cpt_gabarit . '" style="display: none; position: relative; height: 800px;">';
+            $retour .= '<div style="position: absolute; width: 100%; height: 810px; overflow: auto;"><table style="width: 100%;"><tr><td style="vertical-align: top;">';
+            $retour .= "<textarea class=\"edition_gabarit\" id=\"id_edition_gabarit_$mf_cpt_gabarit\">" . htmlspecialchars($txt) . "</textarea>";
+            $retour .= "</td><td style=\"width: 260px; vertical-align: top;\">";
+            $retour .= "$liste_cles";
+            $retour .= "</td></tr></table></div>";
+            $retour .= "</div>";
             $retour .= "<div id=\"affichage_rendu_gabarit_$mf_cpt_gabarit\">" . strtr(file_get_contents("gabarits/" . $filename), $trans) . "</div>";
             $retour .= "<script type=\"text/javascript\">";
-            $retour .= "var xhr_id_edition_gabarit_$mf_cpt_gabarit;";
+            $retour .= "let xhr_id_edition_gabarit_$mf_cpt_gabarit;";
             $retour .= "function maj_id_edition_gabarit_$mf_cpt_gabarit() {";
-            $retour .= "var modif = document.getElementById(\"id_edition_gabarit_$mf_cpt_gabarit\").value;";
+            $retour .= "let modif = document.getElementById(\"id_edition_gabarit_$mf_cpt_gabarit\").value;";
             $retour .= "xhr_id_edition_gabarit_$mf_cpt_gabarit = getXMLHttpRequest();";
             $retour .= "xhr_id_edition_gabarit_$mf_cpt_gabarit.open(\"POST\", \"api/mf_gabarits/maj.php\", true);";
             $retour .= "xhr_id_edition_gabarit_$mf_cpt_gabarit.setRequestHeader(\"Content-Type\", \"application/x-www-form-urlencoded\");";
             $retour .= "xhr_id_edition_gabarit_$mf_cpt_gabarit.send(\"filename=\"+encodeURIComponent('$filename')+\"&contenu=\"+encodeURIComponent(modif));";
             $retour .= "xhr_id_edition_gabarit_$mf_cpt_gabarit.onreadystatechange = function() {";
             $retour .= "if ( xhr_id_edition_gabarit_$mf_cpt_gabarit.readyState == 4 && (xhr_id_edition_gabarit_$mf_cpt_gabarit.status == 200 || xhr_id_edition_gabarit_$mf_cpt_gabarit.status == 0) ) {";
-            $retour .= "var retour = xhr_id_edition_gabarit_$mf_cpt_gabarit.responseText;";
+            $retour .= "let retour = xhr_id_edition_gabarit_$mf_cpt_gabarit.responseText;";
             $retour .= "}";
             $retour .= ";";
             $retour .= "}";
             $retour .= "function affichage_edition_gabarit_$mf_cpt_gabarit() {";
-            $retour .= "var div = document.getElementById('affichage_edition_gabarit_$mf_cpt_gabarit');";
-            $retour .= "var div_2 = document.getElementById('affichage_rendu_gabarit_$mf_cpt_gabarit');";
-            $retour .= "if ( div.style.display == 'none' )";
-            $retour .= "{";
+            $retour .= "let div = document.getElementById('affichage_edition_gabarit_$mf_cpt_gabarit');";
+            $retour .= "let div_2 = document.getElementById('affichage_rendu_gabarit_$mf_cpt_gabarit');";
+            $retour .= "if ( div.style.display == 'none' ) {";
             $retour .= "div.style.display = 'block';";
             $retour .= "div_2.style.display = 'none';";
-            $retour .= "}";
-            $retour .= "else";
-            $retour .= "{";
+            $retour .= "} else {";
             $retour .= "div.style.display = 'none';";
             $retour .= "div_2.style.display = 'block';";
             $retour .= "document.location.href='" . $fil_ariane->get_last_lien() . "'";
@@ -288,16 +285,16 @@ function recuperer_gabarit($filename, $trans, $forcer_mode_prod = false, $mode_m
     if (! MODE_PROD) {
         global $mf_liste_gabarits;
         $infos_gabarit = [];
-        $infos_gabarit[] = '    * C:\\wamp64\\www\\' . NOM_PROJET . '\\' . REPERTOIRE_WWW . '\\' . NOM_PROJET . '\\gabarits\\' . str_replace('/', '\\', $filename);
+        $infos_gabarit[] = '    include \'' . REPERTOIRE_WWW . '\\' . NOM_PROJET . '\\gabarits\\' . str_replace('/', '\\', $filename) . '\';';
         $liste_cles = lister_cles($trans);
         $txt = '';
         foreach ($liste_cles as $i => $value) {
-            $txt .= ($i > 0 ? '                  ' : '') . $value . PHP_EOL;
+            $txt .= ($i > 0 ? '//                  ' : '') . $value . PHP_EOL;
         }
         if ($txt != '') {
-            $infos_gabarit[] = '      Balise(s) : ' . $txt;
+            $infos_gabarit[] = '//      Balise(s) : ' . $txt;
         } else {
-            $infos_gabarit[] = '      Sans balise';
+            $infos_gabarit[] = '//      Sans balise';
         }
         $mf_liste_gabarits[] = $infos_gabarit;
     }
@@ -313,8 +310,7 @@ $num_champs_focus = 0;
 
 function ajouter_champ_modifiable_Bootstrap(&$liste_valeurs_cle_table, &$DB_name, &$valeur_initiale, &$nom_table, &$rafraichissement_page, &$class, &$mode_pourcentage_montant_initiale, &$type_input, &$attributs, &$maj_auto, &$titre, &$mode_formulaire, &$mise_a_jour_silencieuse, &$onchange_js)
 {
-    $onchange_js .= ';$(\'.mf_attente_maj_auto\').css(\'opacity\', \'0.1\');';
-
+    // $onchange_js .= ';$(\'.mf_attente_maj_auto\').css(\'opacity\', \'0.1\');';
     if ($rafraichissement_page) { // inutile de mettre à jour tout les champs si un rafraishissement de la page est prévu
         $mise_a_jour_silencieuse = true;
     }
@@ -415,16 +411,16 @@ function ajouter_champ_modifiable_Bootstrap(&$liste_valeurs_cle_table, &$DB_name
             $retour .= "<input " . ($mode_formulaire ? ' class="form-control mf_champ"' : ' class="form-control mf_champ"') . " onchange=\"maj_form_dyn_$num_champs_auto();$onchange_js;\" id=\"form_dyn_$num_champs_auto\" value=\"" . format_datetime_local($valeur_initiale) . "\" type=\"hidden\">";
             $retour .= "<script type=\"text/javascript\">";
             $retour .= "function maj_form_dyn_{$num_champs_auto}_tmp() {";
-            $retour .= "var date_ = document.getElementById(\"form_dyn_{$num_champs_auto}_date\").value;";
-            $retour .= "var time_ = document.getElementById(\"form_dyn_{$num_champs_auto}_time\").value;";
-            $retour .= "var v = date_ + 'T' + time_;";
+            $retour .= "let date_ = document.getElementById(\"form_dyn_{$num_champs_auto}_date\").value;";
+            $retour .= "let time_ = document.getElementById(\"form_dyn_{$num_champs_auto}_time\").value;";
+            $retour .= "let v = date_ + 'T' + time_;";
             $retour .= "document.getElementById(\"form_dyn_$num_champs_auto\").value = v;";
             $retour .= "maj_form_dyn_$num_champs_auto();";
             $retour .= "}";
             $retour .= "function maj_form_dyn_{$num_champs_auto}_tmp_2() {";
             $retour .= "if (document.getElementById(\"form_dyn_{$num_champs_auto}_date\") !== document.activeElement && document.getElementById(\"form_dyn_{$num_champs_auto}_time\") !== document.activeElement)";
             $retour .= "{";
-            $retour .= "var date_time = document.getElementById(\"form_dyn_{$num_champs_auto}\").value;";
+            $retour .= "let date_time = document.getElementById(\"form_dyn_{$num_champs_auto}\").value;";
             $retour .= "document.getElementById(\"form_dyn_{$num_champs_auto}_date\").value = date_time.substring(0, 10).replace(\"null\",\"\");";
             $retour .= "document.getElementById(\"form_dyn_{$num_champs_auto}_time\").value = date_time.substring(11).replace(\"null\",\"\");";
             $retour .= "}";
@@ -448,129 +444,6 @@ function ajouter_champ_modifiable_Bootstrap(&$liste_valeurs_cle_table, &$DB_name
         $retour .= '</div>';
     }
 
-    $retour .= "<script type=\"text/javascript\">";
-    $retour .= "var xhr_form_dyn_$num_champs_auto;";
-    $retour .= "var maj_form_dyn__{$num_champs_auto}_libre=true;";
-    $retour .= "var maj_form_dyn__{$num_champs_auto}_synchro_demandee=false;";
-    $retour .= "function maj_form_dyn_$num_champs_auto() {";
-
-    $retour .= "if ( maj_form_dyn__{$num_champs_auto}_libre )";
-    $retour .= "{";
-
-    $retour .= "maj_form_dyn__{$num_champs_auto}_libre=false;";
-    $retour .= "nb_actions_en_cours++;";
-
-    $retour .= ($rafraichissement_page ? '$(".mf_champ").prop( "disabled", true );' : '');
-
-    if (isset($mf_dictionnaire_db[$DB_name]['spec']['checkbox'])) {
-        $retour .= 'var modif = ( document.getElementById("form_dyn_' . $num_champs_auto . '").checked ? 1 : 0);';
-        $retour .= 'var e = $(\'label[for="form_dyn_' . $num_champs_auto . '"]\');';
-        $retour .= 'if (typeof e[0] != \'undefined\') {';
-        $retour .= 'e[0].className=( modif==1 ? "checked" : "unchecked" );';
-        $retour .= '}';
-
-        $mf_script_end .= 'var e = $(\'label[for="form_dyn_' . $num_champs_auto . '"]\');';
-        $mf_script_end .= 'if (typeof e[0] != \'undefined\') {';
-        $mf_script_end .= 'e[0].className="' . ($valeur_initiale == 1 ? 'checked' : 'unchecked') . '";';
-        $mf_script_end .= '}';
-    } else {
-        if ($mode_innerHTML) {
-            $retour .= 'var modif = document.getElementById("form_dyn_' . $num_champs_auto . '").value;';
-        } else {
-            $retour .= 'var modif = document.getElementById("form_dyn_' . $num_champs_auto . '").value;';
-        }
-    }
-
-    if ($mode_pourcentage_montant_initiale !== false) {
-        $retour .= "var pourcentage = Math.round(10000*modif/$mode_pourcentage_montant_initiale)/100;";
-        $retour .= "document.getElementById(\"form_dyn_{$num_champs_auto}_p\").value = pourcentage;";
-    }
-    if ($mode_formulaire) {
-        $retour .= "document.getElementById(\"form_dyn_etat_$num_champs_auto\").setAttribute('class', 'maj_dyn_etat on');";
-    }
-    $retour .= "xhr_form_dyn_$num_champs_auto = getXMLHttpRequest();";
-    $retour .= "xhr_form_dyn_$num_champs_auto.open(\"POST\", \"api/$nom_table/modifier.php\", true);";
-    $retour .= "xhr_form_dyn_$num_champs_auto.setRequestHeader(\"Content-Type\", \"application/x-www-form-urlencoded\");";
-    $retour .= "xhr_form_dyn_$num_champs_auto.send(\"$cles&$DB_name=\"+encodeURIComponent(modif));";
-    $retour .= "xhr_form_dyn_$num_champs_auto.onreadystatechange = function()";
-    $retour .= '{';
-    $retour .= "if ( xhr_form_dyn_$num_champs_auto.readyState == 4 && (xhr_form_dyn_$num_champs_auto.status == 200 || xhr_form_dyn_$num_champs_auto.status == 0) )";
-    $retour .= '{';
-
-    $retour .= 'nb_actions_en_cours--;';
-    $retour .= 'maj_form_dyn__' . $num_champs_auto . '_libre=true;';
-
-    $retour .= 'if ( maj_form_dyn__' . $num_champs_auto . '_synchro_demandee )';
-    $retour .= '{';
-
-    $retour .= 'maj_form_dyn__' . $num_champs_auto . '_synchro_demandee = false;';
-    $retour .= 'setTimeout(maj_form_dyn_' . $num_champs_auto . ');';
-
-    $retour .= '}';
-    $retour .= 'else';
-    $retour .= '{';
-
-    $retour .= 'try {';
-
-    $retour .= 'var retour = JSON.parse(xhr_form_dyn_' . $num_champs_auto . '.responseText);';
-    $retour .= 'if ( retour.code_erreur == 0 )';
-    $retour .= '{';
-    if ($mode_formulaire) {
-        $retour .= 'document.getElementById("form_dyn_etat_' . $num_champs_auto . '").setAttribute("class", "maj_dyn_etat");';
-        $retour .= 'document.getElementById("form_dyn_etat_' . $num_champs_auto . '").setAttribute("title", "");';
-    }
-    $retour .= "" . ($rafraichissement_page ? "document.location.href='" . $fil_ariane->get_last_lien() . "'; " : "") . "";
-    if (! $mise_a_jour_silencieuse) {
-        $retour .= "actualiser_les_champs();";
-    }
-    $retour .= '}';
-    $retour .= 'else';
-    $retour .= '{';
-
-    $retour .= ($rafraichissement_page ? '$(".mf_champ").prop( "disabled", false );' : '');
-
-    if ($mode_formulaire) {
-        $retour .= "document.getElementById(\"form_dyn_etat_$num_champs_auto\").setAttribute('class', 'maj_dyn_etat ko');";
-        $retour .= "document.getElementById(\"form_dyn_etat_$num_champs_auto\").setAttribute('title', retour.message_erreur);";
-    }
-    $retour .= '}';
-
-    $retour .= '} catch (e) {';
-
-    $retour .= 'var t = document.getElementById("form_dyn_etat_' . $num_champs_auto . '");';
-    $retour .= 'if (t!=null) {';
-    $retour .= 't.setAttribute("class", "maj_dyn_etat ko");';
-    $retour .= 't.setAttribute("title", "Erreur système");';
-    $retour .= '}';
-
-    if (! MODE_PROD) {
-        $retour .= 'alertModal(xhr_form_dyn_' . $num_champs_auto . '.responseText);';
-    }
-
-    $retour .= '}';
-
-    $retour .= '}';
-    $retour .= '}';
-    $retour .= 'else if (xhr_form_dyn_' . $num_champs_auto . '.readyState!=2 && xhr_form_dyn_' . $num_champs_auto . '.readyState!=3)';
-    $retour .= '{';
-
-    $retour .= 'nb_actions_en_cours--;';
-    $retour .= 'maj_form_dyn__' . $num_champs_auto . '_libre=true;';
-    $retour .= 'console.log("erreur xhr n°" + xhr_form_dyn_' . $num_champs_auto . '.readyState);';
-    $retour .= 'mf_maj_en_cours = false;';
-
-    $retour .= '}';
-
-    $retour .= '}';
-
-    $retour .= '}';
-    $retour .= 'else';
-    $retour .= '{';
-    $retour .= 'maj_form_dyn__' . $num_champs_auto . '_synchro_demandee = true;';
-    $retour .= '}';
-
-    $retour .= '}';
-
     if ($maj_auto) {
 
         global $champ_maj_auto;
@@ -586,7 +459,9 @@ function ajouter_champ_modifiable_Bootstrap(&$liste_valeurs_cle_table, &$DB_name
         }
     }
 
-    $retour .= '</script>';
+    $retour .= zz_script_js_update($nom_table, $DB_name, $valeur_initiale, $num_champs_auto, null,
+        $rafraichissement_page, $mode_innerHTML, $mode_pourcentage_montant_initiale,
+        $mode_formulaire, $cles);
 
     $num_champs_auto ++;
 
@@ -595,8 +470,7 @@ function ajouter_champ_modifiable_Bootstrap(&$liste_valeurs_cle_table, &$DB_name
 
 function ajouter_champ_modifiable_Bootstrap_4(&$liste_valeurs_cle_table, &$DB_name, &$valeur_initiale, &$nom_table, &$rafraichissement_page, &$class, &$mode_pourcentage_montant_initiale, &$type_input, &$attributs, &$maj_auto, &$titre, &$mode_formulaire, &$mise_a_jour_silencieuse, &$onchange_js)
 {
-    $onchange_js .= ';$(\'.mf_attente_maj_auto\').css(\'opacity\', \'0.1\');';
-
+    // $onchange_js .= ';$(\'.mf_attente_maj_auto\').css(\'opacity\', \'0.1\');';
     if ($rafraichissement_page) { // inutile de mettre à jour tout les champs si un rafraishissement de la page est prévu
         $mise_a_jour_silencieuse = true;
     }
@@ -629,7 +503,7 @@ function ajouter_champ_modifiable_Bootstrap_4(&$liste_valeurs_cle_table, &$DB_na
     $mode_innerHTML = false;
 
     if ($mode_formulaire) {
-        $retour .= '<form>';
+        $retour .= '<div>';
         $retour .= '<div class="form-group row">';
         if ($titre) {
             $retour .= '<label class="col-md-3 col-form-label libelle_formulaire" for="form_dyn_' . $num_champs_auto . '">' . htmlspecialchars(get_nom_colonne($DB_name)) . '&nbsp;:</label>';
@@ -701,22 +575,22 @@ function ajouter_champ_modifiable_Bootstrap_4(&$liste_valeurs_cle_table, &$DB_na
             $retour .= '<td><input class="form-control mf_champ form_dyn_champ_ ' . $class . '"' . " onchange=\"maj_form_dyn_{$num_champs_auto}_tmp();\" id=\"form_dyn_{$num_champs_auto}_time\" value=\"" . format_time($valeur_initiale) . "\" type=\"$type_input\" $attributs_str></td></tr></table>";
             $retour .= '<input  class="form-control mf_champ"' . " onchange=\"maj_form_dyn_$num_champs_auto();$onchange_js;\" id=\"form_dyn_$num_champs_auto\" value=\"" . format_datetime_local($valeur_initiale) . "\" type=\"hidden\">";
             $retour .= "<script type=\"text/javascript\">";
-            $retour .= "function maj_form_dyn_{$num_champs_auto}_tmp() {";
-            $retour .= "var date_ = document.getElementById(\"form_dyn_{$num_champs_auto}_date\").value;";
-            $retour .= "var time_ = document.getElementById(\"form_dyn_{$num_champs_auto}_time\").value;";
-            $retour .= "var v = date_ + 'T' + time_;";
-            $retour .= "document.getElementById(\"form_dyn_$num_champs_auto\").value = v;";
-            $retour .= "maj_form_dyn_$num_champs_auto();";
-            $retour .= "}";
-            $retour .= "function maj_form_dyn_{$num_champs_auto}_tmp_2() {";
-            $retour .= "if (document.getElementById(\"form_dyn_{$num_champs_auto}_date\") !== document.activeElement && document.getElementById(\"form_dyn_{$num_champs_auto}_time\") !== document.activeElement)";
-            $retour .= "{";
-            $retour .= "var date_time = document.getElementById(\"form_dyn_{$num_champs_auto}\").value;";
-            $retour .= "document.getElementById(\"form_dyn_{$num_champs_auto}_date\").value = date_time.substring(0, 10).replace(\"null\",\"\");";
-            $retour .= "document.getElementById(\"form_dyn_{$num_champs_auto}_time\").value = date_time.substring(11).replace(\"null\",\"\");";
-            $retour .= "}";
-            $retour .= "}setInterval(maj_form_dyn_{$num_champs_auto}_tmp_2,100);";
-            $retour .= "</script>";
+            $retour .= "function maj_form_dyn_{$num_champs_auto}_tmp() {" . PHP_EOL;
+            $retour .= "let date_ = document.getElementById(\"form_dyn_{$num_champs_auto}_date\").value;" . PHP_EOL;
+            $retour .= "let time_ = document.getElementById(\"form_dyn_{$num_champs_auto}_time\").value;" . PHP_EOL;
+            $retour .= "let v = date_ + 'T' + time_;" . PHP_EOL;
+            $retour .= "document.getElementById(\"form_dyn_$num_champs_auto\").value = v;" . PHP_EOL;
+            $retour .= "maj_form_dyn_$num_champs_auto();" . PHP_EOL;
+            $retour .= "}" . PHP_EOL;
+            $retour .= "function maj_form_dyn_{$num_champs_auto}_tmp_2() {" . PHP_EOL;
+            $retour .= "if (document.getElementById(\"form_dyn_{$num_champs_auto}_date\") !== document.activeElement && document.getElementById(\"form_dyn_{$num_champs_auto}_time\") !== document.activeElement)" . PHP_EOL;
+            $retour .= "{" . PHP_EOL;
+            $retour .= "let date_time = document.getElementById(\"form_dyn_{$num_champs_auto}\").value;" . PHP_EOL;
+            $retour .= "document.getElementById(\"form_dyn_{$num_champs_auto}_date\").value = date_time.substring(0, 10).replace(\"null\",\"\");" . PHP_EOL;
+            $retour .= "document.getElementById(\"form_dyn_{$num_champs_auto}_time\").value = date_time.substring(11).replace(\"null\",\"\");" . PHP_EOL;
+            $retour .= "}" . PHP_EOL;
+            $retour .= "}setInterval(maj_form_dyn_{$num_champs_auto}_tmp_2,100);" . PHP_EOL;
+            $retour .= "</script>" . PHP_EOL;
         } elseif ($mf_dictionnaire_db[$DB_name]['type'] == 'TIME') {
             if ($type_input == '')
                 $type_input = 'time';
@@ -732,133 +606,8 @@ function ajouter_champ_modifiable_Bootstrap_4(&$liste_valeurs_cle_table, &$DB_na
     if ($mode_formulaire) {
         $retour .= '</div><div class="col-1" style="padding: 0; text-align: center;"><span id="form_dyn_etat_' . $num_champs_auto . '" class="maj_dyn_etat"></span></div></div></div>';
         $retour .= '</div>';
-        $retour .= '</form>';
+        $retour .= '</div>';
     }
-
-    $retour .= "<script type=\"text/javascript\">";
-    $retour .= "var xhr_form_dyn_$num_champs_auto;";
-    $retour .= "var maj_form_dyn__{$num_champs_auto}_libre=true;";
-    $retour .= "var maj_form_dyn__{$num_champs_auto}_synchro_demandee=false;";
-    $retour .= "function maj_form_dyn_$num_champs_auto() {";
-
-    $retour .= "if ( maj_form_dyn__{$num_champs_auto}_libre )";
-    $retour .= "{";
-
-    $retour .= "maj_form_dyn__{$num_champs_auto}_libre=false;";
-    $retour .= "nb_actions_en_cours++;";
-
-    $retour .= ($rafraichissement_page ? '$(".mf_champ").prop( "disabled", true );' : '');
-
-    if (isset($mf_dictionnaire_db[$DB_name]['spec']['checkbox'])) {
-        $retour .= 'var modif = ( document.getElementById("form_dyn_' . $num_champs_auto . '").checked ? 1 : 0);';
-        $retour .= 'var e = $(\'label[for="form_dyn_' . $num_champs_auto . '"]\');';
-        $retour .= 'if (typeof e[0] != \'undefined\') {';
-        $retour .= 'e[0].className=( modif==1 ? "checked" : "unchecked" );';
-        $retour .= '}';
-
-        $mf_script_end .= 'var e = $(\'label[for="form_dyn_' . $num_champs_auto . '"]\');';
-        $mf_script_end .= 'if (typeof e[0] != \'undefined\') {';
-        $mf_script_end .= 'e[0].className="' . ($valeur_initiale == 1 ? 'checked' : 'unchecked') . '";';
-        $mf_script_end .= '}';
-    } else {
-        if ($mode_innerHTML) {
-            $retour .= 'var modif = document.getElementById("form_dyn_' . $num_champs_auto . '").value;';
-        } else {
-            $retour .= 'var modif = document.getElementById("form_dyn_' . $num_champs_auto . '").value;';
-        }
-    }
-
-    if ($mode_pourcentage_montant_initiale !== false) {
-        $retour .= "var pourcentage = Math.round(10000*modif/$mode_pourcentage_montant_initiale)/100;
-                           document.getElementById(\"form_dyn_{$num_champs_auto}_p\").value = pourcentage;";
-    }
-    if ($mode_formulaire) {
-        $retour .= "document.getElementById(\"form_dyn_etat_$num_champs_auto\").setAttribute('class', 'maj_dyn_etat on');";
-    }
-    $retour .= "xhr_form_dyn_$num_champs_auto = getXMLHttpRequest();";
-    $retour .= "xhr_form_dyn_$num_champs_auto.open(\"POST\", \"api/$nom_table/modifier.php\", true);";
-    $retour .= "xhr_form_dyn_$num_champs_auto.setRequestHeader(\"Content-Type\", \"application/x-www-form-urlencoded\");";
-    $retour .= "xhr_form_dyn_$num_champs_auto.send(\"$cles&$DB_name=\"+encodeURIComponent(modif));";
-    $retour .= "xhr_form_dyn_$num_champs_auto.onreadystatechange = function()";
-    $retour .= '{';
-
-    $retour .= "if ( xhr_form_dyn_$num_champs_auto.readyState == 4 && (xhr_form_dyn_$num_champs_auto.status == 200 || xhr_form_dyn_$num_champs_auto.status == 0) )";
-    $retour .= '{';
-
-    $retour .= 'nb_actions_en_cours--;';
-    $retour .= 'maj_form_dyn__' . $num_champs_auto . '_libre=true;';
-
-    $retour .= 'if ( maj_form_dyn__' . $num_champs_auto . '_synchro_demandee )';
-    $retour .= '{';
-
-    $retour .= 'maj_form_dyn__' . $num_champs_auto . '_synchro_demandee = false;';
-    $retour .= 'setTimeout(maj_form_dyn_' . $num_champs_auto . ');';
-
-    $retour .= '}';
-    $retour .= 'else';
-    $retour .= '{';
-
-    $retour .= 'try {';
-
-    $retour .= 'var retour = JSON.parse(xhr_form_dyn_' . $num_champs_auto . '.responseText);';
-    $retour .= 'if ( retour.code_erreur == 0 )';
-    $retour .= '{';
-    if ($mode_formulaire) {
-        $retour .= 'document.getElementById("form_dyn_etat_' . $num_champs_auto . '").setAttribute("class", "maj_dyn_etat");';
-        $retour .= 'document.getElementById("form_dyn_etat_' . $num_champs_auto . '").setAttribute("title", "");';
-    }
-    $retour .= "" . ($rafraichissement_page ? "document.location.href='" . $fil_ariane->get_last_lien() . "'; " : "") . "";
-    if (! $mise_a_jour_silencieuse) {
-        $retour .= "actualiser_les_champs();";
-    }
-    $retour .= '}';
-    $retour .= 'else';
-    $retour .= '{';
-
-    $retour .= ($rafraichissement_page ? '$(".mf_champ").prop( "disabled", false );' : '');
-
-    if ($mode_formulaire) {
-        $retour .= "document.getElementById(\"form_dyn_etat_$num_champs_auto\").setAttribute('class', 'maj_dyn_etat ko');";
-        $retour .= "document.getElementById(\"form_dyn_etat_$num_champs_auto\").setAttribute('title', retour.message_erreur);";
-    }
-    $retour .= '}';
-
-    $retour .= '} catch (e) {';
-
-    $retour .= 'var t = document.getElementById("form_dyn_etat_' . $num_champs_auto . '");';
-    $retour .= 'if (t!=null) {';
-    $retour .= 't.setAttribute("class", "maj_dyn_etat ko");';
-    $retour .= 't.setAttribute("title", "Erreur système");';
-    $retour .= '}';
-
-    if (! MODE_PROD) {
-        $retour .= 'alertModal(xhr_form_dyn_' . $num_champs_auto . '.responseText);';
-    }
-
-    $retour .= '}';
-
-    $retour .= '}';
-
-    $retour .= '}';
-    $retour .= 'else if (xhr_form_dyn_' . $num_champs_auto . '.readyState!=2 && xhr_form_dyn_' . $num_champs_auto . '.readyState!=3)';
-    $retour .= '{';
-
-    $retour .= 'nb_actions_en_cours--;';
-    $retour .= 'maj_form_dyn__' . $num_champs_auto . '_libre=true;';
-    $retour .= 'console.log("erreur xhr n°" + xhr_form_dyn_' . $num_champs_auto . '.readyState);';
-    $retour .= 'mf_maj_en_cours = false;';
-
-    $retour .= '}';
-
-    $retour .= '}';
-
-    $retour .= '}';
-    $retour .= 'else';
-    $retour .= '{';
-    $retour .= 'maj_form_dyn__' . $num_champs_auto . '_synchro_demandee = true;';
-    $retour .= '}';
-
-    $retour .= '}';
 
     if ($maj_auto) {
 
@@ -867,15 +616,17 @@ function ajouter_champ_modifiable_Bootstrap_4(&$liste_valeurs_cle_table, &$DB_na
 
         if ($mode_pourcentage_montant_initiale !== false) {
             $retour .= "function maj_form_dyn_{$num_champs_auto}_p() {";
-            $retour .= "var pourcentage = document.getElementById(\"form_dyn_{$num_champs_auto}_p\").value;";
-            $retour .= "var v = Math.round( $mode_pourcentage_montant_initiale * pourcentage )/100;";
+            $retour .= "let pourcentage = document.getElementById(\"form_dyn_{$num_champs_auto}_p\").value;";
+            $retour .= "let v = Math.round( $mode_pourcentage_montant_initiale * pourcentage )/100;";
             $retour .= "document.getElementById(\"form_dyn_$num_champs_auto\").value = v;";
             $retour .= "maj_form_dyn_$num_champs_auto();";
             $retour .= "}";
         }
     }
 
-    $retour .= '</script>';
+    $retour .= zz_script_js_update($nom_table, $DB_name, $valeur_initiale, $num_champs_auto, null,
+        $rafraichissement_page, $mode_innerHTML, $mode_pourcentage_montant_initiale,
+        $mode_formulaire, $cles);
 
     $num_champs_auto ++;
 
@@ -943,10 +694,10 @@ function ajouter_champ_session_modifiable_interface(array $parametres)
     global $num_champs_auto, $lang_standard, $mf_dictionnaire_db, $fil_ariane, $mf_script_end;
 
     $name = $parametres['name'];
-    if (! isset($_SESSION[PREFIXE_SESSION]['parametres'][$name])) {
+    if (mf_get_value_session($name) === null) {
         mf_set_value_session($name, $parametres['valeur_initiale']);
     }
-    $valeur_initiale = $_SESSION[PREFIXE_SESSION]['parametres'][$name];
+    $valeur_initiale = mf_get_value_session($name);
     $mf_dictionnaire_db[$name]['type'] = $parametres['type']; // Eq base de données
 
     $rafraichissement_page = isset($parametres['rafraichissement_page']) ? $parametres['rafraichissement_page'] : false;
@@ -963,7 +714,7 @@ function ajouter_champ_session_modifiable_interface(array $parametres)
     $mise_a_jour_silencieuse = isset($parametres['mise_a_jour_silencieuse']) ? $parametres['mise_a_jour_silencieuse'] : false;
     $htmlspecialchars_select = isset($parametres['htmlspecialchars_select']) ? $parametres['htmlspecialchars_select'] : true;
 
-    $onchange_js .= ';$(\'.mf_attente_maj_auto\').css(\'opacity\', \'0.1\');';
+    // $onchange_js .= ';$(\'.mf_attente_maj_auto\').css(\'opacity\', \'0.1\');';
 
     $cles = 'name=' . $name;
 
@@ -979,7 +730,7 @@ function ajouter_champ_session_modifiable_interface(array $parametres)
     $retour = '';
 
     $retour .= '<script type="text/javascript">';
-    $retour .= 'var maj_form_dyn_add_js_' . $num_champs_auto . ' = "' . $onchange_js . '";';
+    $retour .= 'let maj_form_dyn_add_js_' . $num_champs_auto . ' = "' . $onchange_js . '";';
     $retour .= '</script>';
 
     $class = ' ' . $class . ' ';
@@ -988,7 +739,7 @@ function ajouter_champ_session_modifiable_interface(array $parametres)
     $mode_innerHTML = false;
 
     if ($mode_formulaire) {
-        $retour .= '<form>';
+        $retour .= '<div>';
         $retour .= '<div class="form-group row">';
         if ($titre) {
             $retour .= '<label class="col-md-3 col-form-label libelle_formulaire" for="form_dyn_' . $num_champs_auto . '">' . htmlspecialchars(get_nom_colonne($name)) . '&nbsp;:</label>';
@@ -1090,142 +841,12 @@ function ajouter_champ_session_modifiable_interface(array $parametres)
     if ($mode_formulaire) {
         $retour .= '</div><div class="col-1" style="padding: 0; text-align: center;"><span id="form_dyn_etat_' . $num_champs_auto . '" class="maj_dyn_etat"></span></div></div></div>';
         $retour .= '</div>';
-        $retour .= '</form>';
+        $retour .= '</div>';
     }
 
-    $retour .= "<script type=\"text/javascript\">";
-    $retour .= "var xhr_form_dyn_$num_champs_auto;";
-    $retour .= "var maj_form_dyn__{$num_champs_auto}_libre=true;";
-    $retour .= "var maj_form_dyn__{$num_champs_auto}_synchro_demandee=false;";
-    $retour .= "function maj_form_dyn_$num_champs_auto() {";
-
-    $retour .= "if (maj_form_dyn__{$num_champs_auto}_libre) {";
-
-    $retour .= "maj_form_dyn__{$num_champs_auto}_libre = false;";
-    $retour .= "nb_actions_en_cours ++;" . PHP_EOL;
-
-    if ($js_before) {
-        $retour .= 'eval(maj_form_dyn_add_js_' . $num_champs_auto . ');' . PHP_EOL;
-    }
-
-    $retour .= ($rafraichissement_page ? '$(".mf_champ").prop("disabled", true);' : '');
-
-    if (isset($mf_dictionnaire_db[$name]['spec']['checkbox'])) {
-        $retour .= 'var modif = ( document.getElementById("form_dyn_' . $num_champs_auto . '").checked ? 1 : 0);';
-        $retour .= 'var e = $(\'label[for="form_dyn_' . $num_champs_auto . '"]\');';
-        $retour .= 'if (typeof e[0] != \'undefined\') {';
-        $retour .= 'e[0].className=( modif==1 ? "checked" : "unchecked" );';
-        $retour .= '}';
-
-        $mf_script_end .= 'var e = $(\'label[for="form_dyn_' . $num_champs_auto . '"]\');';
-        $mf_script_end .= 'if (typeof e[0] != \'undefined\') {';
-        $mf_script_end .= 'e[0].className="' . ($valeur_initiale == 1 ? 'checked' : 'unchecked') . '";';
-        $mf_script_end .= '}';
-    } else {
-        if ($mode_innerHTML) {
-            $retour .= 'var modif = document.getElementById("form_dyn_' . $num_champs_auto . '").value;';
-        } else {
-            $retour .= 'var modif = document.getElementById("form_dyn_' . $num_champs_auto . '").value;';
-        }
-    }
-
-    if ($mode_pourcentage_montant_initiale !== false) {
-        $retour .= "var pourcentage = Math.round(10000*modif/$mode_pourcentage_montant_initiale)/100;
-                           document.getElementById(\"form_dyn_{$num_champs_auto}_p\").value = pourcentage;";
-    }
-    if ($mode_formulaire) {
-        $retour .= "document.getElementById(\"form_dyn_etat_$num_champs_auto\").setAttribute('class', 'maj_dyn_etat on');";
-    }
-    $retour .= "xhr_form_dyn_$num_champs_auto = getXMLHttpRequest();";
-    $retour .= "xhr_form_dyn_$num_champs_auto.open(\"POST\", \"api/mf_session/modifier.php\", true);";
-    $retour .= "xhr_form_dyn_$num_champs_auto.setRequestHeader(\"Content-Type\", \"application/x-www-form-urlencoded\");";
-    $retour .= "xhr_form_dyn_$num_champs_auto.send(\"$cles&$name=\"+encodeURIComponent(modif));";
-    $retour .= "xhr_form_dyn_$num_champs_auto.onreadystatechange = function()";
-    $retour .= '{';
-
-    $retour .= "if ( xhr_form_dyn_$num_champs_auto.readyState == 4 && (xhr_form_dyn_$num_champs_auto.status == 200 || xhr_form_dyn_$num_champs_auto.status == 0) )";
-    $retour .= '{';
-
-    $retour .= 'nb_actions_en_cours--;';
-    $retour .= 'maj_form_dyn__' . $num_champs_auto . '_libre=true;';
-
-    $retour .= 'if ( maj_form_dyn__' . $num_champs_auto . '_synchro_demandee )';
-    $retour .= '{';
-
-    $retour .= 'maj_form_dyn__' . $num_champs_auto . '_synchro_demandee = false;';
-    $retour .= 'setTimeout(maj_form_dyn_' . $num_champs_auto . ');';
-
-    $retour .= '}';
-    $retour .= 'else';
-    $retour .= '{';
-
-    $retour .= 'try {';
-
-    $retour .= 'var retour = JSON.parse(xhr_form_dyn_' . $num_champs_auto . '.responseText);';
-    $retour .= 'if ( retour.code_erreur == 0 )';
-    $retour .= '{';
-    if ($mode_formulaire) {
-        $retour .= 'document.getElementById("form_dyn_etat_' . $num_champs_auto . '").setAttribute("class", "maj_dyn_etat");';
-        $retour .= 'document.getElementById("form_dyn_etat_' . $num_champs_auto . '").setAttribute("title", "");';
-    }
-    $retour .= ($rafraichissement_page ? "document.location.href='" . $fil_ariane->get_last_lien() . "'; " : "") . PHP_EOL;
-
-    if (! $js_before) {
-        $retour .= 'eval(maj_form_dyn_add_js_' . $num_champs_auto . ');' . PHP_EOL;
-    }
-
-    if (! $mise_a_jour_silencieuse) {
-        $retour .= "actualiser_les_champs();";
-    }
-
-    $retour .= '}';
-    $retour .= 'else';
-    $retour .= '{';
-
-    $retour .= ($rafraichissement_page ? '$(".mf_champ").prop( "disabled", false );' : '');
-
-    if ($mode_formulaire) {
-        $retour .= "document.getElementById(\"form_dyn_etat_$num_champs_auto\").setAttribute('class', 'maj_dyn_etat ko');";
-        $retour .= "document.getElementById(\"form_dyn_etat_$num_champs_auto\").setAttribute('title', retour.message_erreur);";
-    }
-    $retour .= '}';
-
-    $retour .= '} catch (e) {';
-
-    $retour .= 'var t = document.getElementById("form_dyn_etat_' . $num_champs_auto . '");';
-    $retour .= 'if (t!=null) {';
-    $retour .= 't.setAttribute("class", "maj_dyn_etat ko");';
-    $retour .= 't.setAttribute("title", "Erreur système");';
-    $retour .= '}';
-
-    if (! MODE_PROD) {
-        $retour .= 'alertModal(xhr_form_dyn_' . $num_champs_auto . '.responseText);';
-    }
-
-    $retour .= '}';
-
-    $retour .= '}';
-
-    $retour .= '}';
-    $retour .= 'else if (xhr_form_dyn_' . $num_champs_auto . '.readyState!=2 && xhr_form_dyn_' . $num_champs_auto . '.readyState!=3)';
-    $retour .= '{';
-
-    $retour .= 'nb_actions_en_cours--;';
-    $retour .= 'maj_form_dyn__' . $num_champs_auto . '_libre=true;';
-    $retour .= 'console.log("erreur xhr n°" + xhr_form_dyn_' . $num_champs_auto . '.readyState);';
-    $retour .= 'mf_maj_en_cours = false;';
-
-    $retour .= '}';
-
-    $retour .= '}';
-
-    $retour .= '}';
-    $retour .= 'else';
-    $retour .= '{';
-    $retour .= 'maj_form_dyn__' . $num_champs_auto . '_synchro_demandee = true;';
-    $retour .= '}';
-
-    $retour .= '}';
+    $retour .= zz_script_js_update('mf_session', $name, $valeur_initiale, $num_champs_auto, $js_before,
+                             $rafraichissement_page, $mode_innerHTML, $mode_pourcentage_montant_initiale,
+                             $mode_formulaire, $cles);
 
     if ($maj_auto) {
 
@@ -1233,18 +854,150 @@ function ajouter_champ_session_modifiable_interface(array $parametres)
         $champ_maj_auto['mf_session'][$cles][$name][] = $num_champs_auto;
 
         if ($mode_pourcentage_montant_initiale !== false) {
-            $retour .= "function maj_form_dyn_{$num_champs_auto}_p() {";
-            $retour .= "var pourcentage = document.getElementById(\"form_dyn_{$num_champs_auto}_p\").value;";
-            $retour .= "var v = Math.round( $mode_pourcentage_montant_initiale * pourcentage )/100;";
-            $retour .= "document.getElementById(\"form_dyn_$num_champs_auto\").value = v;";
-            $retour .= "maj_form_dyn_$num_champs_auto();";
-            $retour .= "}";
+            $retour .= "function maj_form_dyn_{$num_champs_auto}_p() {" . PHP_EOL;
+            $retour .= "var pourcentage = document.getElementById('form_dyn_{$num_champs_auto}_p').value;" . PHP_EOL;
+            $retour .= "var v = Math.round( $mode_pourcentage_montant_initiale * pourcentage )/100;" . PHP_EOL;
+            $retour .= "document.getElementById(\"form_dyn_$num_champs_auto\").value = v;" . PHP_EOL;
+            $retour .= "maj_form_dyn_$num_champs_auto();" . PHP_EOL;
+            $retour .= "}" . PHP_EOL;
         }
     }
 
-    $retour .= '</script>';
+    $retour .= '</script>' . PHP_EOL;
 
     $num_champs_auto ++;
+
+    return $retour;
+}
+
+function zz_script_js_update(string $nom_table, string $name, $valeur_initiale, int $num_champs_auto, ?bool $js_before,
+                             bool $rafraichissement_page, bool $mode_innerHTML, bool $mode_pourcentage_montant_initiale,
+                             bool $mode_formulaire, string $cles) {
+    global $fil_ariane, $mf_dictionnaire_db;
+    $retour = "<script type=\"text/javascript\">" . PHP_EOL;
+    $retour .= "let xhr_form_dyn_$num_champs_auto;" . PHP_EOL;
+    $retour .= "let maj_form_dyn__{$num_champs_auto}_libre=true;" . PHP_EOL;
+    $retour .= "let maj_form_dyn__{$num_champs_auto}_synchro_demandee=false;" . PHP_EOL;
+    $retour .= "function maj_form_dyn_$num_champs_auto() {" . PHP_EOL;
+
+    $retour .= "if (maj_form_dyn__{$num_champs_auto}_libre) {" . PHP_EOL;
+
+    $retour .= "maj_form_dyn__{$num_champs_auto}_libre = false;" . PHP_EOL;
+    $retour .= "nb_actions_en_cours ++;" . PHP_EOL;
+
+    if ($js_before === true) {
+        $retour .= 'eval(maj_form_dyn_add_js_' . $num_champs_auto . ');' . PHP_EOL;
+    }
+
+    $retour .= ($rafraichissement_page ? '$(".mf_champ").prop("disabled", true);' . PHP_EOL : '');
+
+    if (isset($mf_dictionnaire_db[$name]['spec']['checkbox'])) {
+        $retour .= 'let modif = ( document.getElementById("form_dyn_' . $num_champs_auto . '").checked ? 1 : 0);' . PHP_EOL;
+        $retour .= 'var e = $(\'label[for="form_dyn_' . $num_champs_auto . '"]\');' . PHP_EOL;
+        $retour .= 'if (typeof e[0] != \'undefined\') {' . PHP_EOL;
+        $retour .= 'e[0].className=(modif == 1 ? "checked" : "unchecked");' . PHP_EOL;
+        $retour .= '}' . PHP_EOL;
+
+        $mf_script_end = 'var e = $(\'label[for="form_dyn_' . $num_champs_auto . '"]\');' . PHP_EOL;
+        $mf_script_end .= 'if (typeof e[0] != \'undefined\') {' . PHP_EOL;
+        $mf_script_end .= 'e[0].className="' . ($valeur_initiale == 1 ? 'checked' : 'unchecked') . '";' . PHP_EOL;
+        $mf_script_end .= '}' . PHP_EOL;
+
+        mf_injection_js($mf_script_end);
+
+    } else {
+        if ($mode_innerHTML) {
+            $retour .= 'let modif = document.getElementById("form_dyn_' . $num_champs_auto . '").value;' . PHP_EOL;
+        } else {
+            $retour .= 'let modif = document.getElementById("form_dyn_' . $num_champs_auto . '").value;' . PHP_EOL;
+        }
+    }
+
+    if ($mode_pourcentage_montant_initiale !== false) {
+        $retour .= "let pourcentage = Math.round(10000*modif/$mode_pourcentage_montant_initiale)/100;" . PHP_EOL;
+        $retour .= "document.getElementById(\"form_dyn_{$num_champs_auto}_p\").value = pourcentage;" . PHP_EOL;
+    }
+    if ($mode_formulaire) {
+        $retour .= "document.getElementById(\"form_dyn_etat_$num_champs_auto\").setAttribute('class', 'maj_dyn_etat on');" . PHP_EOL;
+    }
+    $retour .= "xhr_form_dyn_$num_champs_auto = getXMLHttpRequest();" . PHP_EOL;
+    $retour .= "xhr_form_dyn_$num_champs_auto.open(\"POST\", \"api/$nom_table/modifier.php\", true);" . PHP_EOL;
+    $retour .= "xhr_form_dyn_$num_champs_auto.setRequestHeader(\"Content-Type\", \"application/x-www-form-urlencoded\");" . PHP_EOL;
+    $retour .= "xhr_form_dyn_$num_champs_auto.send(\"$cles&$name=\"+encodeURIComponent(modif));" . PHP_EOL;
+    $retour .= "xhr_form_dyn_$num_champs_auto.onreadystatechange = function()" . PHP_EOL;
+    $retour .= '{' . PHP_EOL;
+
+    $retour .= "if (xhr_form_dyn_$num_champs_auto.readyState == 4 && (xhr_form_dyn_$num_champs_auto.status == 200 || xhr_form_dyn_$num_champs_auto.status == 0)) {" . PHP_EOL;
+
+    $retour .= 'nb_actions_en_cours--;' . PHP_EOL;
+    $retour .= 'maj_form_dyn__' . $num_champs_auto . '_libre=true;' . PHP_EOL;
+
+    $retour .= 'if (maj_form_dyn__' . $num_champs_auto . '_synchro_demandee) {' . PHP_EOL;
+
+    $retour .= 'maj_form_dyn__' . $num_champs_auto . '_synchro_demandee = false;' . PHP_EOL;
+    $retour .= 'setTimeout(maj_form_dyn_' . $num_champs_auto . ');' . PHP_EOL;
+
+    $retour .= '} else {' . PHP_EOL;
+
+    $retour .= 'try {' . PHP_EOL;
+
+    $retour .= 'var retour = JSON.parse(xhr_form_dyn_' . $num_champs_auto . '.responseText);' . PHP_EOL;
+    $retour .= 'if (retour.code_erreur == 0) {' . PHP_EOL;
+    if ($mode_formulaire) {
+        $retour .= 'document.getElementById("form_dyn_etat_' . $num_champs_auto . '").setAttribute("class", "maj_dyn_etat");' . PHP_EOL;
+        $retour .= 'document.getElementById("form_dyn_etat_' . $num_champs_auto . '").setAttribute("title", "");' . PHP_EOL;
+    }
+    $retour .= ($rafraichissement_page ? "document.location.href='" . $fil_ariane->get_last_lien() . "';" . PHP_EOL : "");
+
+    if ($js_before === false) {
+        $retour .= 'eval(maj_form_dyn_add_js_' . $num_champs_auto . ');' . PHP_EOL;
+    }
+
+    $retour .= '} else {';
+
+    $retour .= ($rafraichissement_page ? '$(".mf_champ").prop( "disabled", false );' . PHP_EOL : '');
+
+    if ($mode_formulaire) {
+        $retour .= "document.getElementById(\"form_dyn_etat_$num_champs_auto\").setAttribute('class', 'maj_dyn_etat ko');" . PHP_EOL;
+        $retour .= "document.getElementById(\"form_dyn_etat_$num_champs_auto\").setAttribute('title', retour.message_erreur);" . PHP_EOL;
+    }
+    $retour .= '}' . PHP_EOL;
+
+    $retour .= '} catch (e) {' . PHP_EOL;
+
+    $retour .= 'var t = document.getElementById("form_dyn_etat_' . $num_champs_auto . '");' . PHP_EOL;
+    $retour .= 'if (t != null) {' . PHP_EOL;
+    $retour .= 't.setAttribute("class", "maj_dyn_etat ko");' . PHP_EOL;
+    $retour .= 't.setAttribute("title", "Erreur système");' . PHP_EOL;
+    $retour .= '}' . PHP_EOL;
+
+    if (! MODE_PROD) {
+        $retour .= 'alertModal(xhr_form_dyn_' . $num_champs_auto . '.responseText);' . PHP_EOL;
+    }
+
+    $retour .= '}' . PHP_EOL;
+
+    $retour .= 'mf_run_actualisation();' . PHP_EOL;
+
+    $retour .= '}' . PHP_EOL;
+
+    $retour .= '} else if (xhr_form_dyn_' . $num_champs_auto . '.readyState!=2 && xhr_form_dyn_' . $num_champs_auto . '.readyState!=3) {' . PHP_EOL;
+
+    $retour .= 'nb_actions_en_cours--;' . PHP_EOL;
+    $retour .= "maj_form_dyn__{$num_champs_auto}_libre=true;" . PHP_EOL;
+    $retour .= 'console.log("erreur xhr n°" + xhr_form_dyn_' . $num_champs_auto . '.readyState);' . PHP_EOL;
+
+    $retour .= '}' . PHP_EOL;
+
+    $retour .= '}' . PHP_EOL;
+
+    $retour .= '} else {' . PHP_EOL;
+    $retour .= 'maj_form_dyn__' . $num_champs_auto . '_synchro_demandee = true;' . PHP_EOL;
+    $retour .= '}' . PHP_EOL;
+
+    $retour .= '}' . PHP_EOL;
+
+    $retour .= "</script>" . PHP_EOL;
 
     return $retour;
 }
@@ -1383,75 +1136,9 @@ function ajouter_champ_modifiable($liste_valeurs_cle_table, $DB_name, $valeur_in
 
     $retour .= "</span><span id=\"form_dyn_etat_$num_champs_auto\" class=\"maj_dyn_etat\"></span></span>";
 
-    $retour .= "<script type=\"text/javascript\">";
-    $retour .= "var xhr_form_dyn_$num_champs_auto;";
-    $retour .= "function maj_form_dyn_$num_champs_auto() {";
-    $retour .= "nb_actions_en_cours++;";
-
-    if (isset($mf_dictionnaire_db[$DB_name]['spec']['checkbox'])) {
-        $retour .= 'var modif = ( document.getElementById("form_dyn_' . $num_champs_auto . '").checked ? 1 : 0);';
-    } else {
-        if ($mode_innerHTML) {
-            $retour .= 'var modif = document.getElementById("form_dyn_' . $num_champs_auto . '").value;';
-        } else {
-            $retour .= 'var modif = document.getElementById("form_dyn_' . $num_champs_auto . '").value;';
-        }
-    }
-
-    if ($mode_pourcentage_montant_initiale !== false) {
-        $retour .= "var pourcentage = Math.round(10000*modif/$mode_pourcentage_montant_initiale)/100;";
-        $retour .= "document.getElementById(\"form_dyn_{$num_champs_auto}_p\").value = pourcentage;";
-    }
-    $retour .= "document.getElementById(\"form_dyn_etat_$num_champs_auto\").setAttribute('class', 'maj_dyn_etat on');";
-    $retour .= "xhr_form_dyn_$num_champs_auto = getXMLHttpRequest();";
-    $retour .= "xhr_form_dyn_$num_champs_auto.open(\"POST\", \"api/$nom_table/modifier.php\", true);";
-    $retour .= "xhr_form_dyn_$num_champs_auto.setRequestHeader(\"Content-Type\", \"application/x-www-form-urlencoded\");";
-    $retour .= "xhr_form_dyn_$num_champs_auto.send(\"$cles&$DB_name=\"+encodeURIComponent(modif));";
-    $retour .= "xhr_form_dyn_$num_champs_auto.onreadystatechange = function() {";
-    $retour .= "if ( xhr_form_dyn_$num_champs_auto.readyState == 4 && (xhr_form_dyn_$num_champs_auto.status == 200 || xhr_form_dyn_$num_champs_auto.status == 0) ) {";
-    $retour .= "nb_actions_en_cours--;";
-    $retour .= "var retour = JSON.parse(xhr_form_dyn_$num_champs_auto.responseText);";
-    $retour .= "if ( retour.code_erreur == 0 ) {";
-    $retour .= "document.getElementById(\"form_dyn_etat_$num_champs_auto\").setAttribute('class', 'maj_dyn_etat');";
-    $retour .= "document.getElementById(\"form_dyn_etat_$num_champs_auto\").setAttribute('title', '');";
-    $retour .= "" . ($rafraichissement_page ? "document.location.href='" . $fil_ariane->get_last_lien() . "'; " : "") . "";
-    $retour .= "actualiser_les_champs();";
-    $retour .= "}";
-    $retour .= "else";
-    $retour .= "{";
-    $retour .= "document.getElementById(\"form_dyn_etat_$num_champs_auto\").setAttribute('class', 'maj_dyn_etat ko');";
-    $retour .= "document.getElementById(\"form_dyn_etat_$num_champs_auto\").setAttribute('title', retour.message_erreur);";
-    $retour .= "}";
-    $retour .= "}";
-
-    // $retour .= 'else if (xhr_form_dyn_'.$num_champs_auto.'.readyState!=2 && xhr_form_dyn_'.$num_champs_auto.'.readyState!=3)';
-    // $retour .= '{';
-
-    // $retour .= 'nb_actions_en_cours--;';
-    // $retour .= 'console.log("erreur xhr n°" + xhr_form_dyn_'.$num_champs_auto.'.readyState);';
-    // $retour .= 'mf_maj_en_cours = false;';
-
-    // $retour .= '}';
-
-    $retour .= '}';
-    $retour .= '}';
-
-    if ($maj_auto) {
-
-        global $champ_maj_auto;
-        $champ_maj_auto[$nom_table][$cles][$DB_name][] = $num_champs_auto;
-
-        if ($mode_pourcentage_montant_initiale !== false) {
-            $retour .= "function maj_form_dyn_{$num_champs_auto}_p() {";
-            $retour .= "var pourcentage = document.getElementById(\"form_dyn_{$num_champs_auto}_p\").value;";
-            $retour .= "var v = Math.round( $mode_pourcentage_montant_initiale * pourcentage )/100;";
-            $retour .= "document.getElementById(\"form_dyn_$num_champs_auto\").value = v;";
-            $retour .= "maj_form_dyn_$num_champs_auto();";
-            $retour .= "}";
-        }
-    }
-
-    $retour .= '</script>';
+    zz_script_js_update($nom_table, $DB_name, $valeur_initiale, $num_champs_auto, null,
+                                 $rafraichissement_page, $mode_innerHTML, $mode_pourcentage_montant_initiale,
+                                 $mode_formulaire, $cles);
 
     $num_champs_auto ++;
 
@@ -1606,56 +1293,53 @@ function generer_script_maj_auto()
     foreach ($champ_maj_auto as $nom_table => $temp_1) {
         foreach ($temp_1 as $cles => $temp_2) {
             // requete
-            $retour .= ' var xhr_maj_auto_' . $num_fonction . ';
-                            var mf_maj_en_cours = false;
-                            function maj_auto_' . $num_fonction . '(num_passe)
-                            {
-                                if ( mf_num_passe_maj_en_cours == num_passe && ! mf_maj_en_cours )
-                                {
-                                    mf_maj_en_cours = true;
-                                    xhr_maj_auto_' . $num_fonction . ' = getXMLHttpRequest();
-                                    xhr_maj_auto_' . $num_fonction . '.open("POST", "api/' . $nom_table . '/get.php", true);
-                                    xhr_maj_auto_' . $num_fonction . '.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-                                    xhr_maj_auto_' . $num_fonction . '.send("' . $cles . '");
-                                    xhr_maj_auto_' . $num_fonction . '.onreadystatechange = function()
-                                    {
-                                        if ( xhr_maj_auto_' . $num_fonction . '.readyState == 4 && (xhr_maj_auto_' . $num_fonction . '.status == 200 || xhr_maj_auto_' . $num_fonction . '.status == 0) )
-                                        {
-                                            mf_maj_en_cours = false;';
+            $retour .= "let xhr_maj_auto_$num_fonction;" . PHP_EOL;
+            $retour .= "function maj_auto_$num_fonction() {" . PHP_EOL;
 
-            $retour .= '                 try {';
+            $retour .= 'xhr_maj_auto_' . $num_fonction . ' = getXMLHttpRequest();' . PHP_EOL;
+            $retour .= 'xhr_maj_auto_' . $num_fonction . '.open("POST", "api/' . $nom_table . '/get.php", true);' . PHP_EOL;
+            $retour .= 'xhr_maj_auto_' . $num_fonction . '.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");' . PHP_EOL;
+            $retour .= 'xhr_maj_auto_' . $num_fonction . '.send("' . $cles . '");' . PHP_EOL;
+            $retour .= 'xhr_maj_auto_' . $num_fonction . '.onreadystatechange = function() {' . PHP_EOL;
+            $retour .= 'if (xhr_maj_auto_' . $num_fonction . '.readyState == 4 && (xhr_maj_auto_' . $num_fonction . '.status == 200 || xhr_maj_auto_' . $num_fonction . '.status == 0)) {' . PHP_EOL;
 
-            $retour .= '                 var retour = JSON.parse(xhr_maj_auto_' . $num_fonction . '.responseText);';
+            $retour .= 'try {' . PHP_EOL;
 
-            $retour .= '                 } catch (e) {';
+            $retour .= 'var retour = JSON.parse(xhr_maj_auto_' . $num_fonction . '.responseText);' . PHP_EOL;
+
+            $retour .= '} catch (e) {' . PHP_EOL;
 
             if (! MODE_PROD) {
-                $retour .= 'if (xhr_maj_auto_' . $num_fonction . '.responseText!="") alertModal(xhr_maj_auto_' . $num_fonction . '.responseText);';
+                $retour .= 'if (xhr_maj_auto_' . $num_fonction . '.responseText != "") alertModal(xhr_maj_auto_' . $num_fonction . '.responseText);' . PHP_EOL;
             }
 
-            $retour .= '                 }';
+            $retour .= '}' . PHP_EOL;
+
+            $retour .= 'let requete_utilise = false;';
 
             foreach ($temp_2 as $DB_name => $liste_num_champs_auto) {
-
                 foreach ($liste_num_champs_auto as $num_champs_auto) {
 
-                    $retour .= '             if (document.getElementById("form_dyn_' . $num_champs_auto . '") && document.getElementById("form_dyn_' . $num_champs_auto . '") !== document.activeElement)
-                                                {';
+                    $retour .= '// DEBUT MAJ form_dyn_' . $num_champs_auto . PHP_EOL;
+
+                    $retour .= 'if (document.getElementById("form_dyn_' . $num_champs_auto . '") && document.getElementById("form_dyn_' . $num_champs_auto . '") !== document.activeElement) {' . PHP_EOL;
 
                     if (isset($mf_dictionnaire_db[$DB_name]['type']) && $mf_dictionnaire_db[$DB_name]['type'] == 'BOOL') {
                         if (isset($mf_dictionnaire_db[$DB_name]['spec']['checkbox'])) {
-                            $retour .= '         document.getElementById("form_dyn_' . $num_champs_auto . '").checked = retour.get.' . $DB_name . ';';
+                            $retour .= 'document.getElementById("form_dyn_' . $num_champs_auto . '").checked = retour.get.' . $DB_name . ';' . PHP_EOL;
                         } else {
-                            $retour .= '         document.getElementById("form_dyn_' . $num_champs_auto . '").value = ( retour.get.' . $DB_name . ' ? 1 : 0 );';
+                            $retour .= 'document.getElementById("form_dyn_' . $num_champs_auto . '").value = ( retour.get.' . $DB_name . ' ? 1 : 0 );' . PHP_EOL;
                         }
                     } else {
-                        $retour .= '             document.getElementById("form_dyn_' . $num_champs_auto . '").value = ( retour.get.' . $DB_name . (isset($mf_dictionnaire_db[$DB_name]['type']) && $mf_dictionnaire_db[$DB_name]['type'] == "DATETIME" ? ' + "" ).toString().replace(" ","T")' : ' )') . ';';
+                        $retour .= 'document.getElementById("form_dyn_' . $num_champs_auto . '").value = ( retour.get.' . $DB_name . (isset($mf_dictionnaire_db[$DB_name]['type']) && $mf_dictionnaire_db[$DB_name]['type'] == "DATETIME" ? ' + "" ).toString().replace(" ","T")' : ' )') . ';' . PHP_EOL;
                     }
 
-                    $retour .= '             }';
+                    $retour .= '}' . PHP_EOL;
 
-                    $retour .= '             if (document.getElementById("champ_auto_' . $num_champs_auto . '"))
-                                                {';
+                    $retour .= 'if (document.getElementById("champ_auto_' . $num_champs_auto . '")) {' . PHP_EOL;
+
+                    $retour .= 'requete_utilise = true;' . PHP_EOL;
+
                     $ouvertures_fonctions = '';
                     $fermetures_fonctions = '';
                     $exe_js_additionnel = '';
@@ -1681,105 +1365,140 @@ function generer_script_maj_auto()
                         }
                     }
 
-                    $retour .= '                 if (retour.code_erreur) { console.log("Erreur n°" + retour.code_erreur); } else { document.getElementById("champ_auto_' . $num_champs_auto . '").innerHTML = ' . $ouvertures_fonctions . 'retour.get.' . $DB_name . $fermetures_fonctions . ';';
-                    $retour .= '                 ' . $exe_js_additionnel . ';';
-                    $retour .= '                 document.getElementById("champ_auto_' . $num_champs_auto . '").setAttribute("style", ""); }';
-                    $retour .= '             }';
+                    $retour .= 'if (retour.code_erreur) { console.log("Erreur n°" + retour.code_erreur); } else { document.getElementById("champ_auto_' . $num_champs_auto . '").innerHTML = ' . $ouvertures_fonctions . 'retour.get.' . $DB_name . $fermetures_fonctions . ';' . PHP_EOL;
+                    $retour .= '' . $exe_js_additionnel . ';' . PHP_EOL;
+                    $retour .= 'document.getElementById("champ_auto_' . $num_champs_auto . '").setAttribute("style", ""); }' . PHP_EOL;
+                    $retour .= '}' . PHP_EOL;
 
-                    $retour .= '             if (document.getElementById("champ_auto_liste_' . $num_champs_auto . '"))
-                                                {
-                                                    if (document.getElementById("champ_auto_liste_' . $num_champs_auto . '").hasChildNodes())
-                                                    {
-                                                        if (retour.code_erreur) { console.log("Erreur n°" + retour.code_erreur); } else {
-                                                            collEnfants = document.getElementById("champ_auto_liste_' . $num_champs_auto . '").children;
-                                                            for (var i = 0; i < collEnfants.length; i++)
-                                                            {';
+                    $retour .= 'if (document.getElementById("champ_auto_liste_' . $num_champs_auto . '")) {' . PHP_EOL;
+                    $retour .= 'if (document.getElementById("champ_auto_liste_' . $num_champs_auto . '").hasChildNodes()) {' . PHP_EOL;
+                    $retour .= 'if (retour.code_erreur) { console.log("Erreur n°" + retour.code_erreur); } else {' . PHP_EOL;
+                    $retour .= 'collEnfants = document.getElementById("champ_auto_liste_' . $num_champs_auto . '").children;' . PHP_EOL;
+                    $retour .= 'for (var i = 0; i < collEnfants.length; i++) {' . PHP_EOL;
+
                     if (isset($mf_dictionnaire_db[$DB_name]['type']) && $mf_dictionnaire_db[$DB_name]['type'] == 'BOOL') {
-                        $retour .= '                         if (collEnfants[i].id=="champ_auto_liste_' . $num_champs_auto . '_" + (retour.get.' . $DB_name . ' ? 1 : 0))';
+                        $retour .= 'if (collEnfants[i].id=="champ_auto_liste_' . $num_champs_auto . '_" + (retour.get.' . $DB_name . ' ? 1 : 0))' . PHP_EOL;
                     } else {
-                        $retour .= '                         if (collEnfants[i].id=="champ_auto_liste_' . $num_champs_auto . '_" + retour.get.' . $DB_name . ')';
+                        $retour .= 'if (collEnfants[i].id=="champ_auto_liste_' . $num_champs_auto . '_" + retour.get.' . $DB_name . ')'. PHP_EOL;
                     }
-                    $retour .= '                             {
-                                                                collEnfants[i].className = "";
-                                                                }
-                                                                else
-                                                                {
-                                                                    collEnfants[i].className = "masquer";
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                }';
+                    $retour .= '{'. PHP_EOL;
+                    $retour .= 'collEnfants[i].className = "";' . PHP_EOL;
+                    $retour .= '} else {' . PHP_EOL;
+                    $retour .= 'collEnfants[i].className = "masquer";' . PHP_EOL;
+                    $retour .= '}' . PHP_EOL;
+                    $retour .= '}' . PHP_EOL;
+                    $retour .= '}' . PHP_EOL;
+                    $retour .= '}' . PHP_EOL;
+                    $retour .= '}' . PHP_EOL;
+                    $retour .= '// FIN MAJ form_dyn_' . $num_champs_auto . PHP_EOL;
                 }
             }
-            if ($num_fonction < $nb_fonctions) {
-                $retour .= '                 setTimeout(maj_auto_' . ($num_fonction + 1) . ',' . DELAI_RAFRAICHISSEMENT_COURT . ',num_passe);';
-            } else {
-                $retour .= '                 setTimeout(maj_auto_1,' . DELAI_RAFRAICHISSEMENT . ',num_passe);';
+
+            $retour .= 'if (! requete_utilise) {' . PHP_EOL;
+            $retour .= 'mf_run_disable_actualisation_' . $num_fonction . ' = true;' . PHP_EOL;
+
+            if (! MODE_PROD && ! MODE_DESIGN) {
+                // Mise en évidence des requêtes inutiles
+                $retour .= 'alertModal("Requête inutile sur la table « ' . $nom_table . ' » : ' . $cles . '")' . PHP_EOL;
             }
 
-            $retour .= '             }
-                                        else if (xhr_maj_auto_' . $num_fonction . '.readyState!=2 && xhr_maj_auto_' . $num_fonction . '.readyState!=3)
-                                        {
-                                            console.log("erreur xhr n°" + xhr_maj_auto_' . $num_fonction . '.readyState);
-                                            mf_maj_en_cours = false;
-                                        }
-                                    }
-                                }
-                            }';
+            $retour .= '}' . PHP_EOL;
+            $retour .= 'mf_run_actualisation_running_' . $num_fonction . ' = false;' . PHP_EOL;
+
+
+            $retour .= '} else if (xhr_maj_auto_' . $num_fonction . '.readyState!=2 && xhr_maj_auto_' . $num_fonction . '.readyState!=3) {' . PHP_EOL;
+            $retour .= 'console.log("erreur xhr n°" + xhr_maj_auto_' . $num_fonction . '.readyState);' . PHP_EOL;
+            $retour .= 'mf_run_actualisation_running_' . $num_fonction . ' = false;' . PHP_EOL;
+            $retour .= '}' . PHP_EOL;
+            $retour .= '}' . PHP_EOL;
+            $retour .= '}' . PHP_EOL;
+
             $num_fonction ++;
         }
     }
-    $retour = $retour != '' ? '
-            <script type="text/javascript">' . $retour . '
 
-            var nb_actions_en_cours=0;
-            function myTest_actions_en_cours()
-            {
-                if (nb_actions_en_cours>0)
-                {
-                    return "Des opérations sont en cours d\'enregistrement ...";
-                }
-            }
-            ' . (ALERTE_INFOS_NON_ENREGISTREES ? 'window.onbeforeunload = myTest_actions_en_cours;' : '') . '
 
-            var mf_num_passe_maj_en_cours = 0;
-            function actualiser_les_champs()
-            {
-                mf_num_passe_maj_en_cours++;
-                setTimeout(maj_auto_1,' . DELAI_RAFRAICHISSEMENT_COURT . ',mf_num_passe_maj_en_cours);
-            }
-            setTimeout(actualiser_les_champs,' . DELAI_RAFRAICHISSEMENT . ');
+    if ($nb_fonctions > 0) {
+        $retour = '<script type="text/javascript">' . $retour;
 
-            function function_format_price(val)
-            {
-                var r = "00" + Math.round(Number( val%1 ).toFixed(2)*100);
-                r = r.substring( r.length-2 );
-                val = parseInt( val );
-                r = ( val==0 ? "0," : "," ) + r;
-                var milliers=false;
-                if ( val<0 )
-                {
+        $retour .= 'let nb_actions_en_cours = 0;' . PHP_EOL;
+        $retour .= 'function myTest_actions_en_cours() {' . PHP_EOL;
+        $retour .= 'if (nb_actions_en_cours>0) {' . PHP_EOL;
+        $retour .= 'return "Des opérations sont en cours d\'enregistrement ...";' . PHP_EOL;
+        $retour .= '}' . PHP_EOL;
+        $retour .= '}' . PHP_EOL;
+        $retour .= (ALERTE_INFOS_NON_ENREGISTREES ? 'window.onbeforeunload = myTest_actions_en_cours;' : '') . PHP_EOL;
+
+        for ($i=1; $i <= $nb_fonctions; $i++) {
+            $retour .= "let mf_run_actualisation_cmd_$i = false;" . PHP_EOL;
+            $retour .= "let mf_run_actualisation_running_$i = false;" . PHP_EOL;
+            $retour .= "let mf_run_disable_actualisation_$i = false;" . PHP_EOL;
+        }
+
+        $retour .= PHP_EOL;
+
+        $retour .= 'function mf_run_actualisation() {' . PHP_EOL;
+        for ($i=1; $i <= $nb_fonctions; $i++) {
+            $retour .= "    mf_run_actualisation_cmd_$i = true;" . PHP_EOL;
+        }
+        $retour .= '}' . PHP_EOL;
+
+        $retour .= PHP_EOL;
+
+        $retour .= 'function mf_run_actualisation_exe_nb() {' . PHP_EOL;
+        $retour .= 'let n = 0;' . PHP_EOL;
+        for ($i=1; $i <= $nb_fonctions; $i++) {
+            $retour .= "if (mf_run_actualisation_running_$i) {n++;}" . PHP_EOL;
+        }
+        $retour .= 'return n;' . PHP_EOL;
+        $retour .= '}' . PHP_EOL;
+        $retour .= PHP_EOL;
+
+        $retour .= 'function mf_run_actualisation_exe() {' . PHP_EOL;
+        for ($i=1; $i <= $nb_fonctions; $i++) {
+            $retour .= "    if (mf_run_actualisation_cmd_$i && ! mf_run_actualisation_running_$i && ! mf_run_disable_actualisation_$i && mf_run_actualisation_exe_nb() < 3) {";
+            $retour .= "mf_run_actualisation_running_$i = true;";
+            $retour .= "mf_run_actualisation_cmd_$i = false;";
+            $retour .= "maj_auto_$i();";
+            $retour .= "}" . PHP_EOL;
+        }
+        $retour .= '}' . PHP_EOL;
+
+        $retour .= PHP_EOL;
+
+        $retour .= 'setInterval(mf_run_actualisation_exe, 50);' . PHP_EOL;
+
+        $retour .= PHP_EOL;
+
+        $retour .= 'function actualiser_les_champs() {' . PHP_EOL;
+        $retour .= "    mf_run_actualisation();" . PHP_EOL;
+        $retour .= '}' . PHP_EOL;
+
+        $retour .= PHP_EOL;
+
+        $retour .= 'function function_format_price(val)' . PHP_EOL;
+        $retour .= '{' . PHP_EOL;
+        $retour .= '    let r = "00" + Math.round(Number( val%1 ).toFixed(2)*100);' . PHP_EOL;
+        $retour .= '    r = r.substring( r.length-2 );' . PHP_EOL;
+        $retour .= '    val = parseInt( val );' . PHP_EOL;
+        $retour .= '    r = (val == 0 ? "0," : ",") + r;' . PHP_EOL;
+        $retour .= '    let milliers=false;
+                if ( val<0 ) {
                     val = - val;
                     signe = -1;
-                }
-                else
-                {
+                } else {
                     signe = 1;
                 }
-                while ( val!=0 )
-                {
-                    var t = "" + Math.round(Number( val%1000 ));
+                while (val != 0) {
+                    let t = "" + Math.round(Number( val%1000 ));
                     val = parseInt( val/1000 );
-                    if ( val!=0 )
-                    {
+                    if (val != 0) {
                         t = "000" + t;
                     }
                     r = t.substring( t.length-3 ) + ( milliers ? " " : "" ) + r;
                     milliers = true;
                 }
-                if ( signe==-1 )
-                {
+                if (signe == -1) {
                     r = "-" + r;
                 }
                 return r;
@@ -1787,42 +1506,52 @@ function generer_script_maj_auto()
 
             function function_format_date(val)
             {
-                var d = "" + val;
-                if ( d != "" && d != "null" )
-                {
-                    var annee = d.substring(0,4);
-                    var mois = d.substring(5,7);
-                    var jour = d.substring(8,10);
+                let d = "" + val;
+                if (d != "" && d != "null") {
+                    let annee = d.substring(0,4);
+                    let mois = d.substring(5,7);
+                    let jour = d.substring(8,10);
                     return jour + "/" + mois + "/" + annee;
                 }
                 return "";
             }
             function function_format_date_et_heure(val)
             {
-                var d = "" + val;
-                if ( d != "" && d != "null" )
-                {
-                    var annee = d.substring(0,4);
-                    var mois = d.substring(5,7);
-                    var jour = d.substring(8,10);
-                    var heure = d.substring(11,13);
-                    var minute = d.substring(14,16);
-                    var seconde = d.substring(17,19);
+                let d = "" + val;
+                if (d != "" && d != "null") {
+                    let annee = d.substring(0,4);
+                    let mois = d.substring(5,7);
+                    let jour = d.substring(8,10);
+                    let heure = d.substring(11,13);
+                    let minute = d.substring(14,16);
+                    let seconde = d.substring(17,19);
                     return jour + "/" + mois + "/" + annee + " à " + heure + ":" + minute + ( seconde!=0 ? ":" + seconde : "" );
                 }
                 return "";
             }
             function escapeHtml(text) {
-                var map = {
-                    "&": "&amp;",
-                    "<": "&lt;",
-                    ">": "&gt;",
-                    \'"\': "&quot;",
-                    "\'": "&#039;"
-                };
-                return text.toString().replace(/[&<>"\']/g, function(m) { return map[m]; });
-            }
-        </script>' : '<script type="text/javascript">var nb_actions_en_cours=0;function actualiser_les_champs(){};</script>';
+                if (text === null) {
+                    return "";
+                } else {
+                    let map = {
+                        "&": "&amp;",
+                        "<": "&lt;",
+                        ">": "&gt;",
+                        \'"\': "&quot;",
+                        "\'": "&#039;"
+                    };
+                    return text.toString().replace(/[&<>"\']/g, function(m) { return map[m]; });
+                }
+            }';
+        $retour .= '</script>';
+    } else {
+        $retour = '<script type="text/javascript">' . PHP_EOL;
+        $retour .= 'let nb_actions_en_cours = 0;' . PHP_EOL;
+        $retour .= 'function mf_run_actualisation_exe_nb() {' . PHP_EOL;
+        $retour .= 'return 0;' . PHP_EOL;
+        $retour .= '}' . PHP_EOL;
+        $retour .= '</script>';
+    }
 
     if ($num_champs_focus != 0) {
         $retour .= '<script type="text/javascript">document.getElementById("form_dyn_' . $num_champs_focus . '").select();</script>';
@@ -1853,34 +1582,51 @@ function generer_script_maj_auto()
 
             $retour .= '</div>';
             $retour .= '</div>';
-            $retour .= '<script type="text/javascript">function alertModal(contenu) { document.getElementById("debugAlertModalContent").innerHTML = contenu; $("#debugAlertModal").modal("show"); }</script>';
+            $retour .= '<script type="text/javascript">function alertModal(contenu) { document.getElementById("debugAlertModalContent").innerHTML = document.getElementById("debugAlertModalContent").innerHTML + "<br>" + contenu; $("#debugAlertModal").modal("show"); }</script>';
         } else {
             $retour .= '<script type="text/javascript">function alertModal(contenu) { alert(contenu); }</script>';
         }
     }
 
-    $retour .= '<script type="text/javascript">';
-    $retour .= 'function mf_getXMLHttpRequest() {';
-    $retour .= 'var xhr = null;';
-    $retour .= 'if (window.XMLHttpRequest || window.ActiveXObject) {';
-    $retour .= 'if (window.ActiveXObject) {';
-    $retour .= 'try {';
-    $retour .= 'xhr = new ActiveXObject("Msxml2.XMLHTTP");';
-    $retour .= '} catch (e) {';
-    $retour .= 'xhr = new ActiveXObject("Microsoft.XMLHTTP");';
-    $retour .= '}';
-    $retour .= '} else {';
-    $retour .= 'xhr = new XMLHttpRequest();';
-    $retour .= '}';
-    $retour .= '} else {';
-    $retour .= 'return null;';
-    $retour .= '}';
-    $retour .= 'return xhr;';
-    $retour .= '}';
-    $retour .= 'function launch_worker() {mf_worker=mf_getXMLHttpRequest(); mf_worker.open("GET", "' . ADRESSE_SITE . 'mf_worker_run.php", true) ; mf_worker.send(null);}';
-    $retour .= 'launch_worker();';
-    $retour .= 'setInterval(launch_worker, ' . ((DELAI_EXECUTION_WORKER + 1) * 1000) . ');';
-    $retour .= '</script>';
+    $retour .= '<script type="text/javascript">' . PHP_EOL;
+    $retour .= 'function mf_getXMLHttpRequest() {' . PHP_EOL;
+    $retour .= 'let xhr = null;' . PHP_EOL;
+    $retour .= 'if (window.XMLHttpRequest || window.ActiveXObject) {' . PHP_EOL;
+    $retour .= 'if (window.ActiveXObject) {' . PHP_EOL;
+    $retour .= 'try {' . PHP_EOL;
+    $retour .= 'xhr = new ActiveXObject("Msxml2.XMLHTTP");' . PHP_EOL;
+    $retour .= '} catch (e) {' . PHP_EOL;
+    $retour .= 'xhr = new ActiveXObject("Microsoft.XMLHTTP");' . PHP_EOL;
+    $retour .= '}' . PHP_EOL;
+    $retour .= '} else {' . PHP_EOL;
+    $retour .= 'xhr = new XMLHttpRequest();' . PHP_EOL;
+    $retour .= '}' . PHP_EOL;
+    $retour .= '} else {' . PHP_EOL;
+    $retour .= 'return null;' . PHP_EOL;
+    $retour .= '}' . PHP_EOL;
+    $retour .= 'return xhr;' . PHP_EOL;
+    $retour .= '}' . PHP_EOL;
+    {
+        $retour .= 'function launch_worker() {' . PHP_EOL;
+        $retour .= 'if (mf_run_actualisation_exe_nb() == 0) {' . PHP_EOL;
+        $retour .= 'mf_worker=mf_getXMLHttpRequest(); mf_worker.open("GET", "' . ADRESSE_SITE . 'mf_worker_run.php", true) ; mf_worker.send(null);';
+        $retour .= '}' . PHP_EOL;
+        $retour .= '}' . PHP_EOL;
+        $retour .= 'launch_worker();' . PHP_EOL;
+        $retour .= 'setInterval(launch_worker, ' . round(DELAI_EXECUTION_WORKER * 1050) . ');' . PHP_EOL;
+    }
+    $retour .= '</script>' . PHP_EOL;
 
     return $retour;
+}
+
+$mf_connexion = new Mf_Connexion();
+$menu_a_droite = new Menu_a_droite();
+$fil_ariane = new Fil_Ariane("Accueil", "");
+$trans = array();
+
+if (isset($_GET['act'])) {
+    $mf_action = $_GET['act'];
+} else {
+    $mf_action = '';
 }

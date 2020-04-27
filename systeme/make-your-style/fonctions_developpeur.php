@@ -1,19 +1,18 @@
-<?php
+<?php declare(strict_types=1);
 
 function mise_a_jour_fichier_developpeur()
 {
 
     global $est_charge, $desactivation_actualisation_outils_developpeur, $mf_liste_gabarits;
 
-    if (!isset($desactivation_actualisation_outils_developpeur))
-    {
+    if (! isset($desactivation_actualisation_outils_developpeur)) {
         $filename = __DIR__ . '/../../outil_developpeur.php';
-        $txt = "<?php\n\n";
-        $txt .= "// +-------------------+\n";
-        $txt .= "// | Outil développeur |\n";
-        $txt .= "// +-------------------+\n\n";
+        $txt = "<?php declare(strict_types=1);" . PHP_EOL . PHP_EOL;
+        $txt .= "// +-------------------+" . PHP_EOL;
+        $txt .= "// | Outil développeur |" . PHP_EOL;
+        $txt .= "// +-------------------+" . PHP_EOL . PHP_EOL;
 
-        function test_constante_definie($const_name) {if (!defined($const_name)) return '// constante "'.$const_name.'" introuvable !!!'."\n\n"; return '';}
+        function test_constante_definie($const_name) {if (! defined($const_name)) return '// constante "' . $const_name . '" introuvable !!!' . PHP_EOL . PHP_EOL; return '';}
 
         $txt .= test_constante_definie('ADRESSE_SITE');
         $txt .= test_constante_definie('ADRESSE_API');
@@ -28,6 +27,9 @@ function mise_a_jour_fichier_developpeur()
         $txt .= test_constante_definie('DB_NAME');
         $txt .= test_constante_definie('DB_PORT');
         $txt .= test_constante_definie('LNG_TOKEN');
+        $txt .= test_constante_definie('NB_RESULT_MAX_API');
+        $txt .= test_constante_definie('NB_ELEM_MAX_LANGUE');
+        $txt .= test_constante_definie('NB_ELEM_MAX_TABLEAU');
         $txt .= test_constante_definie('TABLE_INSTANCE');
         $txt .= test_constante_definie('PREFIXE_DB_INSTANCE');
         $txt .= test_constante_definie('TITRE_DB_INSTANCE');
@@ -43,11 +45,7 @@ function mise_a_jour_fichier_developpeur()
         $txt .= test_constante_definie('DB_CACHE_PASSWORD');
         $txt .= test_constante_definie('DB_CACHE_NAME');
         $txt .= test_constante_definie('DB_CACHE_PORT');
-        $txt .= test_constante_definie('PREFIXE_SESSION');
-        $txt .= test_constante_definie('PREFIXE_COOKIE');
         $txt .= test_constante_definie('DUREE_CACHE_MINUTES');
-        $txt .= test_constante_definie('DELAI_RAFRAICHISSEMENT');
-        $txt .= test_constante_definie('DELAI_RAFRAICHISSEMENT_COURT');
         $txt .= test_constante_definie('DELAI_EXECUTION_WORKER');
         $txt .= test_constante_definie('BOUTON_VALIDATION_SOUS_FORMULAIRE');
         $txt .= test_constante_definie('BOUTON_INTEGRABLE');
@@ -75,54 +73,45 @@ function mise_a_jour_fichier_developpeur()
         $txt .= test_constante_definie('FACEBOOK_CLIENT_ID');
         $txt .= test_constante_definie('FACEBOOK_CLIENT_SECRET');
 
-        $txt .= "// Système\n";
-        $txt .= "    include 'systeme/make-your-style/constantes_systeme.php';                        // Les constantes globales\n";
-        $txt .= "    include 'systeme/make-your-style/fonctions_additionnelles.php';                  // Les fonctions globales\n";
-        $txt .= "    include 'systeme/make-your-style/tables/monframework/hooks/Hook_mf_systeme.php'; // Contrôle d'accès aux données, scripts à la connexion et à la déconnexion\n";
-        $txt .= "\n";
+        $txt .= "// Système" . PHP_EOL;
+        $txt .= "    include 'systeme/make-your-style/constantes_systeme.php';                        // Les constantes globales" . PHP_EOL;
+        $txt .= "    include 'systeme/make-your-style/fonctions_additionnelles.php';                  // Les fonctions globales" . PHP_EOL;
+        $txt .= "    include 'systeme/make-your-style/tables/monframework/hooks/Hook_mf_systeme.php'; // Contrôle d'accès aux données, scripts à la connexion et à la déconnexion" . PHP_EOL;
+        $txt .= PHP_EOL;
 
         $debug = debug_backtrace();
         $controleur = '';
-        foreach ($debug as $t)
-        {
+        foreach ($debug as $t) {
             $controleur = $t['file'];
         }
-        $txt .= "// Controleur\n";
-        $txt .= "    include '{$controleur}';\n";
+        $txt .= "// Controleur" . PHP_EOL;
+        $txt .= "    include '{$controleur}';" . PHP_EOL;
 
-        if (isset($est_charge))
-        {
-            foreach ($est_charge as $nom => $etat)
-            {
-                if ($etat==1)
-                {
-                    $txt .= "\n";
-                    $txt .= "// {$nom}\n";
-                    $txt .= "    include 'systeme/make-your-style/langues/fr/{$nom}.php';                     // Fichier de langue française et initialisation automatique des valeurs des colonnes\n";
-                    $txt .= "    include 'systeme/make-your-style/tables/{$nom}.php';                         // Ajout des fonctions personalisées liées à la table {$nom}\n";
-                    $txt .= "    include 'systeme/make-your-style/tables/monframework/hooks/Hook_{$nom}.php'; // Evénements, data controller et completion\n";
-                    $txt .= "    include 'www/make-your-style/code/_{$nom}_form.php';                         // Appels aux formulaires « ajouter », « modifier » et « supprimer ». Chargements de « _{$nom}_get.php » et  « _{$nom}_list.php »\n";
-                    $txt .= "        include 'www/make-your-style/code/_{$nom}_get.php';                      // « _{$nom}_get.php » : Génération des éléments positiionnés dans un gabarit\n";
-                    $txt .= "        include 'www/make-your-style/code/_{$nom}_list.php';                     // « _{$nom}_list.php » : Génération d'un tableau positiionné dans un gabarit\n";
-                    $txt .= "    include 'www/make-your-style/code/_{$nom}_actions.php';                      // Récupération des données en provenance des formulaires et appels aux méthodes associées\n";
+        if (isset($est_charge)) {
+            foreach ($est_charge as $nom => $etat) {
+                if ($etat == 1) {
+                    $txt .= PHP_EOL;
+                    $txt .= "// {$nom}" . PHP_EOL;
+                    $txt .= "    include 'systeme/make-your-style/langues/fr/{$nom}.php';                     // Fichier de langue française et initialisation automatique des valeurs des colonnes" . PHP_EOL;
+                    $txt .= "    include 'systeme/make-your-style/tables/{$nom}.php';                         // Ajout des fonctions personalisées liées à la table {$nom}" . PHP_EOL;
+                    $txt .= "    include 'systeme/make-your-style/tables/monframework/hooks/Hook_{$nom}.php'; // Evénements, data controller et completion" . PHP_EOL;
+                    $txt .= "    include 'www/make-your-style/code/_{$nom}_form.php';                         // Appels aux formulaires « ajouter », « modifier » et « supprimer ». Chargements de « _{$nom}_get.php » et  « _{$nom}_list.php »" . PHP_EOL;
+                    $txt .= "        include 'www/make-your-style/code/_{$nom}_get.php';                      // « _{$nom}_get.php » : Génération des éléments positiionnés dans un gabarit" . PHP_EOL;
+                    $txt .= "        include 'www/make-your-style/code/_{$nom}_list.php';                     // « _{$nom}_list.php » : Génération d'un tableau positiionné dans un gabarit" . PHP_EOL;
+                    $txt .= "    include 'www/make-your-style/code/_{$nom}_actions.php';                      // Récupération des données en provenance des formulaires et appels aux méthodes associées" . PHP_EOL;
                 }
             }
         }
 
-        $txt .= "\n/* Gabarits chargés :\n\n";
+        $txt .= PHP_EOL . "/* ------------------------------ Gabarits chargés ------------------------------ */" . PHP_EOL . PHP_EOL;
         $d = count($mf_liste_gabarits);
-        for ( $i = $d-1; $i>=0; $i-- )
-        {
+        for ($i = $d - 1;$i >= 0; $i--) {
             $gabarits = $mf_liste_gabarits[$i];
             foreach ($gabarits as $value) {
-                $txt .= $value."\n";
+                $txt .= "$value" . PHP_EOL;
             }
-            $txt .= "\n";
+            $txt .= PHP_EOL;
         }
-        $txt .= "*/\n";
-
         file_put_contents($filename, $txt);
-
     }
-
 }

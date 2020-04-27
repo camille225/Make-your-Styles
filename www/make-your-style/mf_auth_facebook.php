@@ -20,14 +20,14 @@ if (isset($_GET['code'])) {
             $id = $mf_connexion->rechercher_un_email($email);
             if ($id > 0) {
                 if ($token = $mf_connexion->connexion_par_id($id)) {
-                    $_SESSION[PREFIXE_SESSION]['token'] = $token;
+                    $_SESSION[NOM_PROJET]['token'] = $token;
                 }
             } else {
                 Hook_mf_systeme::script_inscription_via_compte_oauth2($email, $id_facebook, 2);
                 $id = $mf_connexion->rechercher_un_email($email);
                 if ($id > 0) {
                     if ($token = $mf_connexion->connexion_par_id($id)) {
-                        $_SESSION[PREFIXE_SESSION]['token'] = $token;
+                        $_SESSION[NOM_PROJET]['token'] = $token;
                     }
                 }
             }

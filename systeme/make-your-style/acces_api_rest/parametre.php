@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 define('API_REST_ACCESS_GET_PARAMETRE', 'none');
 define('API_REST_ACCESS_POST_PARAMETRE', 'none');

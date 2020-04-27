@@ -1,24 +1,24 @@
-<?php
+<?php declare(strict_types=1);
 
 $lang_standard['Code_parametre'] = 'parametre';
 
 $lang_standard['parametre_Libelle'] = 'parametre_Libelle';
 
 $lang_standard['bouton_ajouter_parametre'] = 'Ajouter';
-$lang_standard['bouton_creer_parametre'] = 'Creer';
+$lang_standard['bouton_creer_parametre'] = 'Créer';
 $lang_standard['bouton_modifier_parametre'] = 'Modifier';
 $lang_standard['bouton_supprimer_parametre'] = 'Supprimer';
 $lang_standard['bouton_modifier_parametre_Libelle'] = 'Modifier';
 
-$lang_standard['form_add_parametre'] = 'form_add_parametre';
-$lang_standard['form_edit_parametre'] = 'form_edit_parametre';
-$lang_standard['form_delete_parametre'] = 'form_delete_parametre';
+$lang_standard['form_add_parametre'] = 'Ajout d\'un nouvel enregistrement';
+$lang_standard['form_edit_parametre'] = 'Edition de l\'enregistrement';
+$lang_standard['form_delete_parametre'] = 'Confirmation de suppression de l\'enregistrement';
 
 $mf_titre_ligne_table['parametre'] = '{parametre_Libelle}';
 
-$mf_tri_defaut_table['parametre'] = array( 'parametre_Libelle' => 'ASC' );
+$mf_tri_defaut_table['parametre'] = ['parametre_Libelle' => 'ASC'];
 
-$lang_standard['libelle_liste_parametre'] = 'libelle_liste_parametre';
+$lang_standard['libelle_liste_parametre'] = 'Enregistrement(s)';
 
 $mf_initialisation['parametre_Libelle'] = '';
 
