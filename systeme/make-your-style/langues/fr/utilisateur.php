@@ -2,24 +2,26 @@
 
 $lang_standard['Code_utilisateur'] = 'utilisateur';
 
-$lang_standard['utilisateur_Identifiant'] = 'utilisateur_Identifiant';
-$lang_standard['utilisateur_Password'] = 'utilisateur_Password';
-$lang_standard['utilisateur_Email'] = 'utilisateur_Email';
-$lang_standard['utilisateur_Civilite_Type'] = 'utilisateur_Civilite_Type';
-$lang_standard['utilisateur_Civilite_Type_'] = [1 => "Etat 1", 2 => "Etat 2", 3 => "Etat 3"];
-$lang_standard['utilisateur_Prenom'] = 'utilisateur_Prenom';
-$lang_standard['utilisateur_Nom'] = 'utilisateur_Nom';
-$lang_standard['utilisateur_Adresse_1'] = 'utilisateur_Adresse_1';
-$lang_standard['utilisateur_Adresse_2'] = 'utilisateur_Adresse_2';
-$lang_standard['utilisateur_Ville'] = 'utilisateur_Ville';
-$lang_standard['utilisateur_Code_postal'] = 'utilisateur_Code_postal';
-$lang_standard['utilisateur_Date_naissance'] = 'utilisateur_Date_naissance';
-$lang_standard['utilisateur_Accepte_mail_publicitaire'] = 'utilisateur_Accepte_mail_publicitaire';
-$lang_standard['utilisateur_Accepte_mail_publicitaire_'] = [1 => "Oui", 0 => "Non"];
-$lang_standard['utilisateur_Administrateur'] = 'utilisateur_Administrateur';
-$lang_standard['utilisateur_Administrateur_'] = [1 => "Oui", 0 => "Non"];
-$lang_standard['utilisateur_Fournisseur'] = 'utilisateur_Fournisseur';
-$lang_standard['utilisateur_Fournisseur_'] = [1 => "Oui", 0 => "Non"];
+/* debut developpement */
+$lang_standard['utilisateur_Identifiant'] = 'Identifiant';
+$lang_standard['utilisateur_Password'] = 'Mot de passe';
+$lang_standard['utilisateur_Email'] = 'Email';
+$lang_standard['utilisateur_Civilite_Type'] = 'Civilité';
+$lang_standard['utilisateur_Civilite_Type_'] = [1 => "Monsieur", 2 => "Madame"];
+$lang_standard['utilisateur_Prenom'] = 'Prénom';
+$lang_standard['utilisateur_Nom'] = 'Nom';
+$lang_standard['utilisateur_Adresse_1'] = 'Adresse ligne 1';
+$lang_standard['utilisateur_Adresse_2'] = 'Adresse ligne 2';
+$lang_standard['utilisateur_Ville'] = 'Ville';
+$lang_standard['utilisateur_Code_postal'] = 'Code postal';
+$lang_standard['utilisateur_Date_naissance'] = 'Date naissance';
+$lang_standard['utilisateur_Accepte_mail_publicitaire'] = 'Accepte mail publicitaire';
+$lang_standard['utilisateur_Accepte_mail_publicitaire_'] = [ 1 => "Oui", 0 => "Non" ];
+$lang_standard['utilisateur_Administrateur'] = 'Administrateur';
+$lang_standard['utilisateur_Administrateur_'] = [ 1 => "Oui", 0 => "Non" ];
+$lang_standard['utilisateur_Fournisseur'] = 'Fournisseur';
+$lang_standard['utilisateur_Fournisseur_'] = [ 1 => "Oui", 0 => "Non" ];
+/* fin developpement */
 
 $lang_standard['bouton_ajouter_utilisateur'] = 'Ajouter';
 $lang_standard['bouton_creer_utilisateur'] = 'Créer';
@@ -46,7 +48,9 @@ $lang_standard['form_edit_utilisateur'] = 'Edition de l\'enregistrement';
 $lang_standard['form_delete_utilisateur'] = 'Confirmation de suppression de l\'enregistrement';
 $lang_standard['formulaire_modpwd_utilisateur'] = 'Modifier le mot de passe';
 
-$mf_titre_ligne_table['utilisateur'] = '{utilisateur_Identifiant}';
+/* debut developpement */
+$mf_titre_ligne_table['utilisateur'] = '{utilisateur_Prenom} {utilisateur_Nom}';
+/* fin developpement */
 
 $mf_tri_defaut_table['utilisateur'] = ['utilisateur_Identifiant' => 'ASC'];
 

@@ -1,8 +1,12 @@
 <?php declare(strict_types=1);
 
-$lang_standard['Code_parametre'] = 'parametre';
+/* debut developpement */
+$lang_standard['Code_parametre'] = 'Paramètre';
+/* fin developpement */
 
-$lang_standard['parametre_Libelle'] = 'parametre_Libelle';
+/* debut developpement */
+$lang_standard['parametre_Libelle'] = 'Libellé';
+/* fin developpement */
 
 $lang_standard['bouton_ajouter_parametre'] = 'Ajouter';
 $lang_standard['bouton_creer_parametre'] = 'Créer';

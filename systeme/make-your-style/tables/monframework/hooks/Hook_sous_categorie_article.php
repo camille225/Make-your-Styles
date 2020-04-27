@@ -26,7 +26,9 @@ class Hook_sous_categorie_article
         // actualisation uniquement pour l'affichage
         $mf_droits_defaut['sous_categorie_article__CREER'] = false;
         // Mise à jour des droits
-        // ici le code
+        if (est_administrateur()) {
+            $mf_droits_defaut['sous_categorie_article__AJOUTER'] = true;
+        }
     }
 
     public static function autorisation_ajout(string $sous_categorie_article_Libelle, int $Code_categorie_article)
@@ -64,7 +66,9 @@ class Hook_sous_categorie_article
         $mf_droits_defaut['api_modifier__sous_categorie_article_Libelle'] = false;
         $mf_droits_defaut['api_modifier_ref__sous_categorie_article__Code_categorie_article'] = false;
         // Mise à jour des droits
-        // ici le code
+        if (est_administrateur()) {
+            $mf_droits_defaut['api_modifier__sous_categorie_article_Libelle'] = true;
+        }
     }
 
     public static function autorisation_modification(int $Code_sous_categorie_article, string $sous_categorie_article_Libelle__new, int $Code_categorie_article__new)
@@ -97,7 +101,9 @@ class Hook_sous_categorie_article
         // Initialisation des droits
         $mf_droits_defaut['sous_categorie_article__SUPPRIMER'] = false;
         // Mise à jour des droits
-        // Ici le code
+        if (est_administrateur()) {
+            $mf_droits_defaut['sous_categorie_article__SUPPRIMER'] = true;
+        }
         if ($Code_sous_categorie_article != 0 && $mf_droits_defaut['sous_categorie_article__SUPPRIMER']) {
             $db = new DB();
             $mf_droits_defaut['sous_categorie_article__SUPPRIMER'] = $db->article()->mfi_compter(['Code_sous_categorie_article' => $Code_sous_categorie_article]) == 0;

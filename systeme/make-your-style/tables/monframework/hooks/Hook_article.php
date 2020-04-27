@@ -26,8 +26,9 @@ class Hook_article
         // actualisation uniquement pour l'affichage
         $mf_droits_defaut['article__CREER'] = false;
         // Mise à jour des droits
-        $mf_droits_defaut['article__AJOUTER'] = true;
-        // ici le code
+        if (est_administrateur()) {
+            $mf_droits_defaut['article__AJOUTER'] = true;
+        }
     }
 
     public static function autorisation_ajout(string $article_Libelle, string $article_Description, ?int $article_Saison_Type, string $article_Nom_fournisseur, string $article_Url, string $article_Reference, string $article_Couleur, string $article_Code_couleur_svg, ?int $article_Taille_Pays_Type, ?int $article_Taille, string $article_Matiere, string $article_Photo_Fichier, ?float $article_Prix, bool $article_Actif, int $Code_sous_categorie_article)
@@ -78,7 +79,22 @@ class Hook_article
         $mf_droits_defaut['api_modifier__article_Actif'] = false;
         $mf_droits_defaut['api_modifier_ref__article__Code_sous_categorie_article'] = false;
         // Mise à jour des droits
-        // ici le code
+        if (est_administrateur()) {
+            $mf_droits_defaut['api_modifier__article_Libelle'] = true;
+            $mf_droits_defaut['api_modifier__article_Description'] = true;
+            $mf_droits_defaut['api_modifier__article_Saison_Type'] = true;
+            $mf_droits_defaut['api_modifier__article_Nom_fournisseur'] = true;
+            $mf_droits_defaut['api_modifier__article_Url'] = true;
+            $mf_droits_defaut['api_modifier__article_Reference'] = true;
+            $mf_droits_defaut['api_modifier__article_Couleur'] = true;
+            $mf_droits_defaut['api_modifier__article_Code_couleur_svg'] = true;
+            $mf_droits_defaut['api_modifier__article_Taille_Pays_Type'] = true;
+            $mf_droits_defaut['api_modifier__article_Taille'] = true;
+            $mf_droits_defaut['api_modifier__article_Matiere'] = true;
+            $mf_droits_defaut['api_modifier__article_Photo_Fichier'] = true;
+            $mf_droits_defaut['api_modifier__article_Prix'] = true;
+            $mf_droits_defaut['api_modifier__article_Actif'] = true;
+        }
     }
 
     public static function autorisation_modification(int $Code_article, string $article_Libelle__new, string $article_Description__new, ?int $article_Saison_Type__new, string $article_Nom_fournisseur__new, string $article_Url__new, string $article_Reference__new, string $article_Couleur__new, string $article_Code_couleur_svg__new, ?int $article_Taille_Pays_Type__new, ?int $article_Taille__new, string $article_Matiere__new, string $article_Photo_Fichier__new, ?float $article_Prix__new, bool $article_Actif__new, int $Code_sous_categorie_article__new)
@@ -202,7 +218,9 @@ class Hook_article
         // Initialisation des droits
         $mf_droits_defaut['article__SUPPRIMER'] = false;
         // Mise à jour des droits
-        // Ici le code
+        if (est_administrateur()) {
+            $mf_droits_defaut['article__SUPPRIMER'] = true;
+        }
     }
 
     public static function autorisation_suppression(int $Code_article)

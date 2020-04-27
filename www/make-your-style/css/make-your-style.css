@@ -1,0 +1,52 @@
+@charset "UTF-8";
+
+.maj_dyn_etat { display: inline-block; width: 24px; height: 24px; margin-top: 6px; }
+.maj_dyn_etat.on { background-image: url("../images/icones/update.gif"); }
+.maj_dyn_etat.ko { background-image: url("../images/icones/ko.png"); }
+
+.card-header { background-color: #aaa; }
+
+.card-title { color: #fff; }
+
+/* .text-chart {
+    text-align: center;
+    z-index: 8;
+    position: relative;
+    top: 195px;
+    font-weight: bold;
+}
+
+.masquer {
+    display: none!important;
+} */
+
+.accordion_panel_bloc button.accordion {
+    display: none;
+}
+
+/* debut design bouton */
+.btn-default {
+    color: #2196f3;
+    border-color: #2196f3;
+    background-color: #fff;
+}
+.btn-default:hover {
+    color: #fff;
+    background-color: #0C83E2;
+}
+/* .btn-primary, .btn-primary:hover {
+    border-color: white;
+    background-color: #59D0C3;
+}
+.btn-outline-secondary {
+    border-color: #FF5A80;
+    color: #FF5A80 !important;
+}
+.btn-outline-secondary:hover {
+    border-color: #FF5A80;
+    background-color: #FF5A80;
+    color: white !important;
+} */
+/* fin design bouton */
+
+.wrapper { background-color: #ffffffaa; }

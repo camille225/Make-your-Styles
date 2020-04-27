@@ -2,7 +2,9 @@
 
 $lang_standard['Code_categorie_article'] = 'categorie_article';
 
-$lang_standard['categorie_article_Libelle'] = 'categorie_article_Libelle';
+/* debut developpement */
+$lang_standard['categorie_article_Libelle'] = 'Libellé';
+/* fin developpement */
 
 $lang_standard['bouton_ajouter_categorie_article'] = 'Ajouter';
 $lang_standard['bouton_creer_categorie_article'] = 'Créer';
