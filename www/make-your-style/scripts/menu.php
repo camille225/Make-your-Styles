@@ -3,6 +3,11 @@ $pages_menu = [];
 
 if (est_connecte()) {
     /* pages B1 */
+    $pages_menu['<span class="fa fa-user"></span> Compte utilisateur'][] = [
+        'nom' => 'Compte utilisateur',
+        'icone' => 'fa fa-user',
+        'adresse' => 'page_compte_utilisateur.php'
+    ];
 }
 if (est_administrateur() || $db->utilisateur()->mf_compter() == 0) {
     $categorie_administrateur = '<span class="fa fa-cogs"></span> Paramétrage administrateur';
