@@ -52,6 +52,9 @@ define('MODE_RETINA', false); // true : permet de prendre en charge les ecrans r
 define('MULTI_BLOCS', true);
 define('ALERTE_INFOS_NON_ENREGISTREES', true);
 
+define('PREFIXE_SESSION', 'make-your-style');
+define('PREFIXE_COOKIE', 'make-your-style');
+
 // Sauvegarde
 define('DUREE_HISTORIQUE', 150); // duree de conservation de l'historique en jours
 define('LISTE_TABLES_HISTORIQUE_DESACTIVE', []); // Liste des tables sans historique.
