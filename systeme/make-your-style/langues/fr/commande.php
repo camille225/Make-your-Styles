@@ -1,10 +1,14 @@
 <?php declare(strict_types=1);
 
-$lang_standard['Code_commande'] = 'commande';
+/* debut developpement */
+$lang_standard['Code_commande'] = 'Commande';
+/* fin developpement */
 
-$lang_standard['commande_Prix_total'] = 'commande_Prix_total';
-$lang_standard['commande_Date_livraison'] = 'commande_Date_livraison';
-$lang_standard['commande_Date_creation'] = 'commande_Date_creation';
+/* debut developpement */
+$lang_standard['commande_Prix_total'] = 'Prix total';
+$lang_standard['commande_Date_livraison'] = 'Date livraison';
+$lang_standard['commande_Date_creation'] = 'Date création';
+/* fin developpement */
 
 $lang_standard['bouton_ajouter_commande'] = 'Ajouter';
 $lang_standard['bouton_creer_commande'] = 'Créer';

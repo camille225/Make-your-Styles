@@ -4,11 +4,11 @@
 .maj_dyn_etat.on { background-image: url("../images/icones/update.gif"); }
 .maj_dyn_etat.ko { background-image: url("../images/icones/ko.png"); }
 
-/* .card-header {
-    background-color: #aaa;
-}
+.card-header { background-color: #aaa; }
 
-.text-chart {
+.card-title { color: #fff; }
+
+/* .text-chart {
     text-align: center;
     z-index: 8;
     position: relative;
@@ -24,21 +24,17 @@
     display: none;
 }
 
-/* body .sidebar-brand, body .splash-icon, body .wrapper:before {
-    background-color: #59d0c3c4 !important;
-} */
-
 /* debut design bouton */
-/* .btn-default {
-    color: #59D0C3;
-    border-color: #59D0C3;
+.btn-default {
+    color: #2196f3;
+    border-color: #2196f3;
     background-color: #fff;
 }
 .btn-default:hover {
     color: #fff;
-    background-color: #59D0C3;
+    background-color: #0C83E2;
 }
-.btn-primary, .btn-primary:hover {
+/* .btn-primary, .btn-primary:hover {
     border-color: white;
     background-color: #59D0C3;
 }
@@ -52,7 +48,5 @@
     color: white !important;
 } */
 /* fin design bouton */
-
-/* .card-title { color: #fff; } */
 
 .wrapper { background-color: #ffffffaa; }

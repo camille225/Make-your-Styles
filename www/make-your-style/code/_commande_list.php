@@ -12,7 +12,9 @@
         $tab->modifier_code_action("apercu_commande");
         $tab->ajouter_colonne('commande_Prix_total', false, '');
         $tab->ajouter_colonne('commande_Date_livraison', false, 'date');
-        $tab->ajouter_colonne('commande_Date_creation', false, 'date');
+        /* debut developpement */
+//        $tab->ajouter_colonne('commande_Date_creation', false, 'date');
+        /* fin developpement */
         if (! isset($est_charge['utilisateur'])) {
             $tab->ajouter_colonne('Code_utilisateur', true, '');
         }

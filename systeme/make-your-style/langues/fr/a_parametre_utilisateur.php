@@ -2,8 +2,10 @@
 
 $lang_standard['a_parametre_utilisateur'] = 'a_parametre_utilisateur';
 
-$lang_standard['a_parametre_utilisateur_Valeur'] = 'a_parametre_utilisateur_Valeur';
-$lang_standard['a_parametre_utilisateur_Actif'] = 'a_parametre_utilisateur_Actif';
+/* debut developpement */
+$lang_standard['a_parametre_utilisateur_Valeur'] = 'Valeur';
+$lang_standard['a_parametre_utilisateur_Actif'] = 'Actif';
+/* fin developpement */
 
 $lang_standard['bouton_ajouter_a_parametre_utilisateur'] = 'Ajouter';
 $lang_standard['bouton_creer_a_parametre_utilisateur'] = 'Créer';
