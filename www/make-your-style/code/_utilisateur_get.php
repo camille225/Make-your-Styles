@@ -227,3 +227,6 @@
             $trans['{utilisateur_Fournisseur}'] = get_valeur_html_maj_auto_interface(['liste_valeurs_cle_table' => ['Code_utilisateur' => $utilisateur['Code_utilisateur']], 'DB_name' => 'utilisateur_Fournisseur', 'valeur_initiale' => $utilisateur['utilisateur_Fournisseur']]);
         }
 
+/* debut developpement */
+include __DIR__ . '/_a_parametre_utilisateur_list.php';
+include __DIR__ . '/_commande_list.php';

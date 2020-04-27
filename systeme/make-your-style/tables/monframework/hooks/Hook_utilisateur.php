@@ -82,11 +82,19 @@ class Hook_utilisateur
         // Mise à jour des droits
         if (est_administrateur() && get_utilisateur_courant(MF_UTILISATEUR__ID) != $Code_utilisateur) {
             $mf_droits_defaut['api_modifier__utilisateur_Administrateur'] = true;
+            $mf_droits_defaut['api_modifier__utilisateur_Fournisseur'] = true;
         }
         if (get_utilisateur_courant(MF_UTILISATEUR__ID) == $Code_utilisateur) {
             $mf_droits_defaut['utilisateur__MODIFIER_PWD'] = true;
             $mf_droits_defaut['api_modifier__utilisateur_Identifiant'] = true;
             $mf_droits_defaut['api_modifier__utilisateur_Email'] = true;
+            $mf_droits_defaut['api_modifier__utilisateur_Prenom'] = true;
+            $mf_droits_defaut['api_modifier__utilisateur_Nom'] = true;
+            $mf_droits_defaut['api_modifier__utilisateur_Adresse_1'] = true;
+            $mf_droits_defaut['api_modifier__utilisateur_Adresse_2'] = true;
+            $mf_droits_defaut['api_modifier__utilisateur_Ville'] = true;
+            $mf_droits_defaut['api_modifier__utilisateur_Code_postal'] = true;
+            $mf_droits_defaut['api_modifier__utilisateur_Accepte_mail_publicitaire'] = true;
         }
     }
 

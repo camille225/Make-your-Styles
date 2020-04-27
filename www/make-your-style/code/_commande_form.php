@@ -30,23 +30,27 @@
 
     } else {
 
-        include __DIR__ . '/_commande_list.php';
-
-        $code_html .= recuperer_gabarit('main/section.html', [
-            '{fonction}'  => 'lister',
-            '{nom_table}' => 'commande',
-            '{titre}'     => htmlspecialchars(get_nom_colonne('libelle_liste_commande')),
-            '{contenu}'   => recuperer_gabarit('commande/bloc_lister.html', $trans),
-        ]);
+        /* debut developpement */
+//        include __DIR__ . '/_commande_list.php';
+//
+//        $code_html .= recuperer_gabarit('main/section.html', [
+//            '{fonction}'  => 'lister',
+//            '{nom_table}' => 'commande',
+//            '{titre}'     => htmlspecialchars(get_nom_colonne('libelle_liste_commande')),
+//            '{contenu}'   => recuperer_gabarit('commande/bloc_lister.html', $trans),
+//        ]);
+        /* fin developpement */
 
     }
 
     if ($mf_action == "ajouter_commande") {
 
         $form = new Formulaire('', $mess);
-        $form->ajouter_input("commande_Prix_total", ( isset($_POST['commande_Prix_total']) ? $_POST['commande_Prix_total'] : $mf_initialisation['commande_Prix_total'] ), true);
+        /* debut developpement */
+//        $form->ajouter_input("commande_Prix_total", ( isset($_POST['commande_Prix_total']) ? $_POST['commande_Prix_total'] : $mf_initialisation['commande_Prix_total'] ), true);
         $form->ajouter_input("commande_Date_livraison", ( isset($_POST['commande_Date_livraison']) ? $_POST['commande_Date_livraison'] : $mf_initialisation['commande_Date_livraison'] ), true);
-        $form->ajouter_input("commande_Date_creation", ( isset($_POST['commande_Date_creation']) ? $_POST['commande_Date_creation'] : $mf_initialisation['commande_Date_creation'] ), true);
+//        $form->ajouter_input("commande_Date_creation", ( isset($_POST['commande_Date_creation']) ? $_POST['commande_Date_creation'] : $mf_initialisation['commande_Date_creation'] ), true);
+        /* fin developpement */
         if (! isset($est_charge['utilisateur'])) {
             $form->ajouter_select(lister_cles($lang_standard['Code_utilisateur_']), "Code_utilisateur", (isset($_POST['Code_utilisateur']) ? (int) $_POST['Code_utilisateur'] : 0), true);
         }

@@ -10,19 +10,21 @@
         $tab->ajouter_ref_Colonne_Code("Code_utilisateur");
         $tab->set_ligne_selectionnee('Code_utilisateur', mf_Code_utilisateur());
         $tab->modifier_code_action("apercu_utilisateur");
-        $tab->ajouter_colonne('utilisateur_Identifiant', false, '');
-        $tab->ajouter_colonne('utilisateur_Email', false, '');
-        $tab->ajouter_colonne('utilisateur_Civilite_Type', true, '');
+        /* debut developpement */
         $tab->ajouter_colonne('utilisateur_Prenom', false, '');
         $tab->ajouter_colonne('utilisateur_Nom', false, '');
+        $tab->ajouter_colonne('utilisateur_Civilite_Type', true, '');
+        $tab->ajouter_colonne('utilisateur_Identifiant', false, '');
+        $tab->ajouter_colonne('utilisateur_Email', false, '');
         $tab->ajouter_colonne('utilisateur_Adresse_1', false, '');
         $tab->ajouter_colonne('utilisateur_Adresse_2', false, '');
         $tab->ajouter_colonne('utilisateur_Ville', false, '');
         $tab->ajouter_colonne('utilisateur_Code_postal', false, '');
-        $tab->ajouter_colonne('utilisateur_Date_naissance', false, 'date');
-        $tab->ajouter_colonne('utilisateur_Accepte_mail_publicitaire', true, '');
+//        $tab->ajouter_colonne('utilisateur_Date_naissance', false, 'date');
         $tab->ajouter_colonne('utilisateur_Administrateur', true, '');
         $tab->ajouter_colonne('utilisateur_Fournisseur', true, '');
+        $tab->ajouter_colonne('utilisateur_Accepte_mail_publicitaire', true, '');
+        /* fin developpement */
         $trans['{tableau_utilisateur}'] = (count($liste) < NB_ELEM_MAX_TABLEAU ? '' : get_code_alert_warning("Attention, affichage partielle des données (soit " . NB_ELEM_MAX_TABLEAU . " enregistrements)")) . $tab->generer_code();
 
     // boutons

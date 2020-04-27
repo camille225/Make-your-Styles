@@ -1,24 +1,28 @@
 <?php declare(strict_types=1);
 
-$lang_standard['Code_article'] = 'article';
+/* debut developpement */
+$lang_standard['Code_article'] = 'Article';
+/* fin developpement */
 
-$lang_standard['article_Libelle'] = 'article_Libelle';
-$lang_standard['article_Description'] = 'article_Description';
-$lang_standard['article_Saison_Type'] = 'article_Saison_Type';
-$lang_standard['article_Saison_Type_'] = [1 => "Etat 1", 2 => "Etat 2", 3 => "Etat 3"];
-$lang_standard['article_Nom_fournisseur'] = 'article_Nom_fournisseur';
-$lang_standard['article_Url'] = 'article_Url';
-$lang_standard['article_Reference'] = 'article_Reference';
-$lang_standard['article_Couleur'] = 'article_Couleur';
-$lang_standard['article_Code_couleur_svg'] = 'article_Code_couleur_svg';
-$lang_standard['article_Taille_Pays_Type'] = 'article_Taille_Pays_Type';
-$lang_standard['article_Taille_Pays_Type_'] = [1 => "Etat 1", 2 => "Etat 2", 3 => "Etat 3"];
-$lang_standard['article_Taille'] = 'article_Taille';
-$lang_standard['article_Matiere'] = 'article_Matiere';
-$lang_standard['article_Photo_Fichier'] = 'article_Photo_Fichier';
-$lang_standard['article_Prix'] = 'article_Prix';
-$lang_standard['article_Actif'] = 'article_Actif';
-$lang_standard['article_Actif_'] = [1 => "Oui", 0 => "Non"];
+/* debut developpement */
+$lang_standard['article_Libelle'] = 'Libellé';
+$lang_standard['article_Description'] = 'Description';
+$lang_standard['article_Saison_Type'] = 'Saison';
+$lang_standard['article_Saison_Type_'] = [ 1 => "Printemps", 2 => "Été", 3 => "Automne", 4 => "Hiver"];
+$lang_standard['article_Nom_fournisseur'] = 'Nom fournisseur';
+$lang_standard['article_Url'] = 'Url';
+$lang_standard['article_Reference'] = 'Référence';
+$lang_standard['article_Couleur'] = 'Couleur';
+$lang_standard['article_Code_couleur_svg'] = 'Code couleur svg';
+$lang_standard['article_Taille_Pays_Type'] = 'Taille Pays';
+$lang_standard['article_Taille_Pays_Type_'] = [ 1 => "US", 2 => "autre" ];
+$lang_standard['article_Taille'] = 'Taille';
+$lang_standard['article_Matiere'] = 'Matière';
+$lang_standard['article_Photo_Fichier'] = 'Photo';
+$lang_standard['article_Prix'] = 'Prix';
+$lang_standard['article_Actif'] = 'Actif';
+$lang_standard['article_Actif_'] = [ 1 => "Oui", 0 => "Non" ];
+/* fin developpement */
 
 $lang_standard['bouton_ajouter_article'] = 'Ajouter';
 $lang_standard['bouton_creer_article'] = 'Créer';

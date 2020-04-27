@@ -2,8 +2,10 @@
 
 $lang_standard['a_commande_article'] = 'a_commande_article';
 
-$lang_standard['a_commande_article_Quantite'] = 'a_commande_article_Quantite';
-$lang_standard['a_commande_article_Prix_ligne'] = 'a_commande_article_Prix_ligne';
+/* debut developpement */
+$lang_standard['a_commande_article_Quantite'] = 'Quantité';
+$lang_standard['a_commande_article_Prix_ligne'] = 'Prix de la ligne';
+/* fin developpement */
 
 $lang_standard['bouton_ajouter_a_commande_article'] = 'Ajouter';
 $lang_standard['bouton_creer_a_commande_article'] = 'Créer';

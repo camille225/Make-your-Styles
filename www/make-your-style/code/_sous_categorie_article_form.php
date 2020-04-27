@@ -30,14 +30,16 @@
 
     } else {
 
-        include __DIR__ . '/_sous_categorie_article_list.php';
-
-        $code_html .= recuperer_gabarit('main/section.html', [
-            '{fonction}'  => 'lister',
-            '{nom_table}' => 'sous_categorie_article',
-            '{titre}'     => htmlspecialchars(get_nom_colonne('libelle_liste_sous_categorie_article')),
-            '{contenu}'   => recuperer_gabarit('sous_categorie_article/bloc_lister.html', $trans),
-        ]);
+        /* debut developpement */
+//        include __DIR__ . '/_sous_categorie_article_list.php';
+//
+//        $code_html .= recuperer_gabarit('main/section.html', [
+//            '{fonction}'  => 'lister',
+//            '{nom_table}' => 'sous_categorie_article',
+//            '{titre}'     => htmlspecialchars(get_nom_colonne('libelle_liste_sous_categorie_article')),
+//            '{contenu}'   => recuperer_gabarit('sous_categorie_article/bloc_lister.html', $trans),
+//        ]);
+        /* fin developpement */
 
     }
 

@@ -2,9 +2,11 @@
 
 $lang_standard['Code_conseil'] = 'conseil';
 
-$lang_standard['conseil_Libelle'] = 'conseil_Libelle';
-$lang_standard['conseil_Description'] = 'conseil_Description';
-$lang_standard['conseil_Actif'] = 'conseil_Actif';
+/* debut developpement */
+$lang_standard['conseil_Libelle'] = 'Libellé';
+$lang_standard['conseil_Description'] = 'Description';
+$lang_standard['conseil_Actif'] = 'Actif';
+/* fin developpement */
 $lang_standard['conseil_Actif_'] = [1 => "Oui", 0 => "Non"];
 
 $lang_standard['bouton_ajouter_conseil'] = 'Ajouter';

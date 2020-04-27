@@ -10,20 +10,22 @@
         $tab->ajouter_ref_Colonne_Code("Code_article");
         $tab->set_ligne_selectionnee('Code_article', mf_Code_article());
         $tab->modifier_code_action("apercu_article");
+/* debut developpement */
         $tab->ajouter_colonne('article_Libelle', false, '');
         // $tab->ajouter_colonne('article_Description', false, '');
         $tab->ajouter_colonne('article_Saison_Type', true, '');
         $tab->ajouter_colonne('article_Nom_fournisseur', false, '');
-        $tab->ajouter_colonne('article_Url', false, '');
-        $tab->ajouter_colonne('article_Reference', false, '');
+//        $tab->ajouter_colonne('article_Url', false, '');
+//        $tab->ajouter_colonne('article_Reference', false, '');
         $tab->ajouter_colonne('article_Couleur', false, 'color');
-        $tab->ajouter_colonne('article_Code_couleur_svg', false, '');
+//        $tab->ajouter_colonne('article_Code_couleur_svg', false, '');
         $tab->ajouter_colonne('article_Taille_Pays_Type', true, '');
         $tab->ajouter_colonne('article_Taille', false, '');
         $tab->ajouter_colonne('article_Matiere', false, '');
-        // $tab->ajouter_colonne_fichier('article_Photo_Fichier', '');
+//         $tab->ajouter_colonne_fichier('article_Photo_Fichier', '');
         $tab->ajouter_colonne('article_Prix', false, '');
         $tab->ajouter_colonne('article_Actif', true, '');
+/* fin developpement */
         if (! isset($est_charge['sous_categorie_article'])) {
             $tab->ajouter_colonne('Code_sous_categorie_article', true, '');
         }
