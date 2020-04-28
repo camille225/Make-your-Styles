@@ -56,7 +56,10 @@ class Hook_utilisateur
 
     public static function ajouter(int $Code_utilisateur)
     {
-        // ici le code
+        $db = new DB();
+        $db -> a_parametre_utilisateur() -> mfi_ajouter_auto([
+            'Code_utilisateur' => $Code_utilisateur
+        ]);
     }
 
     public static function hook_actualiser_les_droits_modifier(?int $Code_utilisateur = null)

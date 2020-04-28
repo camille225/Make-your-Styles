@@ -26,7 +26,9 @@ class Hook_parametre
         // actualisation uniquement pour l'affichage
         $mf_droits_defaut['parametre__CREER'] = false;
         // Mise à jour des droits
-        // ici le code
+        if (est_administrateur()) {
+            $mf_droits_defaut['parametre__AJOUTER'] = true;
+        }
     }
 
     public static function autorisation_ajout(string $parametre_Libelle)
@@ -53,7 +55,10 @@ class Hook_parametre
 
     public static function ajouter(int $Code_parametre)
     {
-        // ici le code
+        $db = new DB();
+        $db -> a_parametre_utilisateur() -> mfi_ajouter_auto([
+            'Code_parametre' => $Code_parametre
+        ]);
     }
 
     public static function hook_actualiser_les_droits_modifier(?int $Code_parametre = null)
@@ -63,7 +68,9 @@ class Hook_parametre
         $mf_droits_defaut['parametre__MODIFIER'] = false;
         $mf_droits_defaut['api_modifier__parametre_Libelle'] = false;
         // Mise à jour des droits
-        // ici le code
+        if (est_administrateur()) {
+            $mf_droits_defaut['api_modifier__parametre_Libelle'] = true;
+        }
     }
 
     public static function autorisation_modification(int $Code_parametre, string $parametre_Libelle__new)
@@ -91,7 +98,9 @@ class Hook_parametre
         // Initialisation des droits
         $mf_droits_defaut['parametre__SUPPRIMER'] = false;
         // Mise à jour des droits
-        // Ici le code
+        if (est_administrateur()) {
+            $mf_droits_defaut['parametre__SUPPRIMER'] = true;
+        }
     }
 
     public static function autorisation_suppression(int $Code_parametre)

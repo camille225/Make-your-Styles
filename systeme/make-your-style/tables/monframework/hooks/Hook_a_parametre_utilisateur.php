@@ -52,7 +52,10 @@ class Hook_a_parametre_utilisateur
         $mf_droits_defaut['api_modifier__a_parametre_utilisateur_Valeur'] = false;
         $mf_droits_defaut['api_modifier__a_parametre_utilisateur_Actif'] = false;
         // Mise à jour des droits
-        // ici le code
+        if (get_utilisateur_courant(MF_UTILISATEUR__ID) == $Code_utilisateur) {
+            $mf_droits_defaut['api_modifier__a_parametre_utilisateur_Valeur'] = true;
+            $mf_droits_defaut['api_modifier__a_parametre_utilisateur_Actif'] = true;
+        }
     }
 
     public static function autorisation_modification(int $Code_utilisateur, int $Code_parametre, ?int $a_parametre_utilisateur_Valeur__new, ?int $a_parametre_utilisateur_Actif__new)
