@@ -2,7 +2,9 @@
 
 $lang_standard['Code_sous_categorie_article'] = 'sous_categorie_article';
 
-$lang_standard['sous_categorie_article_Libelle'] = 'sous_categorie_article_Libelle';
+/* debut developpement */
+$lang_standard['sous_categorie_article_Libelle'] = 'Libellé';
+/* fin developpement */
 
 $lang_standard['bouton_ajouter_sous_categorie_article'] = 'Ajouter';
 $lang_standard['bouton_creer_sous_categorie_article'] = 'Créer';

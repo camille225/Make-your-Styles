@@ -26,7 +26,9 @@ class Hook_conseil
         // actualisation uniquement pour l'affichage
         $mf_droits_defaut['conseil__CREER'] = false;
         // Mise à jour des droits
-        // ici le code
+        if (est_administrateur()) {
+            $mf_droits_defaut['conseil__AJOUTER'] = true;
+        }
     }
 
     public static function autorisation_ajout(string $conseil_Libelle, string $conseil_Description, bool $conseil_Actif)
@@ -65,7 +67,11 @@ class Hook_conseil
         $mf_droits_defaut['api_modifier__conseil_Description'] = false;
         $mf_droits_defaut['api_modifier__conseil_Actif'] = false;
         // Mise à jour des droits
-        // ici le code
+        if (est_administrateur()) {
+            $mf_droits_defaut['api_modifier__conseil_Libelle'] = true;
+            $mf_droits_defaut['api_modifier__conseil_Description'] = true;
+            $mf_droits_defaut['api_modifier__conseil_Actif'] = true;
+        }
     }
 
     public static function autorisation_modification(int $Code_conseil, string $conseil_Libelle__new, string $conseil_Description__new, bool $conseil_Actif__new)
@@ -103,7 +109,9 @@ class Hook_conseil
         // Initialisation des droits
         $mf_droits_defaut['conseil__SUPPRIMER'] = false;
         // Mise à jour des droits
-        // Ici le code
+        if (est_administrateur()) {
+            $mf_droits_defaut['conseil__SUPPRIMER'] = true;
+        }
     }
 
     public static function autorisation_suppression(int $Code_conseil)

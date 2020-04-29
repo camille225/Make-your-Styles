@@ -52,7 +52,9 @@
             $form->ajouter_select(lister_cles($lang_standard['Code_article_']), "Code_article", ( isset($_POST['Code_article']) ? (int) $_POST['Code_article'] : 0 ), true);
         }
         $form->ajouter_input("a_commande_article_Quantite", ( isset($_POST['a_commande_article_Quantite']) ? $_POST['a_commande_article_Quantite'] : $mf_initialisation['a_commande_article_Quantite'] ), true);
-        $form->ajouter_input("a_commande_article_Prix_ligne", ( isset($_POST['a_commande_article_Prix_ligne']) ? $_POST['a_commande_article_Prix_ligne'] : $mf_initialisation['a_commande_article_Prix_ligne'] ), true);
+        /* debut developpement */
+//        $form->ajouter_input("a_commande_article_Prix_ligne", ( isset($_POST['a_commande_article_Prix_ligne']) ? $_POST['a_commande_article_Prix_ligne'] : $mf_initialisation['a_commande_article_Prix_ligne'] ), true);
+        /* fin developpement */
 
         $code_html .= recuperer_gabarit('a_commande_article/form_add_a_commande_article.html', ['{form}' => $form->generer_code(), '{title}' => get_nom_colonne('form_add_a_commande_article')], false, true);
 

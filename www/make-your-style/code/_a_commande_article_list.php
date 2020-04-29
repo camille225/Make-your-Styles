@@ -18,8 +18,10 @@
         }
         $tab->ajouter_ref_Colonne_Code('Code_article');
         $tab->modifier_code_action('apercu_a_commande_article');
-        $tab->ajouter_colonne('a_commande_article_Quantite', false, '');
+        /* debut developpement */
         $tab->ajouter_colonne('a_commande_article_Prix_ligne', false, '');
+        $tab->ajouter_colonne('a_commande_article_Quantite', false, '');
+        /* debut developpement */
         if ($mf_droits_defaut['a_commande_article__SUPPRIMER']) {
             $tab->ajouter_colonne_bouton('supprimer_a_commande_article', BOUTON_LIBELLE_SUPPRIMER_PREC . get_nom_colonne('bouton_supprimer_a_commande_article') . BOUTON_LIBELLE_SUPPRIMER_SUIV );
         }

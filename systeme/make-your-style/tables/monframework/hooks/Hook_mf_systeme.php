@@ -14,7 +14,34 @@ class Hook_mf_systeme
      */
     public static function worker(int $num_passe)
     {
-        // script ici
+        $db = new DB();
+        $liste_commande = $db -> commande() -> mf_lister(0, [OPTION_COND_MYSQL => [
+            MF_COMMANDE_DATE_LIVRAISON.'>"'.get_now().'"'
+        ]]);
+        echo MF_COMMANDE_DATE_LIVRAISON.'>"'.get_now().'"';
+        $data_commande = [];
+        $data_lignes = [];
+        foreach ($liste_commande as $commande) {
+            $liste_ligne = $db -> a_commande_article() -> mf_lister($commande[MF_COMMANDE__ID], 0);
+            $prix_commande = 0;
+            foreach ($liste_ligne as $ligne) {
+                $article = $db -> article() -> mf_get($ligne[MF_A_COMMANDE_ARTICLE_CODE_ARTICLE]);
+                $prix_ligne = intval($ligne[MF_A_COMMANDE_ARTICLE_QUANTITE] * $article[MF_ARTICLE_PRIX]);
+                if ($ligne[MF_A_COMMANDE_ARTICLE_PRIX_LIGNE] != $prix_ligne) {
+                    $data_lignes[] = [
+                        MF_A_COMMANDE_ARTICLE_CODE_ARTICLE => $ligne[MF_A_COMMANDE_ARTICLE_CODE_ARTICLE],
+                        MF_A_COMMANDE_ARTICLE_CODE_COMMANDE => $ligne[MF_A_COMMANDE_ARTICLE_CODE_COMMANDE],
+                        MF_A_COMMANDE_ARTICLE_PRIX_LIGNE => $prix_ligne
+                    ];
+                }
+                $prix_commande += $prix_ligne;
+            }
+            if ($commande[MF_COMMANDE_PRIX_TOTAL] != $prix_commande) {
+                $data_commande[$commande[MF_COMMANDE__ID]] = [ MF_COMMANDE_PRIX_TOTAL => $prix_commande ];
+            }
+        }
+        $db -> a_commande_article() -> mf_modifier_2($data_lignes, true);
+        $db -> commande() -> mf_modifier_2($data_commande, true);
     }
 
     public static function controle_acces_donnees(string $code, int $valeur): bool
