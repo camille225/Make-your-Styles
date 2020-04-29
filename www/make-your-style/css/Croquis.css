@@ -1,11 +1,6 @@
- *{
-    box-sizing: border-box;
-    margin: auto;
-}
 
-body{
-    display: flex;
-}
+
+
 
 button{
 
@@ -133,12 +128,5 @@ left: 460px;
         width : auto;
 }
 
-.chaussure{
-        flex-direction: row;
-        justify-content: space-between;
-        height: 28%;
-        width: auto;
-        
-}
 
 
