@@ -1,0 +1,132 @@
+
+
+
+
+button{
+
+}
+
+
+#partie_croquis {
+   background-image: url(bonhomesvg.svg); 
+   width: 650px;
+   height: 1000px;
+   background-repeat: no-repeat;
+  display: flex;
+  padding-left: 0;
+  margin-left: 0;
+  padding-right: 0;
+  margin-right: 0;
+}
+
+#gestion_couleur{
+  display: flex;
+   height: 1000px;
+  flex-direction: column;
+  align-items: center;
+  padding: 100 0 100 0;
+  padding-left: 0;
+  margin-left: 0;
+}
+
+#tee_shirt {
+    width: 18%;
+    height: auto;
+    position : absolute;
+    top:265px;
+    left:248px;
+    z-index: 1
+}
+
+#path{
+  top : 490px;
+  width: 17%;
+  left:256px;
+  position : absolute;
+  z-index: 2
+
+}
+
+.Chaussure{
+top: 420px;
+width: 150px;
+position : absolute;
+
+}
+
+#Chaussure_droite{
+left: 460px;
+}
+
+#Chaussure_gauche{
+  left: 160px;
+  transform: rotateY(180deg);
+}
+
+
+
+#croquis{
+    display: flex;
+     justify-content: center;
+    flex-direction: column;
+    height: 100%;
+    width : auto;
+
+    
+ 
+} 
+
+#couvre_chef{
+        display: flex;
+       justify-content: center;
+        height: 8%;
+        width : auto;
+}
+
+#tete{
+        display: flex;
+       justify-content: center;
+        height: 8%;
+        width : auto;
+}
+
+            
+
+#cou{
+        display: flex;
+       justify-content: center;
+        height: 3%;
+        width : auto;
+}
+
+#tronc{
+        display: flex;
+       justify-content: center;
+        height: 35%;
+        width : auto;
+}
+
+#ceinture{
+        display: flex;
+       justify-content: center;
+        height: 3%;
+        width : auto;
+}
+
+#pantallon{
+        display: flex;
+       justify-content: center;
+        height: 35%;
+        width : auto;
+}
+
+#pieds{
+        display: flex;
+       justify-content: center;
+       flex-direction: row;
+        height: 8%;
+        width : auto;
+}
+
+
+

@@ -1,6 +1,6 @@
 <?php
 
-include __DIR__ . '/../../systeme/make-your-style/espace_privee.php';
+include __DIR__ . '/../../systeme/make-your-style/espace_publique.php';
 
 if ( !$cache->start() )
 {
