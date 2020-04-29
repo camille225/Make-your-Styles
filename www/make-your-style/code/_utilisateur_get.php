@@ -228,5 +228,12 @@
         }
 
 /* debut developpement */
+        if(get_nom_page_courante()=="page_compte_utilisateur.php"){
+            if ($mf_droits_defaut['api_modifier__utilisateur_Nom']) {
+                $trans['{utilisateur_Nom}'] = ajouter_champ_modifiable_interface(['liste_valeurs_cle_table' => ['Code_utilisateur' => $utilisateur['Code_utilisateur']], 'DB_name' => 'utilisateur_Nom', 'valeur_initiale' => $utilisateur['utilisateur_Nom'], "mode_formulaire" => false]);
+            } else {
+                $trans['{utilisateur_Nom}'] = get_valeur_html_maj_auto_interface(['liste_valeurs_cle_table' => ['Code_utilisateur' => $utilisateur['Code_utilisateur']], 'DB_name' => 'utilisateur_Nom', 'valeur_initiale' => $utilisateur['utilisateur_Nom']]);
+            }
+        }
 include __DIR__ . '/_a_parametre_utilisateur_list.php';
 include __DIR__ . '/_commande_list.php';

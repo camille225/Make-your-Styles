@@ -1,43 +1,36 @@
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="">
-    <meta name="author" content="">
+<?php declare(strict_types=1);
 
-    <title>{titre_page}</title>
+include __DIR__ . '/../../systeme/make-your-style/espace_privee.php';
 
-    <link href="css/compte_utilisateur.css" rel="stylesheet">
-    </head>
-    <body>
-    {header}
-        <div id="page">
-            <div id="content_align">
-                <section id="section1">
-                    <h1>Informations</h1>
-                    <form>
-                        <label for="Nom"><input type="text" class="infos" name="nom" placeholder="Nom" /></label>
-                        <label for="Prenom"><input type="text" class="infos" name="prenom" placeholder="Prénom" /></label>
-                        <label for="Taille"><input type="text" class="infos" name="taille" placeholder="Taille" /></label>
-                        <label for="Date"><input type="date" class="infos" name="date" placeholder="Date de naissance" /></label>
-                        {utilisateur_Email}
-                        {utilisateur_Password}
-                    </form>
-                </section>
-                <div id="separateur"></div>
-                <section id="section2">
-                    <img src="IMG/Logo_Make_Your_Style_2.png">
-                    <h2>Question 1</h2>
-                    <p>Réponse de la première question</p>
-                    <h2>Question 2</h2>
-                    <p>Réponse de la deuxième question</p>
-                    <h2>Question 3</h2>
-                    <p>Réponse de la troisième question</p>
-                </section>
-            </div>
-        </div>
-    {footer}
-    {code_html}
-    </body>
-</html>
+if (! $cache->start()) {
+
+    require __DIR__ . '/scripts/lecture_parametres.php';
+
+    /* Chargement des actions */
+    include __DIR__ . '/code/_utilisateur_actions.php';
+
+    require __DIR__ . '/scripts/genealogie.php';
+
+    ob_start(); include __DIR__ . '/scripts/css.php'; $css = ob_get_clean();
+    ob_start(); include __DIR__ . '/scripts/js.php'; $js = ob_get_clean();
+    ob_start(); include __DIR__ . '/scripts/menu.php'; $menu = ob_get_clean();
+
+    $mess = ((isset($retour) && $retour['code_erreur']>0) ? (isset($mf_libelle_erreur[$retour['code_erreur']]) ? $mf_libelle_erreur[$retour['code_erreur']] : 'ERREUR N_'.$retour['code_erreur'] ) : '');
+
+    $code_html = '';
+
+    $Code_utilisateur = get_utilisateur_courant(MF_UTILISATEUR__ID);
+    $utilisateur = $db -> utilisateur() -> mf_get($Code_utilisateur);
+
+    /* Chargement des forms */
+    include __DIR__ . '/code/_utilisateur_get.php';
+
+    $menu_a_droite->ajouter_bouton_deconnexion();
+
+    echo recuperer_gabarit('compte/page_compte_utilisateur.html', $trans, true);
+
+    $cache->end();
+
+}
+
+fermeture_connexion_db();
