@@ -2,6 +2,11 @@
 $pages_menu = [];
 
 /* début pages B1 */
+$pages_menu['<span class="fa fa-home"></span> Accueil'][] = [
+    'nom' => 'Accueil',
+    'icone' => 'fa fa-home',
+    'adresse' => 'user_acceuil.php'
+];
 $pages_menu['<span class="fa fa-phone"></span> Contact'][] = [
     'nom' => 'Contact',
     'icone' => 'fa fa-phone',
