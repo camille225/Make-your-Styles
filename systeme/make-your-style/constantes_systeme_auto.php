@@ -1,19 +1,18 @@
 <?php declare(strict_types=1);
 
 // utilisateur_Civilite_Type
-define('UTILISATEUR_CIVILITE_TYPE_ETAT_1', 1);
-define('UTILISATEUR_CIVILITE_TYPE_ETAT_2', 2);
-define('UTILISATEUR_CIVILITE_TYPE_ETAT_3', 3);
+define('UTILISATEUR_CIVILITE_TYPE_MONSIEUR', 1);
+define('UTILISATEUR_CIVILITE_TYPE_MADAME', 2);
 
 // article_Saison_Type
-define('ARTICLE_SAISON_TYPE_ETAT_1', 1);
-define('ARTICLE_SAISON_TYPE_ETAT_2', 2);
-define('ARTICLE_SAISON_TYPE_ETAT_3', 3);
+define('ARTICLE_SAISON_TYPE_PRINTEMPS', 1);
+define('ARTICLE_SAISON_TYPE_ETE', 2);
+define('ARTICLE_SAISON_TYPE_AUTOMNE', 3);
+define('ARTICLE_SAISON_TYPE_HIVER', 4);
 
 // article_Taille_Pays_Type
-define('ARTICLE_TAILLE_PAYS_TYPE_ETAT_1', 1);
-define('ARTICLE_TAILLE_PAYS_TYPE_ETAT_2', 2);
-define('ARTICLE_TAILLE_PAYS_TYPE_ETAT_3', 3);
+define('ARTICLE_TAILLE_PAYS_TYPE_US', 1);
+define('ARTICLE_TAILLE_PAYS_TYPE_AUTRE', 2);
 
 // vue_utilisateur_Filtre_Saison_Type
 define('VUE_UTILISATEUR_FILTRE_SAISON_TYPE_ETAT_1', 1);

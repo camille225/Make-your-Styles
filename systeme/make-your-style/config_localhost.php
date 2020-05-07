@@ -7,7 +7,7 @@ define('REPERTOIRE_WWW', 'www'); // nom du dossier publique
 
 define('HTTPS_ON', false);
 define('ADRESSES_IP_AUTORISES', ['127.0.0.1', '::1']); // si vide, pas de restriction. Sinon, les ip autorisees
-define('MODE_PROD', false);
+define('MODE_PROD', true);
 define('MODE_DESIGN', false); // Nécessite (! MODE_PROD)
 
 define('DB_HOST', 'localhost');
